@@ -806,9 +806,9 @@ async def create_checkout(request: Request, user: User = Depends(require_auth)):
     return {"url": session.url, "session_id": session.session_id}
 
 @api_router.get("/payments/status/{session_id}")
-async def get_payment_status(session_id: str, user: User = Depends(require_auth)):
+async def get_payment_status(session_id: str, request: Request, user: User = Depends(require_auth)):
     """Get payment status and update membership if paid"""
-    host_url = "https://vcsa-portal.preview.emergentagent.com"
+    host_url = str(request.base_url).rstrip('/')
     webhook_url = f"{host_url}/api/webhook/stripe"
     
     stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
