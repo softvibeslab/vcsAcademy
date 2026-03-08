@@ -3,10 +3,18 @@
 ## Project Overview
 Premium online education and community platform for vacation club/timeshare sales professionals. Designed to help sales reps, managers, and industry leaders become consistent top producers through structured sales training, community interaction, and live industry events.
 
+## Strategic Positioning
+**VCSA helps sales reps improve performance, gives sales managers structured resources to develop teams, and equips industry leaders with the insights and conversations needed to elevate the industry.**
+
+### Three Pillars
+1. **Top Producer Development System** - Rep performance engine
+2. **Manager Performance Resource Center** - Team training tools (Future)
+3. **Industry Leadership Network** - Strategic content (Future)
+
 ## Target Audience
-- **Sales Representatives**: Vacation club/timeshare sales professionals looking to improve performance
-- **Sales Managers**: Leaders responsible for training and managing sales teams
-- **Industry Leaders**: Experienced professionals sharing knowledge and participating in masterclasses
+- **Sales Representatives**: Primary users - improve performance on the floor
+- **Sales Managers**: Operational users - train teams faster (Phase 2)
+- **Industry Leaders**: Strategic users - elevate organizations (Phase 3)
 
 ## Architecture
 
@@ -22,167 +30,122 @@ Premium online education and community platform for vacation club/timeshare sale
 - **Typography**: Playfair Display (headings) + DM Sans (body)
 - **UI Components**: Radix UI / shadcn
 
-## Core Features Implemented ✅
+## Phase 1: Top Producer Development System ✅
 
-### 1. User Authentication
-- [x] Email/password registration and login
-- [x] Google OAuth integration
-- [x] Session management with secure cookies
-- [x] Protected routes
+### Rep Journey (4 Stages)
+- **Stage 1: New Rep** - Build foundation (150 pts, 1-2 weeks)
+- **Stage 2: Developing Rep** - Execute with consistency (300 pts, 2-4 weeks)
+- **Stage 3: Performing Rep** - Close consistently (500 pts, 4-8 weeks)
+- **Stage 4: Consistent Top Producer** - Elite performer (750 pts, 8-12 weeks)
 
-### 2. User Dashboard
-- [x] Welcome header with user name
-- [x] Current level and points display
-- [x] Progress snapshot (completed lessons)
-- [x] Recently added courses
-- [x] Upcoming events
-- [x] Community highlights
+### Core Curriculum (6 Tracks, 34 Modules)
+- [x] Track 1: Pro Mindset (5 modules, 59 min)
+- [x] Track 2: Discovery & Control (5 modules, 75 min)
+- [x] Track 3: Value Architecture (5 modules, 75 min)
+- [x] Track 4: Decision Management (6 modules, 95 min) - CRITICAL TRACK
+- [x] Track 5: Objection Handling (8 modules, 119 min)
+- [x] Track 6: Post-Decision Integrity (5 modules, 62 min)
 
-### 3. Training Library
-- [x] Course listing with categories (course, masterclass, workshop, interview)
-- [x] Search and filter functionality
-- [x] Course cards with thumbnails and metadata
-- [x] Level-gated content
-- [x] VIP-only content badges
-- [x] Course detail page with lessons
-- [x] Video player (YouTube/Vimeo embed support)
-- [x] Mark lessons as complete
-- [x] Progress tracking
+### Features Implemented
+- [x] Top Producer Path (guided journey UI)
+- [x] 4-stage progression system
+- [x] 6-track progress display
+- [x] Current assignment block ("Your Next Step")
+- [x] Milestone tracker
+- [x] Stage badge display
+- [x] Module completion tracking
+- [x] Real Deal Breakdowns (5 scenarios)
+- [x] Quick Wins Library (10 tactics)
+- [x] Readiness Score calculation
+- [x] Badge system (7 badges defined)
+- [x] Points system for all actions
 
-### 4. Community Feed
-- [x] Create posts
-- [x] View post feed
-- [x] Like posts
-- [x] Pinned posts
-- [x] Comments on posts
-- [x] User avatars and timestamps
+### Deal Breakdowns (5 Initial)
+1. Lost Control After Price Reveal
+2. The Missing Spouse Objection
+3. The "Think About It" Collapse
+4. Momentum Lost Mid-Presentation
+5. Price Objection After Strong Value Build
 
-### 5. Events System
-- [x] Upcoming events display
-- [x] Past events/recordings section
-- [x] Event details (title, speaker, date/time, description)
-- [x] Join links for live events
-- [x] VIP-only events
+### Quick Wins (10 Initial)
+1. How to Recover After Losing Control
+2. How to Answer "We Need to Think About It"
+3. How to Create Urgency Without Pressure
+4. How to Reset After Price Resistance
+5. How to Handle "We're Just Looking"
+6. How to Re-engage a Quiet Buyer
+7. How to Respond to "That's Too Expensive"
+8. How to Handle the Missing Spouse
+9. How to Prevent Early Price Questions
+10. How to Build Value Before Numbers
 
-### 6. Resource Library
-- [x] Downloadable resources
-- [x] Categories (scripts, frameworks, guides, AI prompts, templates)
-- [x] Level-gated resources
-- [x] VIP-only resources
-- [x] Download tracking
-
-### 7. Gamification System
-- [x] Points awarded for activities (lessons, posts, comments)
-- [x] Level progression (1-5)
-- [x] Level-based content unlocking
-- [x] Progress bars and level roadmap
-
-### 8. Membership/Payments
-- [x] Free tier
-- [x] VIP Monthly ($97/month)
-- [x] VIP Annual ($970/year)
-- [x] Stripe checkout integration
-- [x] Payment success handling
-- [x] Membership status display
-
-### 9. User Profile
-- [x] Profile overview
-- [x] Level and points display
-- [x] Level benefits breakdown
-- [x] Points earning guide
-
-### 10. Admin Panel
-- [x] Platform statistics overview
-- [x] User management (view, update roles/membership)
-- [x] Course creation
-- [x] Lesson creation
-- [x] Event creation
-- [x] Resource creation
-
-## Database Schema
-
-### Collections
-- `users` - User accounts with level, points, membership
-- `user_sessions` - Auth sessions
-- `courses` - Training courses/content
-- `lessons` - Individual lessons within courses
-- `events` - Live events and masterclasses
-- `posts` - Community posts
-- `comments` - Post comments
-- `resources` - Downloadable resources
-- `user_progress` - Lesson completion tracking
-- `payment_transactions` - Stripe payment records
+## Legacy Features (Pre-Phase 1) ✅
+- Landing Page
+- Authentication (Email/Password + Google OAuth)
+- User Dashboard
+- Training Library (courses page)
+- Community Feed
+- Events System
+- Resource Library
+- Membership/Payments (Stripe)
+- Admin Panel
 
 ## API Endpoints
 
-### Auth
-- POST /api/auth/register
-- POST /api/auth/login
-- POST /api/auth/session (Google OAuth)
-- GET /api/auth/me
-- POST /api/auth/logout
-
-### Content
-- GET /api/courses
-- GET /api/courses/:id
-- POST /api/courses (admin)
-- POST /api/lessons (admin)
-- POST /api/lessons/:id/complete
-- GET /api/events
-- GET /api/resources
-- POST /api/resources/:id/download
-
-### Community
-- GET /api/posts
-- POST /api/posts
-- POST /api/posts/:id/like
-- GET /api/posts/:id/comments
-- POST /api/comments
-
-### Payments
-- POST /api/payments/checkout
-- GET /api/payments/status/:session_id
-- POST /api/webhook/stripe
-
-### Admin
-- GET /api/admin/stats
-- GET /api/admin/users
-- PUT /api/admin/users/:id/role
-- PUT /api/admin/users/:id/membership
+### Phase 1 Development System
+- GET /api/development/stages
+- GET /api/development/tracks
+- GET /api/development/tracks/:id
+- GET /api/development/modules
+- GET /api/development/badges
+- GET /api/development/breakdowns
+- GET /api/development/quickwins
+- GET /api/development/progress
+- POST /api/development/modules/:id/complete
+- POST /api/development/breakdowns/:id/review
+- POST /api/development/quickwins/:id/apply
 
 ## Test Credentials
 - **Admin**: admin@vcsa.com / admin123
 - **Demo User**: demo@vcsa.com / demo123
 
-## Seed Data Included
-- 2 users (admin, demo)
-- 4 courses with lessons
-- 2 upcoming events
-- 2 community posts
-- 4 downloadable resources
+---
+
+## P0 - Critical (Completed)
+- [x] Phase 1 Shell: Top Producer Path UI
+- [x] Phase 1 Curriculum architecture
+- [x] Decision Management Track (Track 4)
+- [x] Deal Breakdowns library
+- [x] Quick Wins library
+- [x] Measurement layer (basic)
+
+## P1 - High Priority (Next Sprint)
+- [ ] Add remaining 10 Deal Breakdowns
+- [ ] Add remaining 10 Quick Wins
+- [ ] Stage assessment gates
+- [ ] Badge award logic
+- [ ] Training streak tracking
+- [ ] Video content integration for modules
+
+## P2 - Phase 2: Manager Tools
+- [ ] Team Training Modules
+- [ ] Manager Dashboard
+- [ ] New Rep Onboarding Structure
+- [ ] Sales Meeting Resources
+- [ ] Coaching Frameworks
+
+## P3 - Phase 3: Leadership Network
+- [ ] Leadership Conversations section
+- [ ] Strategic Trend Discussions
+- [ ] Guest Expert Sessions
+- [ ] Leader-Only Community
+
+## P4 - AI Multiplier
+- [ ] AI Sales Coach (practice layer)
 
 ---
 
-## P0 - Critical (Remaining)
-- None - MVP Complete
-
-## P1 - High Priority (Backlog)
-- [ ] Course/lesson editing in admin
-- [ ] Event registration tracking
-- [ ] User activity logging
-- [ ] Email notifications (SendGrid)
-- [ ] Video upload/hosting integration
-
-## P2 - Medium Priority (Backlog)
-- [ ] Mobile app (React Native)
-- [ ] Sales performance tracking
-- [ ] Leaderboards
-- [ ] Badges/achievements
-- [ ] Deal simulation training
-- [ ] AI sales assistant integration
-- [ ] Direct messaging between users
-
 ## Last Updated
 - **Date**: March 8, 2026
-- **Status**: MVP Complete
-- **Version**: 1.0.0
+- **Status**: Phase 1 MVP Complete
+- **Version**: 2.0.0

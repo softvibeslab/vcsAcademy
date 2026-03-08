@@ -19,6 +19,11 @@ import PaymentSuccessPage from "@/pages/PaymentSuccessPage";
 import ProfilePage from "@/pages/ProfilePage";
 import AdminPage from "@/pages/AdminPage";
 import AuthCallback from "@/pages/AuthCallback";
+// Phase 1: Top Producer Development System
+import TopProducerPath from "@/pages/TopProducerPath";
+import TrackDetailPage from "@/pages/TrackDetailPage";
+import DealBreakdownsPage from "@/pages/DealBreakdownsPage";
+import QuickWinsPage from "@/pages/QuickWinsPage";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 export const API = `${BACKEND_URL}/api`;
@@ -120,6 +125,12 @@ function AppRouter() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+      {/* Phase 1: Top Producer Development System */}
+      <Route path="/path" element={<ProtectedRoute><TopProducerPath /></ProtectedRoute>} />
+      <Route path="/path/track/:trackId" element={<ProtectedRoute><TrackDetailPage /></ProtectedRoute>} />
+      <Route path="/path/breakdowns" element={<ProtectedRoute><DealBreakdownsPage /></ProtectedRoute>} />
+      <Route path="/path/quickwins" element={<ProtectedRoute><QuickWinsPage /></ProtectedRoute>} />
+      {/* Training Library (Legacy) */}
       <Route path="/courses" element={<ProtectedRoute><CoursesPage /></ProtectedRoute>} />
       <Route path="/courses/:courseId" element={<ProtectedRoute><CourseDetailPage /></ProtectedRoute>} />
       <Route path="/community" element={<ProtectedRoute><CommunityPage /></ProtectedRoute>} />

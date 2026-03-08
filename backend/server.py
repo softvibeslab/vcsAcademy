@@ -983,6 +983,10 @@ async def root():
 # Include router
 app.include_router(api_router)
 
+# Include Phase 1 development routes
+from phase1_routes import get_phase1_router
+app.include_router(get_phase1_router())
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,

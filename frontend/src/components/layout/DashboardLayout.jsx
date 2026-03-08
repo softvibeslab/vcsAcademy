@@ -2,7 +2,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, BookOpen, Users, Calendar, 
   Download, Crown, User, Settings, LogOut, 
-  Trophy, Menu, X, Shield
+  Trophy, Menu, X, Shield, Target, Zap
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '@/App';
@@ -11,7 +11,8 @@ import { cn } from '@/lib/utils';
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
-  { icon: BookOpen, label: 'Training', path: '/courses' },
+  { icon: Target, label: 'Top Producer Path', path: '/path', highlight: true },
+  { icon: BookOpen, label: 'Training Library', path: '/courses' },
   { icon: Users, label: 'Community', path: '/community' },
   { icon: Calendar, label: 'Events', path: '/events' },
   { icon: Download, label: 'Resources', path: '/resources' },
