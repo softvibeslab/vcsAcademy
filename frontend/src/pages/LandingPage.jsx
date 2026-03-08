@@ -33,7 +33,10 @@ export default function LandingPage() {
             <div className="w-10 h-10 gradient-gold flex items-center justify-center">
               <Trophy className="w-5 h-5 text-black" />
             </div>
-            <span className="font-serif text-xl font-semibold tracking-tight">VCSA</span>
+            <div className="flex flex-col">
+              <span className="font-serif text-lg font-semibold tracking-tight leading-tight">Vacation Club</span>
+              <span className="text-xs text-[#D4AF37] uppercase tracking-widest">Sales Academy</span>
+            </div>
           </div>
           <div className="flex items-center gap-4">
             <Button 
@@ -339,7 +342,7 @@ export default function LandingPage() {
             <span className="font-serif font-semibold">Vacation Club Sales Academy</span>
           </div>
           <p className="text-sm text-[#94A3B8]">
-            &copy; {new Date().getFullYear()} VCSA. All rights reserved.
+            &copy; {new Date().getFullYear()} Vacation Club Sales Academy. All rights reserved.
           </p>
         </div>
       </footer>

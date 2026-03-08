@@ -48,7 +48,10 @@ export const DashboardLayout = ({ children }) => {
             <div className="w-10 h-10 gradient-gold flex items-center justify-center">
               <Trophy className="w-5 h-5 text-black" />
             </div>
-            <span className="font-serif text-lg font-semibold">VCSA</span>
+            <div className="flex flex-col">
+              <span className="font-serif text-sm font-semibold leading-tight">Vacation Club</span>
+              <span className="text-[10px] text-[#D4AF37] uppercase tracking-widest">Sales Academy</span>
+            </div>
           </Link>
         </div>
 
@@ -151,7 +154,10 @@ export const DashboardLayout = ({ children }) => {
             <div className="w-8 h-8 gradient-gold flex items-center justify-center">
               <Trophy className="w-4 h-4 text-black" />
             </div>
-            <span className="font-serif font-semibold">VCSA</span>
+            <div className="flex flex-col">
+              <span className="font-serif text-sm font-semibold leading-tight">Vacation Club</span>
+              <span className="text-[9px] text-[#D4AF37] uppercase tracking-wider">Sales Academy</span>
+            </div>
           </Link>
           <button 
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}

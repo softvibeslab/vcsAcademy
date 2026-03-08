@@ -53,7 +53,10 @@ export default function LoginPage() {
             <div className="w-10 h-10 gradient-gold flex items-center justify-center">
               <Trophy className="w-5 h-5 text-black" />
             </div>
-            <span className="font-serif text-xl font-semibold">VCSA</span>
+            <div className="flex flex-col">
+              <span className="font-serif text-lg font-semibold leading-tight">Vacation Club</span>
+              <span className="text-xs text-[#D4AF37] uppercase tracking-widest">Sales Academy</span>
+            </div>
           </Link>
 
           <h1 className="font-serif text-3xl font-bold mb-2">Welcome back</h1>

@@ -26,7 +26,7 @@ export default function RegisterPage() {
     try {
       const response = await axios.post(`${API}/auth/register`, { name, email, password }, { withCredentials: true });
       login(response.data);
-      toast.success('Welcome to VCSA!');
+      toast.success('Welcome to Vacation Club Sales Academy!');
       navigate('/dashboard');
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Registration failed');
@@ -67,7 +67,10 @@ export default function RegisterPage() {
             <div className="w-10 h-10 gradient-gold flex items-center justify-center">
               <Trophy className="w-5 h-5 text-black" />
             </div>
-            <span className="font-serif text-xl font-semibold">VCSA</span>
+            <div className="flex flex-col">
+              <span className="font-serif text-lg font-semibold leading-tight">Vacation Club</span>
+              <span className="text-xs text-[#D4AF37] uppercase tracking-widest">Sales Academy</span>
+            </div>
           </Link>
 
           <h1 className="font-serif text-3xl font-bold mb-2">Create your account</h1>
