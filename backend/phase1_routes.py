@@ -46,6 +46,8 @@ class Module(BaseModel):
     focus: str
     duration: int  # minutes
     order: int
+    type: Optional[str] = "text"  # video, text, deal_breakdown, quick_win
+    video_url: Optional[str] = None
     lesson_id: Optional[str] = None  # Links to existing lesson if available
 
 class DealBreakdown(BaseModel):
@@ -209,11 +211,11 @@ TRACKS = [
 
 MODULES = [
     # Track 1: Pro Mindset
-    {"module_id": "mod_1_1", "track_id": "track_1", "module_number": "1.1", "title": "Identity of a Top Producer", "focus": "Who you need to become", "duration": 12, "order": 1},
-    {"module_id": "mod_1_2", "track_id": "track_1", "module_number": "1.2", "title": "The Performance Mindset", "focus": "Daily mental preparation", "duration": 10, "order": 2},
-    {"module_id": "mod_1_3", "track_id": "track_1", "module_number": "1.3", "title": "Handling Rejection", "focus": "Why 'no' is part of the process", "duration": 15, "order": 3},
-    {"module_id": "mod_1_4", "track_id": "track_1", "module_number": "1.4", "title": "Consistency Over Talent", "focus": "Systems beat motivation", "duration": 12, "order": 4},
-    {"module_id": "mod_1_5", "track_id": "track_1", "module_number": "1.5", "title": "Ownership Mentality", "focus": "Taking control of your results", "duration": 10, "order": 5},
+    {"module_id": "mod_1_1", "track_id": "track_1", "module_number": "1.1", "title": "Introduction: The Pro Mindset", "focus": "Who you need to become", "duration": 8, "order": 1, "type": "video", "video_url": "https://youtu.be/wDjfOy5aks8"},
+    {"module_id": "mod_1_2", "track_id": "track_1", "module_number": "1.2", "title": "The Performance Mindset", "focus": "Daily mental preparation", "duration": 10, "order": 2, "video_url": None},
+    {"module_id": "mod_1_3", "track_id": "track_1", "module_number": "1.3", "title": "Handling Rejection", "focus": "Why 'no' is part of the process", "duration": 15, "order": 3, "video_url": None},
+    {"module_id": "mod_1_4", "track_id": "track_1", "module_number": "1.4", "title": "Consistency Over Talent", "focus": "Systems beat motivation", "duration": 12, "order": 4, "video_url": None},
+    {"module_id": "mod_1_5", "track_id": "track_1", "module_number": "1.5", "title": "Ownership Mentality", "focus": "Taking control of your results", "duration": 10, "order": 5, "video_url": None},
     
     # Track 2: Discovery & Control
     {"module_id": "mod_2_1", "track_id": "track_2", "module_number": "2.1", "title": "The Power Opening", "focus": "Capture attention in 60 seconds", "duration": 15, "order": 1},

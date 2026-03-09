@@ -20,6 +20,7 @@ export default function TrackDetailPage() {
   const [progress, setProgress] = useState(null);
   const [loading, setLoading] = useState(true);
   const [completingModule, setCompletingModule] = useState(null);
+  const [activeModule, setActiveModule] = useState(null);
 
   useEffect(() => {
     fetchData();
@@ -39,6 +40,21 @@ export default function TrackDetailPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const getVideoEmbed = (url) => {
+    if (!url) return null;
+    // YouTube
+    const ytMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]+)/);
+    if (ytMatch) {
+      return `https://www.youtube.com/embed/${ytMatch[1]}`;
+    }
+    // Vimeo
+    const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
+    if (vimeoMatch) {
+      return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
+    }
+    return url;
   };
 
   const handleCompleteModule = async (moduleId) => {
@@ -134,6 +150,43 @@ export default function TrackDetailPage() {
           </div>
         </motion.div>
 
+        {/* Video Player */}
+        {activeModule && activeModule.video_url && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="glass overflow-hidden mb-8"
+          >
+            <div className="aspect-video bg-black">
+              <iframe
+                src={getVideoEmbed(activeModule.video_url)}
+                className="w-full h-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                title={activeModule.title}
+              />
+            </div>
+            <div className="p-4 border-t border-white/10">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-[#D4AF37] uppercase tracking-wider">Now Playing</p>
+                  <h3 className="font-medium">{activeModule.title}</h3>
+                </div>
+                {!modulesCompleted.includes(activeModule.module_id) && (
+                  <Button
+                    size="sm"
+                    className="bg-[#D4AF37] text-black hover:bg-[#B4942D]"
+                    onClick={() => handleCompleteModule(activeModule.module_id)}
+                    disabled={completingModule === activeModule.module_id}
+                  >
+                    <Check className="w-4 h-4 mr-1" /> Mark Complete
+                  </Button>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         {/* Modules List */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
@@ -145,6 +198,8 @@ export default function TrackDetailPage() {
             {track.modules?.map((module, i) => {
               const isCompleted = modulesCompleted.includes(module.module_id);
               const isNext = !isCompleted && (i === 0 || modulesCompleted.includes(track.modules[i - 1]?.module_id));
+              const isActive = activeModule?.module_id === module.module_id;
+              const hasVideo = !!module.video_url;
               
               return (
                 <motion.div
@@ -153,10 +208,13 @@ export default function TrackDetailPage() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.05 * i }}
                   className={cn(
-                    "glass p-5 flex items-center gap-4",
-                    isNext && "border-[#D4AF37]/50",
-                    isCompleted && "border-green-500/30"
+                    "glass p-5 flex items-center gap-4 cursor-pointer transition-all",
+                    isActive && "border-[#D4AF37] bg-[#D4AF37]/5",
+                    !isActive && isNext && "border-[#D4AF37]/50",
+                    !isActive && isCompleted && "border-green-500/30",
+                    !isActive && "hover:border-[#D4AF37]/30"
                   )}
+                  onClick={() => hasVideo && setActiveModule(module)}
                   data-testid={`module-${module.module_id}`}
                 >
                   {/* Status Icon */}
@@ -195,17 +253,28 @@ export default function TrackDetailPage() {
                   </div>
 
                   {/* Action */}
-                  <div className="shrink-0">
+                  <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
                     {isCompleted ? (
                       <span className="text-xs text-green-400 uppercase tracking-wider">Completed</span>
-                    ) : (
+                    ) : hasVideo ? (
                       <Button
                         size="sm"
                         className={cn(
-                          isNext 
-                            ? "bg-[#D4AF37] text-black hover:bg-[#B4942D]" 
-                            : "bg-white/10 hover:bg-white/20"
+                          isActive
+                            ? "bg-green-500 text-white hover:bg-green-600"
+                            : isNext 
+                              ? "bg-[#D4AF37] text-black hover:bg-[#B4942D]" 
+                              : "bg-white/10 hover:bg-white/20"
                         )}
+                        onClick={() => setActiveModule(module)}
+                      >
+                        <Play className="w-4 h-4 mr-1" /> 
+                        {isActive ? 'Playing' : isNext ? 'Start' : 'Watch'}
+                      </Button>
+                    ) : (
+                      <Button
+                        size="sm"
+                        className="bg-white/10 hover:bg-white/20"
                         onClick={() => handleCompleteModule(module.module_id)}
                         disabled={completingModule === module.module_id}
                       >
@@ -213,8 +282,7 @@ export default function TrackDetailPage() {
                           <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
                         ) : (
                           <>
-                            <Play className="w-4 h-4 mr-1" /> 
-                            {isNext ? 'Start' : 'Watch'}
+                            <Check className="w-4 h-4 mr-1" /> Complete
                           </>
                         )}
                       </Button>

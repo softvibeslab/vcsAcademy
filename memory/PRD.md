@@ -118,14 +118,16 @@ Premium online education and community platform for vacation club/timeshare sale
 - [x] Deal Breakdowns library
 - [x] Quick Wins library
 - [x] Measurement layer (basic)
+- [x] Video embedding for training modules (YouTube/Vimeo support)
 
 ## P1 - High Priority (Next Sprint)
-- [ ] Add remaining 10 Deal Breakdowns
-- [ ] Add remaining 10 Quick Wins
+- [ ] Populate all 36 modules across 6 tracks
+- [ ] Add remaining 10 Deal Breakdowns (15 total)
+- [ ] Add remaining 10 Quick Wins (20 total)
 - [ ] Stage assessment gates
 - [ ] Badge award logic
 - [ ] Training streak tracking
-- [ ] Video content integration for modules
+- [ ] Readiness Score algorithm finalization
 
 ## P2 - Phase 2: Manager Tools
 - [ ] Team Training Modules
@@ -146,6 +148,11 @@ Premium online education and community platform for vacation club/timeshare sale
 ---
 
 ## Last Updated
-- **Date**: March 8, 2026
-- **Status**: Phase 1 MVP Complete
-- **Version**: 2.0.0
+- **Date**: March 9, 2026
+- **Status**: Phase 1 Video Embedding Complete
+- **Version**: 2.1.0
+- **Recent Changes**:
+  - Fixed JSX syntax error in TrackDetailPage.jsx
+  - Implemented YouTube video embedding with responsive player
+  - Added "Introduction: The Pro Mindset" lesson with video
+  - Added `type` field to Module schema for future content types

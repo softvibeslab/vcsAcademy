@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 import uuid
 
 # Configuration from frontend/.env
-BACKEND_URL = "https://vcsa-portal.preview.emergentagent.com/api"
+BACKEND_URL = "https://sales-training-hub-11.preview.emergentagent.com/api"
 
 class VCSAAPITester:
     def __init__(self, base_url=BACKEND_URL):
@@ -160,7 +160,7 @@ class VCSAAPITester:
         """Test payment endpoints (requires auth)"""
         checkout_data = {
             "package_id": "vip_monthly",
-            "origin_url": "https://vcsa-portal.preview.emergentagent.com"
+            "origin_url": "https://sales-training-hub-11.preview.emergentagent.com"
         }
         success, status, data = self.make_request('POST', 'payments/checkout', checkout_data, expected_status=401)
         return self.log_result("Payment Checkout (Unauth)", success, status,
