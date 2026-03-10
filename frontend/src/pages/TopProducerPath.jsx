@@ -215,7 +215,7 @@ export default function TopProducerPath() {
                 <p className="text-xs uppercase tracking-widest text-[#D4AF37]">Your Next Step</p>
                 <h3 className="font-serif text-lg font-semibold">
                   {nextAssignment.type === 'module' 
-                    ? nextAssignment.module.title 
+                    ? nextAssignment.content?.title 
                     : nextAssignment.breakdown?.title}
                 </h3>
               </div>
@@ -229,7 +229,7 @@ export default function TopProducerPath() {
                       <BookOpen className="w-4 h-4" /> {nextAssignment.track}
                     </span>
                     <span className="flex items-center gap-1">
-                      <Clock className="w-4 h-4" /> {nextAssignment.module.duration} min
+                      <Clock className="w-4 h-4" /> {nextAssignment.content?.duration} min
                     </span>
                   </>
                 )}
@@ -239,7 +239,7 @@ export default function TopProducerPath() {
                   </span>
                 )}
               </div>
-              <Link to={nextAssignment.type === 'module' ? `/path/track/${nextAssignment.module.track_id}` : '/path/breakdowns'}>
+              <Link to={nextAssignment.type === 'module' ? `/path/track/${nextAssignment.track_id}` : '/path/breakdowns'}>
                 <Button className="bg-[#D4AF37] text-black hover:bg-[#B4942D] font-semibold">
                   Start Now <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>

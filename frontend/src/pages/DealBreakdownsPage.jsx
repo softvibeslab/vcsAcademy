@@ -66,7 +66,7 @@ export default function DealBreakdownsPage() {
     }
   };
 
-  const reviewedBreakdowns = progress?.progress?.breakdowns_reviewed || [];
+  const reviewedBreakdowns = progress?.progress?.content_completed?.filter(id => id.startsWith('breakdown_')) || [];
   
   const filteredBreakdowns = breakdowns.filter(b =>
     b.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -142,12 +142,12 @@ export default function DealBreakdownsPage() {
           {/* Breakdown List */}
           <div className="space-y-4">
             {filteredBreakdowns.map((breakdown, i) => {
-              const isReviewed = reviewedBreakdowns.includes(breakdown.breakdown_id);
-              const isSelected = selectedBreakdown?.breakdown_id === breakdown.breakdown_id;
+              const isReviewed = reviewedBreakdowns.includes(breakdown.content_id);
+              const isSelected = selectedBreakdown?.content_id === breakdown.content_id;
               
               return (
                 <motion.div
-                  key={breakdown.breakdown_id}
+                  key={breakdown.content_id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.05 * i }}
@@ -157,7 +157,7 @@ export default function DealBreakdownsPage() {
                     isReviewed && "border-green-500/30"
                   )}
                   onClick={() => setSelectedBreakdown(breakdown)}
-                  data-testid={`breakdown-${breakdown.breakdown_id}`}
+                  data-testid={`breakdown-${breakdown.content_id}`}
                 >
                   <div className="flex items-start gap-4">
                     <div className={cn(
@@ -202,7 +202,7 @@ export default function DealBreakdownsPage() {
           <div className="lg:sticky lg:top-6 h-fit">
             {selectedBreakdown ? (
               <motion.div
-                key={selectedBreakdown.breakdown_id}
+                key={selectedBreakdown.content_id}
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 className="glass p-6 space-y-6"
@@ -223,7 +223,7 @@ export default function DealBreakdownsPage() {
 
                 <div>
                   <h4 className="text-xs uppercase tracking-widest text-[#94A3B8] mb-2">Scenario</h4>
-                  <p className="text-[#F1F5F9] leading-relaxed">{selectedBreakdown.scenario}</p>
+                  <p className="text-[#F1F5F9] leading-relaxed">{selectedBreakdown.scenario || selectedBreakdown.description}</p>
                 </div>
 
                 <div>
@@ -247,9 +247,9 @@ export default function DealBreakdownsPage() {
 
                 <div className="bg-[#D4AF37]/10 p-4 border-l-2 border-[#D4AF37]">
                   <h4 className="text-xs uppercase tracking-widest text-[#D4AF37] mb-2 flex items-center gap-2">
-                    <Lightbulb className="w-4 h-4" /> Key Takeaway
+                    <Lightbulb className="w-4 h-4" /> Key Move
                   </h4>
-                  <p className="text-[#F1F5F9] leading-relaxed">{selectedBreakdown.key_takeaway}</p>
+                  <p className="text-[#F1F5F9] leading-relaxed">{selectedBreakdown.key_move}</p>
                 </div>
 
                 <div>
@@ -257,10 +257,10 @@ export default function DealBreakdownsPage() {
                   <p className="text-[#94A3B8] italic">{selectedBreakdown.practice_prompt}</p>
                 </div>
 
-                {!reviewedBreakdowns.includes(selectedBreakdown.breakdown_id) ? (
+                {!reviewedBreakdowns.includes(selectedBreakdown.content_id) ? (
                   <Button
                     className="w-full bg-[#D4AF37] text-black hover:bg-[#B4942D] font-semibold"
-                    onClick={() => handleReview(selectedBreakdown.breakdown_id)}
+                    onClick={() => handleReview(selectedBreakdown.content_id)}
                     disabled={marking}
                   >
                     {marking ? (

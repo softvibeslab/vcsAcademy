@@ -71,7 +71,7 @@ export default function QuickWinsPage() {
     }
   };
 
-  const appliedWins = progress?.progress?.quickwins_applied || [];
+  const appliedWins = progress?.progress?.content_completed?.filter(id => id.startsWith('qw_')) || [];
   
   const filteredWins = quickwins.filter(w => {
     const matchesSearch = w.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -181,12 +181,12 @@ export default function QuickWinsPage() {
           {/* Quick Wins List */}
           <div className="space-y-3">
             {filteredWins.map((win, i) => {
-              const isApplied = appliedWins.includes(win.quickwin_id);
-              const isSelected = selectedWin?.quickwin_id === win.quickwin_id;
+              const isApplied = appliedWins.includes(win.content_id);
+              const isSelected = selectedWin?.content_id === win.content_id;
               
               return (
                 <motion.div
-                  key={win.quickwin_id}
+                  key={win.content_id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.03 * i }}
@@ -196,7 +196,7 @@ export default function QuickWinsPage() {
                     isApplied && "border-green-500/30"
                   )}
                   onClick={() => setSelectedWin(win)}
-                  data-testid={`quickwin-${win.quickwin_id}`}
+                  data-testid={`quickwin-${win.content_id}`}
                 >
                   <div className="flex items-start gap-3">
                     <div className={cn(
@@ -241,7 +241,7 @@ export default function QuickWinsPage() {
           <div className="lg:sticky lg:top-6 h-fit">
             {selectedWin ? (
               <motion.div
-                key={selectedWin.quickwin_id}
+                key={selectedWin.content_id}
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 className="glass p-6 space-y-5"
@@ -281,10 +281,10 @@ export default function QuickWinsPage() {
                   <p className="text-[#F1F5F9] leading-relaxed italic">"{selectedWin.example}"</p>
                 </div>
 
-                {!appliedWins.includes(selectedWin.quickwin_id) ? (
+                {!appliedWins.includes(selectedWin.content_id) ? (
                   <Button
                     className="w-full bg-[#D4AF37] text-black hover:bg-[#B4942D] font-semibold"
-                    onClick={() => handleApply(selectedWin.quickwin_id)}
+                    onClick={() => handleApply(selectedWin.content_id)}
                     disabled={applying}
                   >
                     {applying ? (

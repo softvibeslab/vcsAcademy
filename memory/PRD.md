@@ -38,13 +38,29 @@ Premium online education and community platform for vacation club/timeshare sale
 - **Stage 3: Performing Rep** - Close consistently (500 pts, 4-8 weeks)
 - **Stage 4: Consistent Top Producer** - Elite performer (750 pts, 8-12 weeks)
 
-### Core Curriculum (6 Tracks, 34 Modules)
-- [x] Track 1: Pro Mindset (5 modules, 59 min)
-- [x] Track 2: Discovery & Control (5 modules, 75 min)
-- [x] Track 3: Value Architecture (5 modules, 75 min)
-- [x] Track 4: Decision Management (6 modules, 95 min) - CRITICAL TRACK
-- [x] Track 5: Objection Handling (8 modules, 119 min)
-- [x] Track 6: Post-Decision Integrity (5 modules, 62 min)
+### Core Curriculum (6 Tracks, 36 Modules)
+- [x] Track 1: Pro Mindset (6 modules)
+- [x] Track 2: Discovery & Control (6 modules)
+- [x] Track 3: Value Architecture (6 modules)
+- [x] Track 4: Decision Management (6 modules)
+- [x] Track 5: Objection Mastery (6 modules)
+- [x] Track 6: Post-Decision Integrity (6 modules)
+
+### Content Library
+- [x] 36 Training Modules with Key Move for each lesson
+- [x] 15 Deal Breakdowns (full scenario analysis)
+- [x] 20 Quick Wins (tactical knowledge)
+
+### Engagement Layer
+- [x] Watch Later / Bookmarks with tags (before_tour, closing_help, etc.)
+- [x] User Activity tracking for analytics
+- [x] Training Streak (24h window)
+
+### Gamification
+- [x] Readiness Score algorithm (40% video + 30% track + 10% QW + 10% BD + 10% streak)
+- [x] 11 Badges with automatic award logic
+- [x] Stage gate completion checks
+- [x] Points system (10 pts/module, 5 pts/breakdown, 3 pts/quick win)
 
 ### Features Implemented
 - [x] Top Producer Path (guided journey UI)
@@ -120,14 +136,24 @@ Premium online education and community platform for vacation club/timeshare sale
 - [x] Measurement layer (basic)
 - [x] Video embedding for training modules (YouTube/Vimeo support)
 
-## P1 - High Priority (Next Sprint)
-- [ ] Populate all 36 modules across 6 tracks
-- [ ] Add remaining 10 Deal Breakdowns (15 total)
-- [ ] Add remaining 10 Quick Wins (20 total)
-- [ ] Stage assessment gates
-- [ ] Badge award logic
-- [ ] Training streak tracking
-- [ ] Readiness Score algorithm finalization
+## P1 - High Priority (Completed)
+- [x] Content Layer architecture (36 modules populated)
+- [x] All 15 Deal Breakdowns with full analysis
+- [x] All 20 Quick Wins with examples
+- [x] Readiness Score algorithm
+- [x] Badge award logic (11 badges)
+- [x] Training Streak tracking
+- [x] Watch Later / Bookmarks feature
+- [x] User Activity tracking
+- [x] "Key Move" for each lesson
+- [x] Pre-Tour Tactical Mode API
+
+## P2 - Next Sprint (Current Focus)
+- [ ] Pre-Tour Tactical Mode UI (Dashboard widget)
+- [ ] Stage gate assessment UI
+- [ ] Badge display/award animations
+- [ ] Deal Simulator (interactive scenarios)
+- [ ] Real video URLs (replace placeholders)
 
 ## P2 - Phase 2: Manager Tools
 - [ ] Team Training Modules
@@ -148,11 +174,19 @@ Premium online education and community platform for vacation club/timeshare sale
 ---
 
 ## Last Updated
-- **Date**: March 9, 2026
-- **Status**: Phase 1 Video Embedding Complete
-- **Version**: 2.1.0
+- **Date**: March 10, 2026
+- **Status**: P1 Sprint Complete - Content Population & Engagement Layer
+- **Version**: 3.0.0
 - **Recent Changes**:
-  - Fixed JSX syntax error in TrackDetailPage.jsx
-  - Implemented YouTube video embedding with responsive player
-  - Added "Introduction: The Pro Mindset" lesson with video
-  - Added `type` field to Module schema for future content types
+  - Complete content architecture refactor (Content Layer abstraction)
+  - Populated 36 modules across 6 tracks with key_move for each
+  - Added 15 Deal Breakdowns (full analysis for each)
+  - Added 20 Quick Wins (tactical knowledge library)
+  - Implemented Watch Later / Bookmarks feature with tags
+  - User Activity tracking for analytics
+  - Training Streak tracking with 24h window
+  - Readiness Score algorithm (40% video + 30% track + 10% QW + 10% BD + 10% streak)
+  - 11 Badge definitions with award logic
+  - Stage gate completion checks
+  - "Key Move From This Lesson" UI element
+  - Pre-Tour Tactical Mode API endpoint

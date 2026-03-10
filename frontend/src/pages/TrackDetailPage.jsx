@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  ChevronLeft, Check, Lock, Play, Clock, 
-  BookOpen, Target, Award
+  ChevronLeft, Check, Play, Clock, 
+  BookOpen, Award, Bookmark, BookmarkCheck, Lightbulb, X
 } from 'lucide-react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
@@ -21,6 +21,8 @@ export default function TrackDetailPage() {
   const [loading, setLoading] = useState(true);
   const [completingModule, setCompletingModule] = useState(null);
   const [activeModule, setActiveModule] = useState(null);
+  const [bookmarks, setBookmarks] = useState([]);
+  const [bookmarking, setBookmarking] = useState(null);
 
   useEffect(() => {
     fetchData();
@@ -28,12 +30,14 @@ export default function TrackDetailPage() {
 
   const fetchData = async () => {
     try {
-      const [trackRes, progressRes] = await Promise.all([
+      const [trackRes, progressRes, bookmarksRes] = await Promise.all([
         axios.get(`${API}/development/tracks/${trackId}`, { withCredentials: true }),
-        axios.get(`${API}/development/progress`, { withCredentials: true })
+        axios.get(`${API}/development/progress`, { withCredentials: true }),
+        axios.get(`${API}/development/bookmarks`, { withCredentials: true }).catch(() => ({ data: [] }))
       ]);
       setTrack(trackRes.data);
       setProgress(progressRes.data);
+      setBookmarks(bookmarksRes.data?.map(b => b.content_id) || []);
     } catch (error) {
       console.error('Error:', error);
       toast.error('Failed to load track');
@@ -44,7 +48,7 @@ export default function TrackDetailPage() {
 
   const getVideoEmbed = (url) => {
     if (!url) return null;
-    // YouTube
+    // YouTube - handle various formats
     const ytMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]+)/);
     if (ytMatch) {
       return `https://www.youtube.com/embed/${ytMatch[1]}`;
@@ -57,16 +61,41 @@ export default function TrackDetailPage() {
     return url;
   };
 
-  const handleCompleteModule = async (moduleId) => {
-    setCompletingModule(moduleId);
+  const handleCompleteModule = async (contentId) => {
+    setCompletingModule(contentId);
     try {
-      await axios.post(`${API}/development/modules/${moduleId}/complete`, {}, { withCredentials: true });
-      toast.success('Module completed! +10 points');
+      const response = await axios.post(`${API}/development/content/${contentId}/complete`, {}, { withCredentials: true });
+      const { points_earned, streak, stage_advanced, new_stage } = response.data;
+      
+      let message = `Module completed! +${points_earned} points`;
+      if (streak > 1) message += ` | ${streak} day streak!`;
+      if (stage_advanced) message = `Stage ${new_stage} unlocked! ${message}`;
+      
+      toast.success(message);
       await fetchData();
     } catch (error) {
       toast.error('Failed to complete module');
     } finally {
       setCompletingModule(null);
+    }
+  };
+
+  const handleBookmark = async (contentId, tag = 'before_tour') => {
+    setBookmarking(contentId);
+    try {
+      if (bookmarks.includes(contentId)) {
+        await axios.delete(`${API}/development/bookmarks/${contentId}`, { withCredentials: true });
+        setBookmarks(prev => prev.filter(id => id !== contentId));
+        toast.success('Removed from Watch Later');
+      } else {
+        await axios.post(`${API}/development/bookmarks`, { content_id: contentId, tag }, { withCredentials: true });
+        setBookmarks(prev => [...prev, contentId]);
+        toast.success('Added to Watch Later');
+      }
+    } catch (error) {
+      toast.error('Failed to update bookmark');
+    } finally {
+      setBookmarking(null);
     }
   };
 
@@ -92,9 +121,9 @@ export default function TrackDetailPage() {
     );
   }
 
-  const modulesCompleted = progress?.progress?.modules_completed || [];
+  const contentCompleted = progress?.progress?.content_completed || [];
   const trackProgress = progress?.progress?.tracks_progress?.[trackId] || 0;
-  const completedCount = track.modules?.filter(m => modulesCompleted.includes(m.module_id)).length || 0;
+  const completedCount = track.modules?.filter(m => contentCompleted.includes(m.content_id)).length || 0;
 
   return (
     <DashboardLayout>
@@ -150,42 +179,89 @@ export default function TrackDetailPage() {
           </div>
         </motion.div>
 
-        {/* Video Player */}
-        {activeModule && activeModule.video_url && (
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="glass overflow-hidden mb-8"
-          >
-            <div className="aspect-video bg-black">
-              <iframe
-                src={getVideoEmbed(activeModule.video_url)}
-                className="w-full h-full"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                title={activeModule.title}
-              />
-            </div>
-            <div className="p-4 border-t border-white/10">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-[#D4AF37] uppercase tracking-wider">Now Playing</p>
-                  <h3 className="font-medium">{activeModule.title}</h3>
+        {/* Video Player with Key Move */}
+        <AnimatePresence>
+          {activeModule && activeModule.video_url && (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="glass overflow-hidden mb-8"
+            >
+              <div className="aspect-video bg-black relative">
+                <iframe
+                  src={getVideoEmbed(activeModule.video_url)}
+                  className="w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  title={activeModule.title}
+                />
+                <button
+                  onClick={() => setActiveModule(null)}
+                  className="absolute top-4 right-4 p-2 bg-black/50 hover:bg-black/70 rounded-full transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              
+              {/* Video Info Bar */}
+              <div className="p-4 border-t border-white/10">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <p className="text-xs text-[#D4AF37] uppercase tracking-wider">Now Playing</p>
+                    <h3 className="font-medium text-lg">{activeModule.title}</h3>
+                    <p className="text-sm text-[#94A3B8]">{activeModule.description}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className={cn(
+                        "text-[#94A3B8] hover:text-white",
+                        bookmarks.includes(activeModule.content_id) && "text-[#D4AF37]"
+                      )}
+                      onClick={() => handleBookmark(activeModule.content_id)}
+                      disabled={bookmarking === activeModule.content_id}
+                    >
+                      {bookmarks.includes(activeModule.content_id) ? (
+                        <BookmarkCheck className="w-5 h-5" />
+                      ) : (
+                        <Bookmark className="w-5 h-5" />
+                      )}
+                    </Button>
+                    {!contentCompleted.includes(activeModule.content_id) && (
+                      <Button
+                        size="sm"
+                        className="bg-[#D4AF37] text-black hover:bg-[#B4942D]"
+                        onClick={() => handleCompleteModule(activeModule.content_id)}
+                        disabled={completingModule === activeModule.content_id}
+                      >
+                        <Check className="w-4 h-4 mr-1" /> Mark Complete
+                      </Button>
+                    )}
+                  </div>
                 </div>
-                {!modulesCompleted.includes(activeModule.module_id) && (
-                  <Button
-                    size="sm"
-                    className="bg-[#D4AF37] text-black hover:bg-[#B4942D]"
-                    onClick={() => handleCompleteModule(activeModule.module_id)}
-                    disabled={completingModule === activeModule.module_id}
-                  >
-                    <Check className="w-4 h-4 mr-1" /> Mark Complete
-                  </Button>
+
+                {/* Key Move - The actionable takeaway */}
+                {activeModule.key_move && (
+                  <div className="bg-gradient-to-r from-[#D4AF37]/10 to-transparent p-4 border-l-2 border-[#D4AF37]">
+                    <div className="flex items-start gap-3">
+                      <Lightbulb className="w-5 h-5 text-[#D4AF37] shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-xs uppercase tracking-wider text-[#D4AF37] font-semibold mb-1">
+                          Key Move From This Lesson
+                        </p>
+                        <p className="text-white">
+                          {activeModule.key_move}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 )}
               </div>
-            </div>
-          </motion.div>
-        )}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Modules List */}
         <motion.div 
@@ -196,14 +272,15 @@ export default function TrackDetailPage() {
           <h2 className="font-serif text-xl font-semibold mb-4">Modules</h2>
           <div className="space-y-3">
             {track.modules?.map((module, i) => {
-              const isCompleted = modulesCompleted.includes(module.module_id);
-              const isNext = !isCompleted && (i === 0 || modulesCompleted.includes(track.modules[i - 1]?.module_id));
-              const isActive = activeModule?.module_id === module.module_id;
+              const isCompleted = contentCompleted.includes(module.content_id);
+              const isNext = !isCompleted && (i === 0 || contentCompleted.includes(track.modules[i - 1]?.content_id));
+              const isActive = activeModule?.content_id === module.content_id;
               const hasVideo = !!module.video_url;
+              const isBookmarked = bookmarks.includes(module.content_id);
               
               return (
                 <motion.div
-                  key={module.module_id}
+                  key={module.content_id}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.05 * i }}
@@ -215,7 +292,7 @@ export default function TrackDetailPage() {
                     !isActive && "hover:border-[#D4AF37]/30"
                   )}
                   onClick={() => hasVideo && setActiveModule(module)}
-                  data-testid={`module-${module.module_id}`}
+                  data-testid={`module-${module.content_id}`}
                 >
                   {/* Status Icon */}
                   <div className={cn(
@@ -236,13 +313,18 @@ export default function TrackDetailPage() {
 
                   {/* Content */}
                   <div className="flex-1 min-w-0">
-                    <h3 className={cn(
-                      "font-medium",
-                      isCompleted && "text-green-400"
-                    )}>
-                      {module.title}
-                    </h3>
-                    <p className="text-sm text-[#94A3B8] mt-0.5">{module.focus}</p>
+                    <div className="flex items-center gap-2">
+                      <h3 className={cn(
+                        "font-medium",
+                        isCompleted && "text-green-400"
+                      )}>
+                        {module.title}
+                      </h3>
+                      {isBookmarked && (
+                        <BookmarkCheck className="w-4 h-4 text-[#D4AF37]" />
+                      )}
+                    </div>
+                    <p className="text-sm text-[#94A3B8] mt-0.5">{module.description || module.focus}</p>
                   </div>
 
                   {/* Duration */}
@@ -253,13 +335,27 @@ export default function TrackDetailPage() {
                   </div>
 
                   {/* Action */}
-                  <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
+                  <div className="shrink-0 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className={cn(
+                        "h-8 w-8",
+                        isBookmarked ? "text-[#D4AF37]" : "text-[#94A3B8] hover:text-white"
+                      )}
+                      onClick={() => handleBookmark(module.content_id)}
+                      disabled={bookmarking === module.content_id}
+                    >
+                      {isBookmarked ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
+                    </Button>
+                    
                     {isCompleted ? (
-                      <span className="text-xs text-green-400 uppercase tracking-wider">Completed</span>
+                      <span className="text-xs text-green-400 uppercase tracking-wider w-20 text-center">Completed</span>
                     ) : hasVideo ? (
                       <Button
                         size="sm"
                         className={cn(
+                          "w-20",
                           isActive
                             ? "bg-green-500 text-white hover:bg-green-600"
                             : isNext 
@@ -274,15 +370,15 @@ export default function TrackDetailPage() {
                     ) : (
                       <Button
                         size="sm"
-                        className="bg-white/10 hover:bg-white/20"
-                        onClick={() => handleCompleteModule(module.module_id)}
-                        disabled={completingModule === module.module_id}
+                        className="bg-white/10 hover:bg-white/20 w-20"
+                        onClick={() => handleCompleteModule(module.content_id)}
+                        disabled={completingModule === module.content_id}
                       >
-                        {completingModule === module.module_id ? (
+                        {completingModule === module.content_id ? (
                           <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
                         ) : (
                           <>
-                            <Check className="w-4 h-4 mr-1" /> Complete
+                            <Check className="w-4 h-4 mr-1" /> Done
                           </>
                         )}
                       </Button>
