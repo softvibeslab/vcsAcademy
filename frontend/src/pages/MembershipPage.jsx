@@ -235,7 +235,7 @@ export default function MembershipPage() {
           <h2 className="font-serif text-2xl font-semibold text-center mb-8">What VIP Members Get</h2>
           <div className="grid md:grid-cols-4 gap-4">
             {[
-              { icon: BookOpen, title: 'Full Course Library', desc: '150+ hours of training' },
+              { icon: BookOpen, title: 'Full Course Library', desc: 'Complete training system' },
               { icon: Video, title: 'Live Masterclasses', desc: 'Weekly sessions with pros' },
               { icon: Download, title: 'Premium Resources', desc: 'Scripts & frameworks' },
               { icon: Users, title: 'Elite Community', desc: 'Network with top producers' },
