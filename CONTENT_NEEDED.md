@@ -45,7 +45,7 @@
 | 2.3 | Discovery Questions That Reveal Motivation | 10 min | NEEDED |
 | 2.4 | Identifying Buying Signals | 9 min | NEEDED |
 | 2.5 | Controlling Presentation Flow | 9 min | NEEDED |
-| 2.6 | The Transition Technique | 8 min | NEEDED |
+| 2.6 | The Transition Technique | 8 min | PROVIDED (https://youtu.be/zkOG6Eyi9Cc) |
 
 ### Track 3: Value Architecture (6 videos)
 | Module | Title | Duration | Status |

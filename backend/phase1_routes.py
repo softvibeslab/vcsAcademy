@@ -354,7 +354,7 @@ CONTENT = [
         "type": "video",
         "difficulty": "intermediate",
         "duration": 8,
-        "video_url": PLACEHOLDER_VIDEO,
+        "video_url": "https://youtu.be/zkOG6Eyi9Cc",
         "key_move": "Use 'bridge statements': 'Now that you've seen X, let me show you how it connects to what you told me about Y.'",
         "tags": ["control", "transitions", "flow"]
     },
