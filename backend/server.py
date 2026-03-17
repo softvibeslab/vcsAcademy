@@ -24,13 +24,37 @@ db = client[os.environ['DB_NAME']]
 # Stripe
 STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY', 'sk_test_emergent')
 
-# Create the main app
-app = FastAPI()
-api_router = APIRouter(prefix="/api")
-
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+# ============== SENTRY MONITORING ==============
+try:
+    from sentry_config import init_sentry, capture_exception, set_user, add_breadcrumb
+
+    sentry_enabled = init_sentry(
+        dsn=os.environ.get('SENTRY_DSN'),
+        environment=os.environ.get('SENTRY_ENVIRONMENT', 'development'),
+        traces_sample_rate=float(os.environ.get('SENTRY_TRACES_SAMPLE_RATE', '0.1')),
+        profiles_sample_rate=float(os.environ.get('SENTRY_PROFILES_SAMPLE_RATE', '0.1')),
+        debug=os.environ.get('SENTRY_ENVIRONMENT', 'development') == 'development',
+    )
+
+    if sentry_enabled:
+        logger.info("Sentry error tracking enabled")
+    else:
+        logger.info("Sentry not configured - Running without error tracking")
+
+except ImportError:
+    logger.warning("sentry-sdk not installed - Run: pip install sentry-sdk[fastapi]")
+    sentry_enabled = False
+except Exception as e:
+    logger.error(f"Failed to initialize Sentry: {e}")
+    sentry_enabled = False
+
+# Create the main app
+app = FastAPI()
+api_router = APIRouter(prefix="/api")
 
 # ============== MODELS ==============
 
@@ -160,19 +184,29 @@ class Resource(BaseModel):
     resource_id: str
     title: str
     description: str
-    category: str  # script, framework, guide, prompt, template
-    file_url: str
-    min_level: int = 1
-    vip_only: bool = False
-    downloads: int = 0
+    resource_type: str  # framework, script, case_study, tool, template
+    category: str  # discovery, closing, objections, etc
+    content: Optional[str] = None  # Text content OR
+    file_url: Optional[str] = None  # URL to PDF/downloadable
+    file_type: Optional[str] = None  # pdf, docx, xlsx, etc
+    tags: List[str] = []
+    related_content: List[str] = []  # Links to modules/breakdowns
+    difficulty: str = "beginner"  # beginner, intermediate, advanced
+    usage_count: int = 0  # Popularity tracking
+    created_by: Optional[str] = None  # User ID (admin)
     created_at: datetime
 
 class ResourceCreate(BaseModel):
     title: str
     description: str
+    resource_type: str
     category: str
-    file_url: str
-    min_level: int = 1
+    content: Optional[str] = None
+    file_url: Optional[str] = None
+    file_type: Optional[str] = None
+    tags: List[str] = []
+    related_content: List[str] = []
+    difficulty: str = "beginner"
     vip_only: bool = False
 
 class UserProgress(BaseModel):
@@ -183,6 +217,46 @@ class UserProgress(BaseModel):
     course_id: str
     completed: bool = False
     completed_at: Optional[datetime] = None
+
+# ============== COACHING MODELS ==============
+
+class CoachingHost(BaseModel):
+    name: str
+    bio: str
+    avatar_url: Optional[str] = None
+
+class CoachingSession(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    session_id: str
+    title: str
+    description: str
+    session_type: str  # group, q&a, strategy_review
+    scheduled_date: datetime
+    duration_minutes: int
+    host: CoachingHost
+    meeting_link: str
+    meeting_password: Optional[str] = None
+    max_attendees: Optional[int] = None
+    attendees: List[str] = []
+    recording_url: Optional[str] = None
+    slides_url: Optional[str] = None
+    topics: List[str] = []
+    status: str  # scheduled, live, completed, cancelled
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
+class CoachingSessionCreate(BaseModel):
+    title: str
+    description: str
+    session_type: str
+    scheduled_date: datetime
+    duration_minutes: int = 60
+    host: CoachingHost
+    meeting_link: str
+    meeting_password: Optional[str] = None
+    max_attendees: Optional[int] = None
+    slides_url: Optional[str] = None
+    topics: List[str] = []
 
 class PaymentTransaction(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -695,25 +769,98 @@ async def create_comment(data: CommentCreate, user: User = Depends(require_auth)
 # ============== RESOURCES ROUTES ==============
 
 @api_router.get("/resources", response_model=List[Resource])
-async def get_resources(category: Optional[str] = None, user: User = Depends(require_auth)):
-    """Get resources"""
+async def get_resources(
+    type: Optional[str] = None,
+    category: Optional[str] = None,
+    search: Optional[str] = None,
+    sort: Optional[str] = "newest",
+    user: User = Depends(require_auth)
+):
+    """
+    Get resources with enhanced filtering and search
+
+    Filters:
+    - type: framework, script, case_study, tool, template
+    - category: discovery, closing, objections, etc
+    - search: Full-text search in title and description
+    - sort: newest, popular, a_z
+    """
     query = {}
+
+    if type:
+        query["resource_type"] = type
     if category:
         query["category"] = category
-    
-    resources = await db.resources.find(query, {"_id": 0}).to_list(100)
-    
+    if search:
+        query["$or"] = [
+            {"title": {"$regex": search, "$options": "i"}},
+            {"description": {"$regex": search, "$options": "i"}},
+            {"tags": {"$in": [search]}}
+        ]
+
+    # Determine sort order
+    sort_field = "created_at"
+    sort_direction = -1  # descending (newest first)
+    if sort == "popular":
+        sort_field = "usage_count"
+        sort_direction = -1
+    elif sort == "a_z":
+        sort_field = "title"
+        sort_direction = 1
+
+    resources = await db.resources.find(query, {"_id": 0}).sort(sort_field, sort_direction).to_list(100)
+
     accessible = []
     for resource in resources:
         if isinstance(resource.get("created_at"), str):
             resource["created_at"] = datetime.fromisoformat(resource["created_at"])
-        if resource.get("vip_only") and user.membership != "vip":
-            continue
-        if resource.get("min_level", 1) > user.level:
-            continue
         accessible.append(Resource(**resource))
-    
+
     return accessible
+
+@api_router.get("/resources/{resource_id}", response_model=Resource)
+async def get_resource(resource_id: str, user: User = Depends(require_auth)):
+    """Get single resource with details"""
+    resource = await db.resources.find_one({"resource_id": resource_id}, {"_id": 0})
+    if not resource:
+        raise HTTPException(status_code=404, detail="Resource not found")
+
+    if isinstance(resource.get("created_at"), str):
+        resource["created_at"] = datetime.fromisoformat(resource["created_at"])
+
+    # Increment usage count
+    await db.resources.update_one(
+        {"resource_id": resource_id},
+        {"$inc": {"usage_count": 1}}
+    )
+
+    return Resource(**resource)
+
+@api_router.get("/resources/{resource_id}/related", response_model=List[Resource])
+async def get_related_resources(resource_id: str, user: User = Depends(require_auth)):
+    """Get related resources based on tags and category"""
+    resource = await db.resources.find_one({"resource_id": resource_id}, {"_id": 0})
+    if not resource:
+        raise HTTPException(status_code=404, detail="Resource not found")
+
+    # Find related resources by category or tags
+    query = {
+        "resource_id": {"$ne": resource_id},
+        "$or": [
+            {"category": resource.get("category")},
+            {"tags": {"$in": resource.get("tags", [])}}
+        ]
+    }
+
+    related = await db.resources.find(query, {"_id": 0}).limit(6).to_list(6)
+
+    result = []
+    for r in related:
+        if isinstance(r.get("created_at"), str):
+            r["created_at"] = datetime.fromisoformat(r["created_at"])
+        result.append(Resource(**r))
+
+    return result
 
 @api_router.post("/resources/{resource_id}/download")
 async def download_resource(resource_id: str, user: User = Depends(require_auth)):
@@ -721,16 +868,14 @@ async def download_resource(resource_id: str, user: User = Depends(require_auth)
     resource = await db.resources.find_one({"resource_id": resource_id}, {"_id": 0})
     if not resource:
         raise HTTPException(status_code=404, detail="Resource not found")
-    
-    if resource.get("vip_only") and user.membership != "vip":
-        raise HTTPException(status_code=403, detail="VIP membership required")
-    
-    await db.resources.update_one(
-        {"resource_id": resource_id},
-        {"$inc": {"downloads": 1}}
-    )
-    
-    return {"file_url": resource["file_url"]}
+
+    # Return file URL or content
+    if resource.get("file_url"):
+        return {"file_url": resource["file_url"], "type": "file"}
+    elif resource.get("content"):
+        return {"content": resource["content"], "type": "content"}
+    else:
+        raise HTTPException(status_code=404, detail="No downloadable content")
 
 @api_router.post("/resources", response_model=Resource)
 async def create_resource(data: ResourceCreate, user: User = Depends(require_admin)):
@@ -738,17 +883,159 @@ async def create_resource(data: ResourceCreate, user: User = Depends(require_adm
     resource_id = f"resource_{uuid.uuid4().hex[:12]}"
     resource_doc = {
         "resource_id": resource_id,
-        **data.model_dump(),
-        "downloads": 0,
+        **data.model_dump(exclude_unset=True),
+        "usage_count": 0,
+        "created_by": user.user_id,
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     await db.resources.insert_one(resource_doc)
     resource_doc["created_at"] = datetime.fromisoformat(resource_doc["created_at"])
     return Resource(**resource_doc)
 
+# ============== COACHING SESSIONS ROUTES ==============
+
+@api_router.get("/coaching/sessions", response_model=List[CoachingSession])
+async def get_coaching_sessions(
+    status: Optional[str] = None,
+    session_type: Optional[str] = None,
+    user: User = Depends(require_auth)
+):
+    """Get all coaching sessions, optionally filtered by status or type"""
+    query = {}
+    if status:
+        query["status"] = status
+    if session_type:
+        query["session_type"] = session_type
+
+    sessions = await db.coaching_sessions.find(query, {"_id": 0}).sort("scheduled_date", 1).to_list(50)
+
+    for session in sessions:
+        if isinstance(session.get("scheduled_date"), str):
+            session["scheduled_date"] = datetime.fromisoformat(session["scheduled_date"])
+        if isinstance(session.get("created_at"), str):
+            session["created_at"] = datetime.fromisoformat(session["created_at"])
+        if isinstance(session.get("updated_at"), str):
+            session["updated_at"] = datetime.fromisoformat(session["updated_at"])
+
+    return [CoachingSession(**session) for session in sessions]
+
+@api_router.get("/coaching/sessions/{session_id}", response_model=CoachingSession)
+async def get_coaching_session(session_id: str, user: User = Depends(require_auth)):
+    """Get a specific coaching session"""
+    session = await db.coaching_sessions.find_one({"session_id": session_id}, {"_id": 0})
+    if not session:
+        raise HTTPException(status_code=404, detail="Coaching session not found")
+
+    if isinstance(session.get("scheduled_date"), str):
+        session["scheduled_date"] = datetime.fromisoformat(session["scheduled_date"])
+    if isinstance(session.get("created_at"), str):
+        session["created_at"] = datetime.fromisoformat(session["created_at"])
+    if isinstance(session.get("updated_at"), str):
+        session["updated_at"] = datetime.fromisoformat(session["updated_at"])
+
+    return CoachingSession(**session)
+
+@api_router.post("/coaching/sessions", response_model=CoachingSession)
+async def create_coaching_session(data: CoachingSessionCreate, user: User = Depends(require_admin)):
+    """Create a coaching session (admin only)"""
+    session_id = f"coaching_{uuid.uuid4().hex[:12]}"
+    now = datetime.now(timezone.utc)
+    session_doc = {
+        "session_id": session_id,
+        **data.model_dump(),
+        "attendees": [],
+        "recording_url": None,
+        "status": "scheduled",
+        "created_at": now.isoformat(),
+        "updated_at": now.isoformat()
+    }
+    await db.coaching_sessions.insert_one(session_doc)
+    session_doc["created_at"] = now
+    session_doc["updated_at"] = now
+    session_doc["scheduled_date"] = data.scheduled_date
+    return CoachingSession(**session_doc)
+
+@api_router.put("/coaching/sessions/{session_id}", response_model=CoachingSession)
+async def update_coaching_session(
+    session_id: str,
+    data: CoachingSessionCreate,
+    user: User = Depends(require_admin)
+):
+    """Update a coaching session (admin only)"""
+    existing = await db.coaching_sessions.find_one({"session_id": session_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Coaching session not found")
+
+    update_data = data.model_dump(exclude_unset=True)
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+
+    await db.coaching_sessions.update_one(
+        {"session_id": session_id},
+        {"$set": update_data}
+    )
+
+    updated = await db.coaching_sessions.find_one({"session_id": session_id}, {"_id": 0})
+
+    if isinstance(updated.get("scheduled_date"), str):
+        updated["scheduled_date"] = datetime.fromisoformat(updated["scheduled_date"])
+    if isinstance(updated.get("created_at"), str):
+        updated["created_at"] = datetime.fromisoformat(updated["created_at"])
+    if isinstance(updated.get("updated_at"), str):
+        updated["updated_at"] = datetime.fromisoformat(updated["updated_at"])
+
+    return CoachingSession(**updated)
+
+@api_router.post("/coaching/sessions/{session_id}/rsvp")
+async def rsvp_coaching_session(session_id: str, user: User = Depends(require_auth)):
+    """RSVP to a coaching session"""
+    session = await db.coaching_sessions.find_one({"session_id": session_id})
+    if not session:
+        raise HTTPException(status_code=404, detail="Coaching session not found")
+
+    if session.get("status") != "scheduled":
+        raise HTTPException(status_code=400, detail="Cannot RSVP to this session")
+
+    if session.get("max_attendees"):
+        attendee_count = len(session.get("attendees", []))
+        if attendee_count >= session["max_attendees"]:
+            raise HTTPException(status_code=400, detail="Session is full")
+
+    if user.user_id in session.get("attendees", []):
+        raise HTTPException(status_code=400, detail="Already RSVP'd")
+
+    await db.coaching_sessions.update_one(
+        {"session_id": session_id},
+        {
+            "$addToSet": {"attendees": user.user_id},
+            "$set": {"updated_at": datetime.now(timezone.utc).isoformat()}
+        }
+    )
+
+    return {"message": "RSVP successful"}
+
+@api_router.delete("/coaching/sessions/{session_id}/rsvp")
+async def cancel_rsvp_coaching_session(session_id: str, user: User = Depends(require_auth)):
+    """Cancel RSVP to a coaching session"""
+    session = await db.coaching_sessions.find_one({"session_id": session_id})
+    if not session:
+        raise HTTPException(status_code=404, detail="Coaching session not found")
+
+    if user.user_id not in session.get("attendees", []):
+        raise HTTPException(status_code=400, detail="Not RSVP'd to this session")
+
+    await db.coaching_sessions.update_one(
+        {"session_id": session_id},
+        {
+            "$pull": {"attendees": user.user_id},
+            "$set": {"updated_at": datetime.now(timezone.utc).isoformat()}
+        }
+    )
+
+    return {"message": "RSVP cancelled"}
+
 # ============== PAYMENT ROUTES ==============
 
-from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionResponse, CheckoutStatusResponse, CheckoutSessionRequest
+#from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionResponse, CheckoutStatusResponse, CheckoutSessionRequest
 
 MEMBERSHIP_PACKAGES = {
     "vip_monthly": {"amount": 97.00, "name": "VIP Monthly", "period": "month"},
@@ -976,6 +1263,27 @@ async def update_user_membership(user_id: str, request: Request, user: User = De
 
 # ============== ROOT ==============
 
+@api_router.get("/health")
+async def health_check():
+    """Health check endpoint for monitoring and load balancers"""
+    try:
+        # Check MongoDB connection
+        await db.command("ping")
+        mongo_status = "healthy"
+    except Exception as e:
+        mongo_status = f"unhealthy: {str(e)}"
+        logger.error(f"MongoDB health check failed: {e}")
+
+    return {
+        "status": "healthy" if mongo_status == "healthy" else "unhealthy",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "version": "1.0.0",
+        "services": {
+            "mongodb": mongo_status,
+            "api": "healthy"
+        }
+    }
+
 @api_router.get("/")
 async def root():
     return {"message": "VCSA API", "version": "1.0.0"}
@@ -984,8 +1292,14 @@ async def root():
 app.include_router(api_router)
 
 # Include Phase 1 development routes
-from phase1_routes import get_phase1_router
-app.include_router(get_phase1_router())
+
+# Include Organization routes (White-Label Platform)
+from organization_routes import router as organization_router
+app.include_router(organization_router)
+
+# Add multi-tenancy middleware
+from middleware import inject_organization_context
+app.middleware("http")(inject_organization_context)
 
 app.add_middleware(
     CORSMiddleware,
@@ -998,3 +1312,11 @@ app.add_middleware(
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
+
+# Phase 1 Routes
+try:
+    from phase1_routes import phase1_router
+    app.include_router(phase1_router)
+except ImportError:
+    print("Warning: phase1_routes not available")
+

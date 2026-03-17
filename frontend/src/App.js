@@ -3,6 +3,21 @@ import "@/App.css";
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Toaster } from "@/components/ui/sonner";
+import { OrganizationProvider } from "@/contexts/OrganizationContext";
+
+// ============== SENTRY MONITORING ==============
+try {
+  const { initSentry } = require('./sentry');
+  const sentryEnabled = initSentry();
+
+  if (sentryEnabled) {
+    console.info("Sentry error tracking enabled");
+  } else {
+    console.info("Sentry not configured - Running without error tracking");
+  }
+} catch (error) {
+  console.error("Failed to initialize Sentry:", error);
+}
 
 // Pages
 import LandingPage from "@/pages/LandingPage";
@@ -13,17 +28,23 @@ import CoursesPage from "@/pages/CoursesPage";
 import CourseDetailPage from "@/pages/CourseDetailPage";
 import CommunityPage from "@/pages/CommunityPage";
 import EventsPage from "@/pages/EventsPage";
+import CoachingPage from "@/pages/CoachingPage";
+import MasterclassesPage from "@/pages/MasterclassesPage";
 import ResourcesPage from "@/pages/ResourcesPage";
 import MembershipPage from "@/pages/MembershipPage";
 import PaymentSuccessPage from "@/pages/PaymentSuccessPage";
 import ProfilePage from "@/pages/ProfilePage";
 import AdminPage from "@/pages/AdminPage";
 import AuthCallback from "@/pages/AuthCallback";
+import ProposalPage from "@/pages/ProposalPage";
 // Phase 1: Top Producer Development System
 import TopProducerPath from "@/pages/TopProducerPath";
 import TrackDetailPage from "@/pages/TrackDetailPage";
 import DealBreakdownsPage from "@/pages/DealBreakdownsPage";
 import QuickWinsPage from "@/pages/QuickWinsPage";
+// Organization Management
+import OnboardingWizard from "@/pages/OnboardingWizard";
+import OrganizationSettings from "@/pages/OrganizationSettings";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 export const API = `${BACKEND_URL}/api`;
@@ -124,6 +145,7 @@ function AppRouter() {
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/proposal" element={<ProposalPage />} />
       <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
       {/* Phase 1: Top Producer Development System */}
       <Route path="/path" element={<ProtectedRoute><TopProducerPath /></ProtectedRoute>} />
@@ -135,11 +157,18 @@ function AppRouter() {
       <Route path="/courses/:courseId" element={<ProtectedRoute><CourseDetailPage /></ProtectedRoute>} />
       <Route path="/community" element={<ProtectedRoute><CommunityPage /></ProtectedRoute>} />
       <Route path="/events" element={<ProtectedRoute><EventsPage /></ProtectedRoute>} />
+      <Route path="/coaching" element={<ProtectedRoute><CoachingPage /></ProtectedRoute>} />
+      <Route path="/masterclasses" element={<ProtectedRoute><MasterclassesPage /></ProtectedRoute>} />
       <Route path="/resources" element={<ProtectedRoute><ResourcesPage /></ProtectedRoute>} />
       <Route path="/membership" element={<ProtectedRoute><MembershipPage /></ProtectedRoute>} />
       <Route path="/payment/success" element={<ProtectedRoute><PaymentSuccessPage /></ProtectedRoute>} />
       <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
       <Route path="/admin" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
+      {/* Organization Management */}
+      <Route path="/onboarding" element={<ProtectedRoute><OnboardingWizard /></ProtectedRoute>} />
+      <Route path="/onboarding/:orgId" element={<ProtectedRoute><OnboardingWizard /></ProtectedRoute>} />
+      <Route path="/settings/organization" element={<ProtectedRoute><OrganizationSettings /></ProtectedRoute>} />
+      <Route path="/settings/organization/:orgId" element={<ProtectedRoute><OrganizationSettings /></ProtectedRoute>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
@@ -148,10 +177,12 @@ function AppRouter() {
 function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <AppRouter />
-        <Toaster position="bottom-right" richColors />
-      </AuthProvider>
+      <OrganizationProvider>
+        <AuthProvider>
+          <AppRouter />
+          <Toaster position="bottom-right" richColors />
+        </AuthProvider>
+      </OrganizationProvider>
     </BrowserRouter>
   );
 }
