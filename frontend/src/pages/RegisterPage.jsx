@@ -36,9 +36,9 @@ export default function RegisterPage() {
   };
 
   const handleGoogleLogin = () => {
-    // REMINDER: DO NOT HARDCODE THE URL, OR ADD ANY FALLBACKS OR REDIRECT URLS, THIS BREAKS THE AUTH
-    const redirectUrl = window.location.origin + '/dashboard';
-    window.location.href = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
+    // Google OAuth - To be implemented with your own OAuth provider
+    toast.info('Google OAuth coming soon!');
+    // For now, use email/password registration
   };
 
   return (

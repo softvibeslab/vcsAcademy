@@ -22,7 +22,7 @@ client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
 # Stripe
-STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY', 'sk_test_emergent')
+STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY', 'sk_test_your_stripe_key')
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -411,8 +411,9 @@ async def process_google_session(request: Request, response: Response):
         raise HTTPException(status_code=400, detail="session_id required")
     
     async with httpx.AsyncClient() as client:
+        # OAuth session data endpoint - To be configured with your OAuth provider
         resp = await client.get(
-            "https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data",
+            f"{os.environ.get('OAUTH_BACKEND_URL', 'http://localhost:8000')}/auth/v1/env/oauth/session-data",
             headers={"X-Session-ID": session_id}
         )
         if resp.status_code != 200:
@@ -1035,7 +1036,9 @@ async def cancel_rsvp_coaching_session(session_id: str, user: User = Depends(req
 
 # ============== PAYMENT ROUTES ==============
 
-#from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionResponse, CheckoutStatusResponse, CheckoutSessionRequest
+# Payment integration using Stripe
+# To implement your own payment integration, uncomment and configure the following:
+# from stripe_integration import StripeCheckout, CheckoutSessionResponse, CheckoutStatusResponse, CheckoutSessionRequest
 
 MEMBERSHIP_PACKAGES = {
     "vip_monthly": {"amount": 97.00, "name": "VIP Monthly", "period": "month"},
