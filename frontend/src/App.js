@@ -45,6 +45,9 @@ import QuickWinsPage from "@/pages/QuickWinsPage";
 // Organization Management
 import OnboardingWizard from "@/pages/OnboardingWizard";
 import OrganizationSettings from "@/pages/OrganizationSettings";
+// Create School Flow
+import CreateSchoolPage from "@/pages/CreateSchoolPage";
+import InterviewPage from "@/pages/InterviewPage";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 export const API = `${BACKEND_URL}/api`;
@@ -167,6 +170,8 @@ function AppRouter() {
       {/* Organization Management - Onboarding is public */}
       <Route path="/onboarding" element={<OnboardingWizard />} />
       <Route path="/onboarding/:orgId" element={<ProtectedRoute><OnboardingWizard /></ProtectedRoute>} />
+      <Route path="/onboarding/create-school" element={<CreateSchoolPage />} />
+      <Route path="/onboarding/interview" element={<ProtectedRoute><InterviewPage /></ProtectedRoute>} />
       <Route path="/settings/organization" element={<ProtectedRoute><OrganizationSettings /></ProtectedRoute>} />
       <Route path="/settings/organization/:orgId" element={<ProtectedRoute><OrganizationSettings /></ProtectedRoute>} />
       <Route path="*" element={<Navigate to="/" replace />} />
