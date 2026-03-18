@@ -151,7 +151,9 @@ export default function BrandingCustomizationPage() {
     setIsSaving(true);
 
     try {
-      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
+      // Use relative URLs in production, full URL in development
+      const isProduction = process.env.NODE_ENV === 'production';
+      const backendUrl = isProduction ? '' : (process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000');
 
       // Prepare branding data
       const brandingData = {

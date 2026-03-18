@@ -50,7 +50,10 @@ import CreateSchoolPage from "@/pages/CreateSchoolPage";
 import InterviewPage from "@/pages/InterviewPage";
 import BrandingCustomizationPage from "@/pages/BrandingCustomizationPage";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+// Use relative URLs in production (proxied through nginx)
+// Use full URL in development (direct backend access)
+const isProduction = process.env.NODE_ENV === 'production';
+const BACKEND_URL = isProduction ? '' : (process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000');
 export const API = `${BACKEND_URL}/api`;
 
 // Auth Context

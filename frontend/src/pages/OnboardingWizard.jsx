@@ -96,7 +96,9 @@ export default function OnboardingWizard() {
 
   const loadOrganization = async () => {
     try {
-      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
+      // Use relative URLs in production, full URL in development
+      const isProduction = process.env.NODE_ENV === 'production';
+      const backendUrl = isProduction ? '' : (process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000');
       const orgIdToLoad = orgId || user?.organization_id;
 
       const response = await axios.get(
@@ -156,7 +158,9 @@ export default function OnboardingWizard() {
       setLoading(true);
       setError(null);
 
-      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
+      // Use relative URLs in production, full URL in development
+      const isProduction = process.env.NODE_ENV === 'production';
+      const backendUrl = isProduction ? '' : (process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000');
       console.log('Backend URL:', backendUrl);
       console.log('Current step:', currentStep);
       console.log('Step data:', stepData);
@@ -288,7 +292,9 @@ export default function OnboardingWizard() {
       setLoading(true);
       setError(null);
 
-      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
+      // Use relative URLs in production, full URL in development
+      const isProduction = process.env.NODE_ENV === 'production';
+      const backendUrl = isProduction ? '' : (process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000');
       const orgIdToUse = orgId || user?.organization_id;
 
       // Mark onboarding as complete

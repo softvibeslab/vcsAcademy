@@ -21,7 +21,9 @@ export default function DomainSection({ organization, onSave, saving }) {
 
     try {
       // Call verification API
-      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
+      // Use relative URLs in production, full URL in development
+      const isProduction = process.env.NODE_ENV === 'production';
+      const backendUrl = isProduction ? '' : (process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000');
 
       await fetch(`${backendUrl}/api/organizations/${organization.organization_id}/domains/verify`, {
         method: 'POST',

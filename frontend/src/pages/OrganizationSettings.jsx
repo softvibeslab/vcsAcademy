@@ -71,7 +71,9 @@ export default function OrganizationSettings() {
   const loadOrganization = async () => {
     try {
       setLoading(true);
-      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
+      // Use relative URLs in production, full URL in development
+      const isProduction = process.env.NODE_ENV === 'production';
+      const backendUrl = isProduction ? '' : (process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000');
       const orgIdToLoad = orgId || user?.organization_id;
 
       const response = await axios.get(
@@ -94,7 +96,9 @@ export default function OrganizationSettings() {
       setError(null);
       setSaveSuccess(false);
 
-      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
+      // Use relative URLs in production, full URL in development
+      const isProduction = process.env.NODE_ENV === 'production';
+      const backendUrl = isProduction ? '' : (process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000');
       const orgIdToUse = orgId || user?.organization_id;
 
       await axios.put(
