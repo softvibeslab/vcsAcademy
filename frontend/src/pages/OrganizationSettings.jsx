@@ -13,7 +13,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '@/App';
 import { useOrganization } from '../contexts/OrganizationContext';
 import axios from 'axios';
 import {

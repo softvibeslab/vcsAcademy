@@ -9,13 +9,22 @@ This module provides API endpoints for managing organizations, including:
 - Domain verification
 """
 
-from fastapi import APIRouter, HTTPException, Depends, Header
+from fastapi import APIRouter, HTTPException, Depends, Header, Request
 from fastapi.responses import JSONResponse
-from typing import List, Optional
+from typing import List, Optional, Any
 from datetime import datetime
 import secrets
 import os
 from motor.motor_asyncio import AsyncIOMotorClient
+
+# Optional auth dependency
+async def get_current_user_optional(request: Request) -> Optional[dict]:
+    """Get current user if authenticated, otherwise return None"""
+    try:
+        from server import get_current_user
+        return await get_current_user(request)
+    except:
+        return None
 
 # Import models
 from organization_models import (
@@ -67,14 +76,19 @@ router = APIRouter(prefix="/api/organizations", tags=["organizations"])
 @router.post("", response_model=OrganizationResponse, status_code=201)
 async def create_organization(
     org_data: OrganizationCreate,
-    current_user: dict = Depends(require_auth)
+    current_user: Any = Depends(get_current_user_optional)
 ):
     """
     Create a new organization (white-label instance).
 
     Validates slug uniqueness and creates organization with default settings.
     The creating user becomes the first organization admin.
+
+    Note: If no user is authenticated, organization is created without an owner
+    (for demo/testing purposes - user should register later).
     """
+    _init_server_deps()  # Initialize database connection
+
     # Check if slug is already taken
     existing = await db.organizations.find_one({"slug": org_data.slug})
     if existing:
@@ -90,17 +104,18 @@ async def create_organization(
             detail="Invalid slug format. Use only lowercase letters, numbers, and hyphens."
         )
 
-    # Check user's organization limit
-    user_org_count = await db.organizations.count_documents({
-        "created_by": current_user["user_id"]
-    })
+    # Check user's organization limit (only if authenticated)
+    if current_user:
+        user_org_count = await db.organizations.count_documents({
+            "created_by": current_user["user_id"]
+        })
 
-    # For now, allow unlimited (can add limits later based on user plan)
-    if user_org_count >= 10:  # Default limit
-        raise HTTPException(
-            status_code=403,
-            detail="You have reached the maximum number of organizations"
-        )
+        # For now, allow unlimited (can add limits later based on user plan)
+        if user_org_count >= 10:  # Default limit
+            raise HTTPException(
+                status_code=403,
+                detail="You have reached the maximum number of organizations"
+            )
 
     # Generate organization ID
     organization_id = f"org_{secrets.token_urlsafe(16)}"
@@ -111,8 +126,8 @@ async def create_organization(
         name=org_data.name,
         slug=org_data.slug,
         branding=org_data.branding,
-        created_by=current_user["user_id"],
-        admin_users=[current_user["user_id"]],  # Creator is first admin
+        created_by=current_user["user_id"] if current_user else None,
+        admin_users=[current_user["user_id"]] if current_user else [],  # Creator is first admin
         industry=org_data.industry,
         company_size=org_data.company_size,
         onboarding_completed=False,
@@ -122,14 +137,15 @@ async def create_organization(
     # Insert into database
     await db.organizations.insert_one(organization.dict(by_alias=True))
 
-    # Update user's organization_id
-    await db.users.update_one(
-        {"user_id": current_user["user_id"]},
-        {"$set": {
-            "organization_id": organization_id,
-            "role": "org_admin"
-        }}
-    )
+    # Update user's organization_id (only if authenticated)
+    if current_user:
+        await db.users.update_one(
+            {"user_id": current_user["user_id"]},
+            {"$set": {
+                "organization_id": organization_id,
+                "role": "org_admin"
+            }}
+        )
 
     return OrganizationResponse(**organization.dict())
 
@@ -138,7 +154,7 @@ async def create_organization(
 async def list_organizations(
     skip: int = 0,
     limit: int = 50,
-    current_user: dict = Depends(require_admin)  # Only system admin
+    current_user: Any = Depends(require_admin)  # Only system admin
 ):
     """
     List all organizations (system admin only).
@@ -176,7 +192,7 @@ async def get_organization_by_slug(slug: str):
 @router.get("/{org_id}", response_model=OrganizationResponse)
 async def get_organization(
     org_id: str,
-    current_user: dict = Depends(require_auth)
+    current_user: Any = Depends(require_auth)
 ):
     """
     Get organization by ID.
@@ -206,7 +222,7 @@ async def get_organization(
 async def update_organization(
     org_id: str,
     update_data: OrganizationUpdate,
-    current_user: dict = Depends(require_auth),
+    current_user: Any = Depends(require_auth),
     org_id_check: str = Depends(require_organization)
 ):
     """
@@ -269,7 +285,7 @@ async def update_organization(
 @router.delete("/{org_id}", status_code=204)
 async def delete_organization(
     org_id: str,
-    current_user: dict = Depends(require_admin)  # Only system admin
+    current_user: Any = Depends(require_admin)  # Only system admin
 ):
     """
     Delete an organization (system admin only).
@@ -304,7 +320,7 @@ async def delete_organization(
 @router.get("/{org_id}/settings")
 async def get_organization_settings(
     org_id: str,
-    current_user: dict = Depends(require_auth)
+    current_user: Any = Depends(require_auth)
 ):
     """Get organization settings."""
     if current_user["role"] != "admin" and current_user.get("organization_id") != org_id:
@@ -325,7 +341,7 @@ async def get_organization_settings(
 async def update_organization_settings(
     org_id: str,
     settings: dict,
-    current_user: dict = Depends(require_auth),
+    current_user: Any = Depends(require_auth),
     org_id_check: str = Depends(require_organization)
 ):
     """Update organization settings (org admin only)."""
@@ -351,7 +367,7 @@ async def update_organization_settings(
 @router.get("/{org_id}/branding")
 async def get_organization_branding(
     org_id: str,
-    current_user: dict = Depends(require_auth)
+    current_user: Any = Depends(require_auth)
 ):
     """Get organization branding configuration."""
     if current_user["role"] != "admin" and current_user.get("organization_id") != org_id:
@@ -372,7 +388,7 @@ async def get_organization_branding(
 async def update_organization_branding(
     org_id: str,
     branding: dict,
-    current_user: dict = Depends(require_auth),
+    current_user: Any = Depends(require_auth),
     org_id_check: str = Depends(require_organization)
 ):
     """Update organization branding (org admin only)."""
@@ -402,18 +418,22 @@ async def update_organization_branding(
 @router.post("/onboarding/step")
 async def save_onboarding_step(
     step_data: OnboardingStepData,
-    current_user: dict = Depends(require_auth)
+    current_user: Any = Depends(get_current_user_optional)
 ):
     """
     Save onboarding step progress.
 
     Called as user progresses through the 6-step onboarding wizard.
+    If no user is authenticated, org_id must be provided in step_data.
     """
-    org_id = current_user.get("organization_id")
+    _init_server_deps()  # Initialize database connection
+
+    # Get organization ID from user or request body
+    org_id = current_user.get("organization_id") if current_user else step_data.org_id
     if not org_id:
         raise HTTPException(
             status_code=400,
-            detail="No organization associated with user"
+            detail="No organization ID provided. Please authenticate or provide org_id."
         )
 
     # Build update document based on step
@@ -482,7 +502,7 @@ async def save_onboarding_step(
 
 @router.get("/onboarding/status")
 async def get_onboarding_status(
-    current_user: dict = Depends(require_auth)
+    current_user: Any = Depends(require_auth)
 ):
     """Get current onboarding status for user's organization."""
     org_id = current_user.get("organization_id")
@@ -513,7 +533,7 @@ async def get_onboarding_status(
 
 
 @router.post("/onboarding/complete")
-async def complete_onboarding(current_user: dict = Depends(require_auth)):
+async def complete_onboarding(current_user: Any = Depends(require_auth)):
     """Mark onboarding as completed."""
     org_id = current_user.get("organization_id")
     if not org_id:
@@ -544,7 +564,7 @@ async def complete_onboarding(current_user: dict = Depends(require_auth)):
 async def ai_suggest_changes(
     org_id: str,
     request_data: AIAssistantRequest,
-    current_user: dict = Depends(require_auth),
+    current_user: Any = Depends(require_auth),
     org_id_check: str = Depends(require_organization)
 ):
     """
@@ -594,7 +614,7 @@ async def ai_suggest_changes(
 async def ai_apply_change(
     org_id: str,
     request_data: AIApplyChangeRequest,
-    current_user: dict = Depends(require_auth),
+    current_user: Any = Depends(require_auth),
     org_id_check: str = Depends(require_organization)
 ):
     """
@@ -655,7 +675,7 @@ async def get_ai_change_history(
     org_id: str,
     skip: int = 0,
     limit: int = 50,
-    current_user: dict = Depends(require_auth),
+    current_user: Any = Depends(require_auth),
     org_id_check: str = Depends(require_organization)
 ):
     """Get history of AI-applied changes for audit purposes."""
@@ -686,7 +706,7 @@ async def get_ai_change_history(
 async def verify_custom_domain(
     org_id: str,
     domain: str,
-    current_user: dict = Depends(require_auth),
+    current_user: Any = Depends(require_auth),
     org_id_check: str = Depends(require_organization)
 ):
     """
@@ -717,7 +737,7 @@ async def verify_custom_domain(
 async def get_domain_dns_instructions(
     org_id: str,
     domain: str,
-    current_user: dict = Depends(require_auth),
+    current_user: Any = Depends(require_auth),
     org_id_check: str = Depends(require_organization)
 ):
     """Get DNS configuration instructions for custom domain."""

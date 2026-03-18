@@ -11,8 +11,15 @@ import re
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 
-# Database connection (shared with server.py)
-# from server import db  # Moved to avoid circular import
+# Database connection (lazy import to avoid circular dependency)
+db = None
+
+def _init_db():
+    """Initialize database connection from server.py"""
+    global db
+    if db is None:
+        from server import db as _db
+        db = _db
 
 
 async def get_organization_from_request(request: Request) -> Optional[str]:
@@ -30,6 +37,7 @@ async def get_organization_from_request(request: Request) -> Optional[str]:
     Returns:
         organization_id if found, None otherwise
     """
+    _init_db()  # Initialize database connection
     host = request.headers.get("host", "localhost")
 
     # Strategy 1: Extract subdomain for *.vcsa.com domains
@@ -288,6 +296,7 @@ async def verify_domain_ownership(domain: str, organization_id: str) -> dict:
     Returns:
         Dictionary with verification instructions
     """
+    _init_db()  # Initialize database connection
     # Generate unique verification token
     import secrets
     verification_token = f"vcsa-verify={secrets.token_urlsafe(32)}"
@@ -329,6 +338,7 @@ async def check_domain_verification(domain: str) -> dict:
     Returns:
         Dictionary with verification status
     """
+    _init_db()  # Initialize database connection
     # Look up verification record
     verification = await db.domain_verifications.find_one({
         "domain": domain,

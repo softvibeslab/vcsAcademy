@@ -164,8 +164,8 @@ function AppRouter() {
       <Route path="/payment/success" element={<ProtectedRoute><PaymentSuccessPage /></ProtectedRoute>} />
       <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
       <Route path="/admin" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
-      {/* Organization Management */}
-      <Route path="/onboarding" element={<ProtectedRoute><OnboardingWizard /></ProtectedRoute>} />
+      {/* Organization Management - Onboarding is public */}
+      <Route path="/onboarding" element={<OnboardingWizard />} />
       <Route path="/onboarding/:orgId" element={<ProtectedRoute><OnboardingWizard /></ProtectedRoute>} />
       <Route path="/settings/organization" element={<ProtectedRoute><OrganizationSettings /></ProtectedRoute>} />
       <Route path="/settings/organization/:orgId" element={<ProtectedRoute><OrganizationSettings /></ProtectedRoute>} />

@@ -177,7 +177,7 @@ class Organization(BaseModel):
 
     # Metadata
     created_at: datetime = Field(default_factory=datetime.utcnow, description="Creation timestamp")
-    created_by: str = Field(..., description="User ID of creator")
+    created_by: Optional[str] = Field(None, description="User ID of creator (None for demo/testing)")
     updated_at: datetime = Field(default_factory=datetime.utcnow, description="Last update timestamp")
 
     # Onboarding State
@@ -237,6 +237,7 @@ class OnboardingStepData(BaseModel):
     """Data model for onboarding step completion"""
     step: int = Field(..., ge=0, le=5, description="Step number (0-5)")
     data: dict = Field(..., description="Step data to save")
+    org_id: Optional[str] = Field(None, description="Organization ID (required if not authenticated)")
 
     # Step 0: Welcome
     organization_type: Optional[str] = None  # 'sales_training', 'customer_success', etc.

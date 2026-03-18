@@ -206,7 +206,51 @@ export default function BrandingStep({ formData, updateFormData, onNext, onBack 
             <div className="space-y-4">
               <div>
                 <label className="text-sm text-muted-foreground mb-2 block">
-                  Academy Name
+                  Organization Name *
+                </label>
+                <input
+                  type="text"
+                  value={formData.name || ''}
+                  onChange={(e) => updateFormData({ name: e.target.value })}
+                  placeholder="e.g., Acme Sales Academy"
+                  className="w-full px-4 py-2 border border-border rounded-lg bg-background"
+                  required
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  This will be your organization's official name
+                </p>
+              </div>
+
+              <div>
+                <label className="text-sm text-muted-foreground mb-2 block">
+                  URL Slug *
+                </label>
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-muted-foreground">/</span>
+                  <input
+                    type="text"
+                    value={formData.slug || ''}
+                    onChange={(e) => {
+                      // Convert to lowercase and replace spaces with hyphens
+                      const slug = e.target.value
+                        .toLowerCase()
+                        .replace(/[^a-z0-9]+/g, '-')
+                        .replace(/^-+|-+$/g, '');
+                      updateFormData({ slug });
+                    }}
+                    placeholder="acme-academy"
+                    className="flex-1 px-4 py-2 border border-border rounded-lg bg-background font-mono text-sm"
+                    required
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Lowercase letters, numbers, and hyphens only. This will be your unique URL.
+                </p>
+              </div>
+
+              <div>
+                <label className="text-sm text-muted-foreground mb-2 block">
+                  Site Display Name
                 </label>
                 <input
                   type="text"

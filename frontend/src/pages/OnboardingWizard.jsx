@@ -13,7 +13,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '@/App';
 import axios from 'axios';
 import { CheckCircle2, Circle, ChevronRight, ChevronLeft, Loader2 } from 'lucide-react';
 
@@ -43,6 +43,15 @@ export default function OnboardingWizard() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [organization, setOrganization] = useState(null);
+  const [createdOrgId, setCreatedOrgId] = useState(null); // Store created org ID for new users
+
+  // Redirect to login if no user on protected routes
+  useEffect(() => {
+    if (orgId && !user) {
+      // If accessing specific org (edit mode), require auth
+      navigate('/login');
+    }
+  }, [orgId, user, navigate]);
 
   // Form data for each step
   const [formData, setFormData] = useState({
@@ -50,6 +59,8 @@ export default function OnboardingWizard() {
     organizationType: '',
 
     // Step 1: Branding
+    name: '',  // Organization name
+    slug: '',  // URL slug
     logoUrl: '',
     primaryColor: '#D4AF37',
     secondaryColor: '#1E3A8A',
@@ -146,18 +157,70 @@ export default function OnboardingWizard() {
       setError(null);
 
       const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
-      const orgIdToUse = orgId || user?.organization_id;
+      console.log('Backend URL:', backendUrl);
+      console.log('Current step:', currentStep);
+      console.log('Step data:', stepData);
 
-      const payload = {
-        step: currentStep,
-        ...stepData,
-      };
+      let orgIdToUse = orgId || user?.organization_id || createdOrgId;
 
-      await axios.post(
-        `${backendUrl}/api/organizations/onboarding/step`,
-        payload,
-        { withCredentials: true }
-      );
+      // Step 1 (Branding): Create organization first if it doesn't exist
+      if (currentStep === 1 && !orgIdToUse) {
+        // Need organization name and slug from stepData
+        if (!stepData.name || !stepData.slug) {
+          setError('Organization name and slug are required');
+          setLoading(false);
+          return false;
+        }
+
+        console.log('Creating organization with name:', stepData.name, 'slug:', stepData.slug);
+
+        // Create organization
+        const orgPayload = {
+          name: stepData.name,
+          slug: stepData.slug,
+          branding: {
+            logo_url: stepData.logoUrl || '',
+            primary_color: stepData.primaryColor || '#D4AF37',
+            secondary_color: stepData.secondaryColor || '#1E3A8A',
+            site_name: stepData.siteName || stepData.name,
+            tagline: stepData.tagline || '',
+            email_from_name: stepData.name,
+            email_from_address: `admin@${stepData.slug}.com`
+          },
+          industry: stepData.organizationType || 'Sales Training',
+          company_size: 'small'
+        };
+
+        console.log('Organization payload:', orgPayload);
+
+        const orgResponse = await axios.post(
+          `${backendUrl}/api/organizations`,
+          orgPayload,
+          { withCredentials: true }
+        );
+
+        console.log('Organization created:', orgResponse.data);
+        orgIdToUse = orgResponse.data.organization_id;
+        setCreatedOrgId(orgIdToUse);
+        setOrganization(orgResponse.data);
+      }
+
+      // Save step progress (only if organization exists)
+      if (orgIdToUse) {
+        const payload = {
+          step: currentStep,
+          org_id: orgIdToUse, // Include org_id for unauthenticated users
+          ...stepData,
+        };
+
+        console.log('Saving onboarding step with payload:', payload);
+
+        await axios.post(
+          `${backendUrl}/api/organizations/onboarding/step`,
+          payload,
+          { withCredentials: true }
+        );
+      }
 
       // Update local form data
       setFormData(prev => ({ ...prev, ...stepData }));
@@ -165,7 +228,35 @@ export default function OnboardingWizard() {
       return true;
     } catch (err) {
       console.error('Error saving step:', err);
-      setError(err.response?.data?.detail || 'Failed to save progress');
+      console.error('Error response:', err.response);
+      console.error('Error message:', err.message);
+
+      // Extract error message safely
+      let errorMsg = 'Failed to save progress';
+      try {
+        if (err.response?.data) {
+          if (typeof err.response.data === 'string') {
+            errorMsg = err.response.data;
+          } else if (err.response.data.detail) {
+            errorMsg = String(err.response.data.detail);
+          } else if (err.response.data.message) {
+            errorMsg = String(err.response.data.message);
+          } else {
+            errorMsg = JSON.stringify(err.response.data);
+          }
+        } else if (err.message) {
+          errorMsg = String(err.message);
+        } else if (typeof err === 'string') {
+          errorMsg = err;
+        } else {
+          errorMsg = 'An unexpected error occurred';
+        }
+      } catch (e) {
+        console.error('Error parsing error message:', e);
+        errorMsg = 'Failed to save progress. Please try again.';
+      }
+
+      setError(errorMsg);
       return false;
     } finally {
       setLoading(false);
