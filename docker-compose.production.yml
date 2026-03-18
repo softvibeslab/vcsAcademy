@@ -1,22 +1,20 @@
-version: '3.8'
-
 services:
   # MongoDB Database
   mongodb:
     image: mongo:8
-    container_name: vcsa-mongodb
+    container_name: vcsa-production-mongodb
     restart: unless-stopped
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME:-admin}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-changeme}
       MONGO_INITDB_DATABASE: ${DB_NAME:-vcsa}
     volumes:
-      - mongodb_data:/data/db
-      - mongodb_config:/data/configdb
+      - mongodb_production_data:/data/db
+      - mongodb_production_config:/data/configdb
     ports:
-      - "27019:27017"
+      - "27017:27017"
     networks:
-      - vcsa-network
+      - vcsa-production-network
     healthcheck:
       test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
       interval: 30s
@@ -29,7 +27,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: vcsa-backend
+    container_name: vcsa-production-backend
     restart: unless-stopped
     environment:
       MONGO_URL: mongodb://${MONGO_ROOT_USERNAME:-admin}:${MONGO_ROOT_PASSWORD:-changeme}@mongodb:27017
@@ -40,9 +38,9 @@ services:
       mongodb:
         condition: service_healthy
     ports:
-      - "8001:8000"
+      - "8000:8000"
     networks:
-      - vcsa-network
+      - vcsa-production-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
       interval: 30s
@@ -57,16 +55,16 @@ services:
       dockerfile: Dockerfile
       args:
         REACT_APP_BACKEND_URL: ${REACT_APP_BACKEND_URL:-http://localhost:8000}
-    container_name: vcsa-frontend
+    container_name: vcsa-production-frontend
     restart: unless-stopped
     depends_on:
       backend:
         condition: service_healthy
     ports:
-      - "3001:80"
-      - "3443:443"
+      - "8080:80"
+      - "8443:443"
     networks:
-      - vcsa-network
+      - vcsa-production-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:80/health"]
       interval: 30s
@@ -75,11 +73,11 @@ services:
       start_period: 20s
 
 volumes:
-  mongodb_data:
+  mongodb_production_data:
     driver: local
-  mongodb_config:
+  mongodb_production_config:
     driver: local
 
 networks:
-  vcsa-network:
+  vcsa-production-network:
     driver: bridge
