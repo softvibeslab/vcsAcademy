@@ -1292,17 +1292,12 @@ async def root():
 app.include_router(api_router)
 
 # Include Phase 1 development routes
+from phase1_routes import phase1_router
+app.include_router(phase1_router)
 
 # Include Organization routes (White-Label Platform)
 from organization_routes import router as organization_router
 app.include_router(organization_router)
-
-# Include School creation routes
-try:
-    from school_routes import router as school_router
-    app.include_router(school_router)
-except ImportError:
-    print("Warning: school_routes not available")
 
 # Add multi-tenancy middleware
 from middleware import inject_organization_context
@@ -1319,11 +1314,3 @@ app.add_middleware(
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
-
-# Phase 1 Routes
-try:
-    from phase1_routes import phase1_router
-    app.include_router(phase1_router)
-except ImportError:
-    print("Warning: phase1_routes not available")
-

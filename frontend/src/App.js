@@ -48,6 +48,7 @@ import OrganizationSettings from "@/pages/OrganizationSettings";
 // Create School Flow
 import CreateSchoolPage from "@/pages/CreateSchoolPage";
 import InterviewPage from "@/pages/InterviewPage";
+import BrandingCustomizationPage from "@/pages/BrandingCustomizationPage";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 export const API = `${BACKEND_URL}/api`;
@@ -172,6 +173,7 @@ function AppRouter() {
       <Route path="/onboarding/:orgId" element={<ProtectedRoute><OnboardingWizard /></ProtectedRoute>} />
       <Route path="/onboarding/create-school" element={<CreateSchoolPage />} />
       <Route path="/onboarding/interview" element={<ProtectedRoute><InterviewPage /></ProtectedRoute>} />
+      <Route path="/onboarding/branding" element={<ProtectedRoute><BrandingCustomizationPage /></ProtectedRoute>} />
       <Route path="/settings/organization" element={<ProtectedRoute><OrganizationSettings /></ProtectedRoute>} />
       <Route path="/settings/organization/:orgId" element={<ProtectedRoute><OrganizationSettings /></ProtectedRoute>} />
       <Route path="*" element={<Navigate to="/" replace />} />
