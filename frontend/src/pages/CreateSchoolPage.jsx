@@ -64,47 +64,42 @@ export default function CreateSchoolPage() {
     setIsSubmitting(true);
 
     try {
-      // Use relative URLs in production, full URL in development
-      const isProduction = process.env.NODE_ENV === 'production';
-      const backendUrl = isProduction ? '' : (process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000');
+      // MOCK MODE: Simulate API call with setTimeout
+      console.log('[CreateSchoolPage] MOCK MODE - Creating school without backend');
 
-      // Call the real API to create the school
-      const response = await axios.post(
-        `${backendUrl}/api/schools/create`,
-        {
-          name: formData.schoolName,
-          learning_outcome: formData.learningOutcome || undefined,
-          primary_color: '#D4AF37',
-          secondary_color: '#1E3A8A',
-          industry: 'Sales Training'
-        },
-        { withCredentials: true }
-      );
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 1500));
 
-      if (response.data.success) {
-        // Show success toast
-        toast.success('¡Escuela creada exitosamente! 🎉', {
-          description: 'Tu Asistente IA está listo para ayudarte a personalizar tu academia.',
-          duration: 3000,
-        });
+      // Mock response data
+      const mockResponse = {
+        success: true,
+        school_id: 'mock-school-' + Date.now(),
+        school: {
+          slug: formData.schoolName.toLowerCase().replace(/\s+/g, '-'),
+          name: formData.schoolName
+        }
+      };
 
-        // Store school data and ID
-        const schoolData = {
-          ...formData,
-          schoolId: response.data.school_id,
-          slug: response.data.school.slug
-        };
-        sessionStorage.setItem('schoolData', JSON.stringify(schoolData));
+      // Show success toast
+      toast.success('¡Escuela creada exitosamente! 🎉', {
+        description: 'Tu Asistente IA está listo para ayudarte a personalizar tu academia.',
+        duration: 3000,
+      });
 
-        // Navigate to interview page
-        navigate('/onboarding/interview', { state: { schoolData } });
-      } else {
-        throw new Error(response.data.message || 'Error creating school');
-      }
+      // Store school data and ID
+      const schoolData = {
+        ...formData,
+        schoolId: mockResponse.school_id,
+        slug: mockResponse.school.slug
+      };
+      sessionStorage.setItem('schoolData', JSON.stringify(schoolData));
+
+      // Navigate to interview page
+      navigate('/onboarding/interview', { state: { schoolData } });
     } catch (error) {
       console.error('Error creating school:', error);
       toast.error('Error al crear la escuela', {
-        description: error.response?.data?.detail || error.message || 'Por favor intenta nuevamente',
+        description: error.message || 'Por favor intenta nuevamente',
         duration: 5000,
       });
     } finally {
