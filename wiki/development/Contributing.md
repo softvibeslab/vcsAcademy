@@ -1,74 +1,74 @@
-# Guía de Contribución
+# Contributing Guide
 
-Guía para contribuir al desarrollo de VCSA.
+Guide for contributing to VCSA development.
 
-## 🤝 Cómo Contribuir
+## 🤝 How to Contribute
 
 ### Reporting Bugs
 
-Antes de reportar un bug:
+Before reporting a bug:
 
-1. Verifica que el bug no haya sido reportado
-2. Usa los templates de issues
-3. Incluye:
-   - Pasos para reproducir
-   - Comportamiento esperado vs actual
-   - Screenshots si aplica
+1. Check that the bug hasn't been reported
+2. Use issue templates
+3. Include:
+   - Steps to reproduce
+   - Expected vs actual behavior
+   - Screenshots if applicable
    - Environment (OS, browser, version)
 
-### Sugerencias de Features
+### Feature Suggestions
 
-1. Abre un issue describiendo la feature
-2. Explica el caso de uso
-3. Propón una solución si es posible
-4. Espera feedback antes de implementar
+1. Open an issue describing the feature
+2. Explain the use case
+3. Propose a solution if possible
+4. Wait for feedback before implementing
 
 ---
 
-## 🚀 Flujo de Trabajo
+## 🚀 Workflow
 
-### 1. Fork y Clone
+### 1. Fork and Clone
 
 ```bash
-# Fork el repositorio
+# Fork the repository
 git clone https://github.com/your-username/vcsa.git
 cd vcsa
 
-# Agregar upstream
+# Add upstream
 git remote add upstream https://github.com/original-repo/vcsa.git
 ```
 
-### 2. Crear Branch
+### 2. Create Branch
 
 ```bash
-# Sincronizar con upstream
+# Sync with upstream
 git fetch upstream
 git checkout main
 git merge upstream/main
 
-# Crear feature branch
+# Create feature branch
 git checkout -b feature/your-feature-name
-# o
+# or
 git checkout -b fix/your-bug-fix
 ```
 
-### Naming de Branches
+### Branch Naming
 
-- `feature/` - Nuevas features
+- `feature/` - New features
 - `fix/` - Bug fixes
-- `refactor/` - Refactorización
-- `docs/` - Cambios en documentación
+- `refactor/` - Refactoring
+- `docs/` - Documentation changes
 - `test/` - Tests
 
-### 3. Desarrollar
+### 3. Develop
 
 ```bash
-# Hacer cambios
+# Make changes
 git add .
 git commit -m "feat: add user authentication"
 
-# Commits frecuentes, pequeños
-# Mensajes de commit claros (ver sección abajo)
+# Frequent, small commits
+# Clear commit messages (see section below)
 ```
 
 ### 4. Testing
@@ -87,44 +87,44 @@ flake8 backend/
 cd frontend && yarn lint
 ```
 
-### 5. Push y Pull Request
+### 5. Push and Pull Request
 
 ```bash
-# Push a tu fork
+# Push to your fork
 git push origin feature/your-feature-name
 
-# Abrir PR en GitHub
-# Usa el template de PR
+# Open PR on GitHub
+# Use the PR template
 ```
 
 ---
 
-## 📝 Mensajes de Commit
+## 📝 Commit Messages
 
-Usa [Conventional Commits](https://www.conventionalcommits.org/):
+Use [Conventional Commits](https://www.conventionalcommits.org/):
 
 ```
-<tipo>[ámbito opcional]: <descripción>
+<type>[optional scope]: <description>
 
-[opcional body]
+[optional body]
 
-[opcional footer(s)]
+[optional footer(s)]
 ```
 
-### Tipos
+### Types
 
-- `feat`: Nueva feature
+- `feat`: New feature
 - `fix`: Bug fix
-- `docs`: Cambios en documentación
-- `style`: Formateo, missing semi colons, etc (no afecta lógica)
-- `refactor`: Refactorización (no es feature ni fix)
-- `perf`: Mejoras de performance
-- `test`: Agregar o actualizar tests
-- `build`: Cambios en build system o dependencies
-- `ci`: Cambios en CI configuration
-- `chore`: Otras tareas que no modifican src o test files
+- `docs`: Documentation changes
+- `style`: Formatting, missing semi colons, etc (no logic change)
+- `refactor`: Refactoring (not a feature or fix)
+- `perf`: Performance improvements
+- `test`: Adding or updating tests
+- `build`: Changes to build system or dependencies
+- `ci`: Changes to CI configuration
+- `chore`: Other tasks that don't modify src or test files
 
-### Ejemplos
+### Examples
 
 ```bash
 # Feature
@@ -147,16 +147,16 @@ BREAKING CHANGE: React 19 requires Node 18+"
 
 ---
 
-## 🧋 Código Style
+## 🧋 Code Style
 
 ### Python (Backend)
 
-**Usar Black**:
+**Use Black**:
 ```bash
 black backend/
 ```
 
-**Usar Flake8**:
+**Use Flake8**:
 ```bash
 flake8 backend/
 ```
@@ -195,12 +195,12 @@ def create_user(user: UserCreate) -> User:
 
 **Component Naming**:
 ```jsx
-// ✅ CORRECTO - Named exports para componentes
+// ✅ GOOD - Named exports for components
 export const Button = ({ children, onClick }) => {
   return <button onClick={onClick}>{children}</button>
 }
 
-// ✅ CORRECTO - Default exports para páginas
+// ✅ GOOD - Default exports for pages
 export default function DashboardPage() {
   return <div>Dashboard</div>
 }
@@ -208,7 +208,7 @@ export default function DashboardPage() {
 
 **Hooks**:
 ```jsx
-// ✅ CORRECTO - Named export
+// ✅ GOOD - Named export
 export const useAuth = () => {
   // ...
 }
@@ -230,104 +230,104 @@ import { useAuth } from '../contexts/AuthContext'
 
 **Tailwind Classes**:
 ```jsx
-// ✅ CORRECTO - Clases ordenadas
+// ✅ GOOD - Ordered classes
 <div className="flex flex-col items-center justify-center p-8 bg-card hover:bg-card-hover transition-all">
 
-// ❌ EVITAR - Clases desordenadas
+// ❌ AVOID - Disordered classes
 <div className="flex items-center justify-center flex-col p-8 bg-card hover:bg-card-hover">
 ```
 
 ---
 
-## 🎨 Convenciones de UI
+## 🎨 UI Conventions
 
-### Componentes
+### Components
 
-- **Usar shadcn/ui** cuando sea posible
-- **Named exports** para componentes reutilizables
-- **Default exports** para páginas
+- **Use shadcn/ui** when possible
+- **Named exports** for reusable components
+- **Default exports** for pages
 
-### Estilos
+### Styles
 
-- **Colors**: Usar variables de Tailwind, no hardcoded values
-- **Spacing**: Usar escala de Tailwind (4, 8, 12, 16, etc.)
-- **Borders**: Siempre `border-white/5` o `border-white/10`
-- **Background**: Nunca blanco puro, usar `#F8FAFC` o `#F1F5F9`
-- **Gold**: Solo para alto valor (Subscribe, Upgrade, Win)
+- **Colors**: Use Tailwind variables, no hardcoded values
+- **Spacing**: Use Tailwind scale (4, 8, 12, 16, etc.)
+- **Borders**: Always `border-white/5` or `border-white/10`
+- **Background**: Never pure white, use `#F8FAFC` or `#F1F5F9`
+- **Gold**: Only for high value (Subscribe, Upgrade, Win)
 
-### Animaciones
+### Animations
 
-- **Micro-animaciones**: Cada interacción necesita feedback
-- **Transiciones específicas**: Evitar `transition: all`
-- **Framer Motion**: Para animaciones complejas
+- **Micro-animations**: Every interaction needs feedback
+- **Specific transitions**: Avoid `transition: all`
+- **Framer Motion**: For complex animations
 
 ---
 
 ## 📋 Pull Request Checklist
 
-Antes de abrir un PR:
+Before opening a PR:
 
-- [ ] Código formateado (Black, Prettier)
-- [ ] Linting pasa (Flake8, ESLint)
-- [ ] Tests agregados/actualizados
-- [ ] Tests pasan
-- [ ] Documentación actualizada
-- [ ] Commits siguen conventional commits
-- [ ] Branch actualizado con upstream/main
-- [ ] PR tiene descripción clara
-- [ ] PR referencia issue relacionado
+- [ ] Code formatted (Black, Prettier)
+- [ ] Linting passes (Flake8, ESLint)
+- [ ] Tests added/updated
+- [ ] Tests pass
+- [ ] Documentation updated
+- [ ] Commits follow conventional commits
+- [ ] Branch updated with upstream/main
+- [ ] PR has clear description
+- [ ] PR references related issue
 
 ### PR Template
 
 ```markdown
-## Descripción
-Breve descripción de los cambios
+## Description
+Brief description of changes
 
-## Tipo de Cambio
+## Type of Change
 - [ ] Bug fix (non-breaking change)
 - [ ] Feature (non-breaking change)
 - [ ] Breaking change (fix/feature that would cause existing functionality to not work)
 - [ ] Documentation update
 
-## Issue Relacionado
+## Related Issue
 Fixes #123
 
-## Cómo Testear
-Pasos para testear los cambios:
+## How to Test
+Steps to test changes:
 1. Go to...
 2. Click on...
 3. See...
 
-## Screenshots (si aplica)
-[Adjuntar screenshots]
+## Screenshots (if applicable)
+[Attach screenshots]
 
 ## Checklist
-- [ ] Mi código sigue los style guidelines
-- [ ] He realizado self-review de mi código
-- [ ] He comentado código complejo
-- [ ] He actualizado la documentación
-- [ ] Mis cambios no generan warnings nuevos
-- [ ] He agregado tests que prueban mis cambios
-- [ ] Los tests nuevos y existentes pasan
+- [ ] My code follows style guidelines
+- [ ] I have performed self-review of my code
+- [ ] I have commented complex code
+- [ ] I have updated documentation
+- [ ] My changes don't generate new warnings
+- [ ] I have added tests that test my changes
+- [ ] New and existing tests pass
 ```
 
 ---
 
 ## 🔍 Code Review
 
-### Para Reviewers
+### For Reviewers
 
-1. **Constructivo**: Feedback constructivo y respetuoso
-2. **Específico**: Señalar línea exacta y sugerir mejora
-3. **Explicativo**: Explicar por qué se sugiere el cambio
-4. **Positivo**: Reconocer buen trabajo
+1. **Constructive**: Constructive and respectful feedback
+2. **Specific**: Point to exact line and suggest improvement
+3. **Explanatory**: Explain why change is suggested
+4. **Positive**: Recognize good work
 
-### Para Authors
+### For Authors
 
-1. **Abierto**: Recibir feedback con apertura
-2. **Preguntar**: Pedir clarificación si no entiendes
-3. **Agradecer**: Agradecer el tiempo del reviewer
-4. **Iterar**: Hacer cambios solicitados
+1. **Open**: Receive feedback with openness
+2. **Ask**: Ask for clarification if you don't understand
+3. **Thank**: Thank reviewer for their time
+4. **Iterate**: Make requested changes
 
 ---
 
@@ -379,7 +379,7 @@ describe('Button', () => {
 
 ---
 
-## 📚 Recursos de Aprendizaje
+## 📚 Learning Resources
 
 ### Python/FastAPI
 - [FastAPI Tutorial](https://fastapi.tiangolo.com/tutorial/)
@@ -396,8 +396,8 @@ describe('Button', () => {
 
 ---
 
-## 🙏 Gracias
+## 🙏 Thank You
 
-¡Gracias por contribuir a VCSA! Tu ayuda hace que la plataforma sea mejor para todos.
+Thank you for contributing to VCSA! Your help makes the platform better for everyone.
 
-Si tienes preguntas, no dudes en abrir un issue o contactarnos.
+If you have questions, don't hesitate to open an issue or contact us.

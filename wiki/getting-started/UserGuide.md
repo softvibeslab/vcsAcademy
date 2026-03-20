@@ -1,321 +1,471 @@
-# Guía de Usuario - VCSA
+# User Guide
 
-Guía completa para usuarios de VCSA (Vacation Club Sales Academy).
+Complete guide for VCSA users - sales representatives, managers, and administrators.
 
-## 🎯 ¿Qué es VCSA?
+## 📚 Table of Contents
 
-VCSA es una plataforma de capacitación premium para profesionales de ventas de vacation club y timeshare. Diseñada como un **"Sistema Operativo de Ventas"** - una herramienta diaria que usas en el piso de ventas, no solo una plataforma de cursos.
-
-### Nuestra Misión
-
-**Ayudarte a convertirte en un Top Producer consistente** a través de:
-
-- Entrenamiento estructurado en 6 tracks especializados
-- Análisis de casos reales (Deal Breakdowns)
-- Tácticas rápidas para aplicar en el piso (Quick Wins)
-- Gamificación que mantiene tu motivación alta
-- Comunidad de profesionales de la industria
+- [Getting Started](#getting-started)
+- [Dashboard Overview](#dashboard-overview)
+- [Phase 1: Top Producer Path](#phase-1-top-producer-path)
+- [Training Content](#training-content)
+- [Gamification & Progress](#gamification--progress)
+- [Community Features](#community-features)
+- [Events & Resources](#events--resources)
+- [Tips for Success](#tips-for-success)
 
 ---
 
-## 🚀 Primeros Pasos
+## 🚀 Getting Started
 
-### 1. Crear tu Cuenta
+### Account Setup
 
-Visita [vcsa.com](https://vcsa.com) y:
-1. Haz clic en "Sign Up"
-2. Completa tu información
-3. Verifica tu email
-4. Completa tu perfil
+1. **Create Account**:
+   - Go to [VCSA Login](https://app.vcsa.com)
+   - Click "Sign Up"
+   - Enter your email, name, and password
+   - Or use "Sign in with Google" for quick setup
 
-### 2. Realizar Evaluación Inicial
+2. **Complete Your Profile**:
+   - Add a profile picture
+   - Set your current sales experience level
+   - Select your primary sales focus
 
-- **Readiness Score**: Tu nivel de preparación actual
-- **Objetivos**: Metas de ventas a 30, 60, 90 días
-- **Áreas de mejora**: Identificar oportunidades de crecimiento
+3. **Take the Assessment** (Optional):
+   - Complete the initial skills assessment
+   - Get personalized learning recommendations
+   - Track your baseline performance
 
-### 3. Comenzar tu Camino
+### First Login
 
-Serás colocado en **Stage 1: New Rep** y podrás comenzar el **Top Producer Development Path**.
+After logging in, you'll see:
 
----
-
-## 📊 Sistema de Progresión
-
-### 4 Etapas de Desarrollo
-
-#### Stage 1: New Rep 🌱
-- **Objetivo**: Construir fundación
-- **Duración**: 1-2 semanas
-- **Puntos requeridos**: 150
-- **Tracks**: Pro Mindset, Discovery & Control
-
-#### Stage 2: Developing Rep 📈
-- **Objetivo**: Ejecutar con consistencia
-- **Duración**: 2-4 semanas
-- **Puntos requeridos**: 300
-- **Tracks**: Value Architecture, Decision Management
-
-#### Stage 3: Performing Rep ⚡
-- **Objetivo**: Cerrar consistentemente
-- **Duración**: 4-8 semanas
-- **Puntos requeridos**: 500
-- **Tracks**: Objection Mastery, Post-Decision Integrity
-
-#### Stage 4: Top Producer 👑
-- **Objetivo**: Élite performer
-- **Duración**: 8-12 semanas
-- **Puntos requeridos**: 750
-- **Status**: Máximo nivel
+- **Welcome Dashboard**: Your personalized home base
+- **Current Stage**: Where you are in the 4-stage progression
+- **Recommended Next Step**: What to do next
+- **Quick Stats**: Points, streak, readiness score
 
 ---
 
-## 📚 Contenido de Entrenamiento
+## 📊 Dashboard Overview
 
-### 6 Tracks (36 Módulos)
+### Main Sections
 
-1. **Pro Mindset** (6 módulos)
-   - Mentalidad de ventas de alto nivel
-   - Establecimiento de metas
-   - Psicología del comprador
+#### 1. Header
+- **Profile Menu**: Access your profile, settings, and logout
+- **Notifications**: View announcements and achievements
+- **Membership Status**: Free or VIP badge
 
-2. **Discovery & Control** (6 módulos)
-   - Toma de control desde el inicio
-   - Preguntas estratégicas
-   - Calificación de prospectos
+#### 2. Progress Cards
+- **Current Stage**: Your 4-stage progression badge
+- **Readiness Score**: Your preparedness percentage (0-100%)
+- **Training Streak**: Consecutive days of training
+- **Points Earned**: Total points accumulated
 
-3. **Value Architecture** (6 módulos)
-   - Construcción de valor irresistible
-   - Presentación efectiva
-   - Storytelling de ventas
+#### 3. Quick Actions
+- **Continue Learning**: Pick up where you left off
+- **Watch Later**: Access your bookmarked content
+- **Quick Wins**: Browse tactical scripts
 
-4. **Decision Management** (6 módulos)
-   - Guía de decisiones del comprador
-   - Manejo del proceso de decisión
-   - Cierre estratégico
-
-5. **Objection Mastery** (6 módulos)
-   - Manejo de objeciones comunes
-   - Refutaciones efectivas
-   - Transformación de objeciones en oportunidades
-
-6. **Post-Decision Integrity** (6 módulos)
-   - Mantenimiento de relaciones post-venta
-   - Generación de referidos
-   - Fidelización de clientes
-
-### Deal Breakdowns (15 Casos)
-
-Análisis detallado de escenarios reales de venta:
-- Qué salió mal
-- Por qué pasó
-- Cómo evitarlo
-- Key takeaway
-
-**Ejemplos**:
-- "Lost Control After Price Reveal"
-- "The Missing Spouse Objection"
-- "The 'Think About It' Collapse"
-
-### Quick Wins (20 Tácticas)
-
-Técnicas rápidas para aplicar inmediatamente en el piso:
-- Scripts específicos
-- Cuándo usarlos
-- Resultados esperados
-
-**Ejemplos**:
-- "How to Recover After Losing Control"
-- "How to Answer 'We Need to Think About It'"
-- "How to Create Urgency Without Pressure"
+#### 4. Activity Feed
+- Recent achievements
+- Badge unlocks
+- Community highlights
 
 ---
 
-## 🎮 Sistema de Puntos
+## 🎯 Phase 1: Top Producer Path
 
-### Ganar Puntos
+### What is the Top Producer Path?
 
-| Acción | Puntos |
-|--------|--------|
-| Completar módulo | 10 |
-| Revisar Deal Breakdown | 5 |
-| Aplicar Quick Win | 3 |
+The Top Producer Path is a structured 4-stage journey that takes you from new sales representative to elite top producer. Each stage has specific learning tracks, point requirements, and milestones.
 
-### Progresión de Etapas
+### The 4 Stages
 
-- **Stage 1**: 150 puntos (aprox. 15 módulos)
-- **Stage 2**: 300 puntos (aprox. 30 módulos)
-- **Stage 3**: 500 puntos (todos los módulos + breakdowns)
-- **Stage 4**: 750 puntos (todo + quick wins)
+#### Stage 1: New Rep 🌱 (150 points, 1-2 weeks)
 
----
+**Focus**: Build your sales foundation
 
-## 🏆 Sistema de Badges
+**Training Tracks**:
+1. **Pro Mindset** (6 modules)
+   - The Elite Sales Mindset
+   - Goal Setting That Works
+   - Building Unshakeable Confidence
+   - The Abundance Mentality
+   - Emotional Intelligence in Sales
+   - Daily Success Rituals
 
-### Badges de Progreso
-- **First Steps**: Completar primer módulo
-- **Foundation Builder**: Completar Stage 1
-- **Developing Pro**: Completar Stage 2
-- **Consistent Closer**: Completar Stage 3
-- **Top Producer**: Completar Stage 4
+2. **Discovery & Control** (6 modules)
+   - Taking Control from Hello
+   - The Discovery Framework
+   - Questioning Strategies
+   - Reading Body Language
+   - Building Rapport Quickly
+   - Setting the Tour Agenda
 
-### Badges de Streak
-- **Week Warrior**: Racha de 7 días
-- **Monthly Master**: Racha de 30 días
+**Milestones**:
+- Complete 12 training modules
+- Review 3 deal breakdowns
+- Apply 2 quick wins
+- Earn your first badge
 
-### Badges de Actividad
-- **Deal Analyst**: Revisar primer breakdown
-- **Quick Learner**: Aplicar primer quick win
-- **Track Master**: Completar todos los tracks
-- **Ready for Anything**: 100% Readiness Score
-
----
-
-## 📱 Pre-Tour Tactical Mode
-
-Una de las características más poderosas de VCSA. Antes de cada tour de ventas:
-
-1. **Abre Watch Later**
-2. **Selecciona contenido con tag "before_tour"**
-3. **Revisa rápidamente las tácticas**
-4. **Aplica durante el tour**
-
-### Tags Disponibles
-- `before_tour` - Repaso antes del tour
-- `closing_help` - Técnicas de cierre
-- `objections` - Manejo de objeciones
-- `discovery` - Fase de descubrimiento
-- `value_build` - Construcción de valor
-- `momentum` - Mantener momentum
+**Key Moves**:
+- "Always be closing" starts with "Always be discovering"
+- Control the tour from the first moment
+- Build value before discussing price
 
 ---
 
-## 📈 Readiness Score
+#### Stage 2: Developing Rep 📈 (300 points, 2-4 weeks)
 
-Tu puntuación de preparación se calcula así:
+**Focus**: Execute with consistency
 
-```
-= (Completación de Videos × 40%) +
-  (Progreso de Tracks × 30%) +
-  (Quick Wins Aplicados × 10%) +
-  (Breakdowns Revisados × 10%) +
-  (Training Streak × 10%)
-```
+**Training Tracks**:
+3. **Value Architecture** (6 modules)
+   - Building Value Foundations
+   - The Vacation Ownership Story
+   - Lifestyle Visualization
+   - Value vs. Price Positioning
+   - Creating Urgency
+   - Differentiation Strategies
 
-### Niveles de Readiness
+4. **Decision Management** (6 modules)
+   - Understanding Decision Psychology
+   - The Decision Cycle
+   - Identifying Decision Makers
+   - Decision Facilitation
+   - Closing Techniques
+   - Post-Decision Reinforcement
 
-- **0-25**: Novato - Necesitas fundación sólida
-- **26-50**: Developing - Construyendo habilidades
-- **51-75**: Performing - Consistencia en progreso
-- **76-100**: Top Producer - Máxima preparación
+**Milestones**:
+- Complete 12 additional modules
+- Review 5 deal breakdowns
+- Apply 5 quick wins
+- Maintain 7-day training streak
 
----
-
-## 🔥 Training Streak
-
-Mantén tu racha de entrenamiento activa:
-
-- Ventana de 24 horas para mantener racha
-- Entrena el mismo día para mantener
-- Racha de 7 días = Badge "Week Warrior"
-- Racha de 30 días = Badge "Monthly Master"
-
----
-
-## 👥 Comunidad
-
-### Feed de Comunidad
-- Comparte éxitos de ventas
-- Pregunta consejos
-- Celebra logros con otros reps
-
-### Eventos
-- Webinars mensuales
-- Q&A sessions con top producers
-- Workshops de habilidades específicas
+**Key Moves**:
+- Build value, don't just list features
+- Guide decisions, don't push for them
+- Create urgency without pressure
 
 ---
 
-## 💡 Tips para Máximo Provecho
+#### Stage 3: Performing Rep ⚡ (500 points, 4-8 weeks)
 
-### 1. Consistencia es Clave
-- Entrena todos los días (aunque sea 15 min)
-- Mantén tu training streak activo
-- Aplica lo aprendido inmediatamente
+**Focus**: Close consistently
 
-### 2. Uso Diario
-- **Mañana**: Revisa Quick Wins del día
-- **Antes del Tour**: Pre-Tour Tactical Mode
-- **Tarde**: Completa 1-2 módulos
-- **Noche**: Revisa Deal Breakdowns del día
+**Training Tracks**:
+5. **Objection Mastery** (6 modules)
+   - The Objection Mindset
+   - Price Objections
+   - Timing Objections
+   - Spouse/Partner Objections
+   - Think-It-Over Objections
+   - Advanced Objection Handling
 
-### 3. Aplicación Inmediata
-- Cada módulo tiene un "Key Move"
-- Aplica esa técnica en tu próximo tour
-- Comparte resultados en comunidad
+6. **Post-Decision Integrity** (6 modules)
+   - The Sale Doesn't End at Close
+   - Post-Close Communication
+   - Building Referral Pipelines
+   - Client Retention Strategies
+   - Long-term Relationship Building
+   - The Lifetime Value Approach
 
-### 4. Comunidad Activa
-- Participa en el feed
-- Haz preguntas
-- Compara técnicas con otros reps
+**Milestones**:
+- Complete all 36 training modules
+- Review 10 deal breakdowns
+- Apply 10 quick wins
+- Achieve 80% readiness score
 
----
-
-## 🎯 Metas por Nivel
-
-### Novatos (0-30 días)
-- [ ] Completar Tracks 1-2 (12 módulos)
-- [ ] Alcanzar Stage 2
-- [ ] Revisar 5 Deal Breakdowns
-- [ ] Aplicar 5 Quick Wins
-- [ ] Mantener streak de 7 días
-
-### Intermedios (31-90 días)
-- [ ] Completar Tracks 3-4 (12 módulos)
-- [ ] Alcanzar Stage 3
-- [ ] Revisar 10 Deal Breakdowns
-- [ ] Aplicar 10 Quick Wins
-- [ ] Mantener streak de 30 días
-
-### Avanzados (91+ días)
-- [ ] Completar Tracks 5-6 (12 módulos)
-- [ ] Alcanzar Stage 4 (Top Producer)
-- [ ] Revisar todos los Deal Breakdowns
-- [ ] Aplicar todos los Quick Wins
-- [ ] Readiness Score > 80%
+**Key Moves**:
+- Objections are buying signals in disguise
+- The close is the beginning, not the end
+- Build relationships, not just transactions
 
 ---
 
-## ❓ Preguntas Frecuentes
+#### Stage 4: Top Producer 👑 (750 points, 8-12 weeks)
 
-### ¿Cuánto tiempo tomará completar todo el entrenamiento?
-Depende de tu ritmo. Promedio: 8-12 semanas para completar todas las etapas si entrenas consistentemente.
+**Focus**: Elite performer status
 
-### ¿Puedo saltar a módulos avanzados?
-Sí, pero recomendamos seguir el orden secuencial para construir fundación sólida primero.
+**Milestones**:
+- Complete all content requirements
+- Maintain 30-day training streak
+- Achieve 95% readiness score
+- Earn at least 8 badges
 
-### ¿Qué pasa si pierdo mi training streak?
-No te preocupes. Tu progreso se mantiene. Solo necesitas reiniciar una nueva racha.
-
-### ¿Cómo puedo aplicar esto en mi trabajo de inmediato?
-Cada módulo tiene un "Key Move" - una técnica específica que puedes aplicar en tu próximo tour de ventas.
-
-### ¿Hay certificación al completar todo?
-Sí. Al completar Stage 4 y alcanzar 100% de Readiness Score, recibirás el certificado de "Top Producer VCSA".
+**Next Steps**:
+- Mentor new representatives
+- Contribute to community
+- Access advanced content (VIP)
 
 ---
 
-## 📞 Soporte
+## 📚 Training Content
 
+### Module Structure
+
+Each training module includes:
+
+1. **Video Lesson** (10-20 minutes)
+   - Expert instruction
+   - Real scenarios
+   - Practical examples
+
+2. **Key Move**
+   - One actionable takeaway
+   - How to apply it immediately
+   - Common mistakes to avoid
+
+3. **Completion**
+   - Mark as complete to earn points
+   - Track your progress
+   - Unlock next content
+
+### Deal Breakdowns
+
+Real scenario analysis of challenging sales situations:
+
+- **Scenario**: What happened
+- **Mistake**: What went wrong
+- **Fix**: How to handle it correctly
+- **Key Takeaway**: Lesson learned
+
+**Categories**:
+- Lost control situations
+- Objection failures
+- Closing mistakes
+- Post-sale issues
+
+### Quick Wins
+
+Tactical scripts and phrases for immediate use:
+
+- **Category**: When to use it
+- **Script**: Exact words to say
+- **Why It Works**: Psychology behind it
+
+**Categories**:
+- Before tour preparation
+- Opening strategies
+- Value building
+- Objection responses
+- Closing techniques
+
+---
+
+## 🎮 Gamification & Progress
+
+### Points System
+
+Earn points for learning activities:
+
+| Activity | Points |
+|----------|--------|
+| Complete training module | 10 |
+| Review deal breakdown | 5 |
+| Apply quick win | 3 |
+| Daily login | 1 |
+| Perfect week | 20 bonus |
+
+### Readiness Score
+
+Your overall preparedness percentage (0-100%):
+
+**Calculated from**:
+- Video completion (40%)
+- Track progress (30%)
+- Quick wins applied (10%)
+- Breakdowns reviewed (10%)
+- Training streak (10%)
+
+**Target Scores**:
+- Stage 1: 40%+
+- Stage 2: 60%+
+- Stage 3: 80%+
+- Stage 4: 95%+
+
+### Badges
+
+Earn badges for achievements:
+
+**Completion Badges**:
+- 🎯 First Steps
+- 🌱 Foundation Builder (Stage 1)
+- 📈 Rising Star (Stage 2)
+- ⚡ Peak Performer (Stage 3)
+- 👑 Top Producer (Stage 4)
+
+**Engagement Badges**:
+- 🔥 Week Warrior (7-day streak)
+- ⚡ Two Week Titan (14-day streak)
+- 👑 Monthly Master (30-day streak)
+
+### Training Streak
+
+Maintain consecutive days of training:
+
+- **How it Works**: 24-hour window from last activity
+- **What Counts**: Completing modules, reviewing breakdowns, applying quick wins
+- **Lost Streak**: Miss a day and start over
+
+---
+
+## 💬 Community Features
+
+### Community Feed
+
+Connect with fellow sales professionals:
+
+- **Share Wins**: Post your success stories
+- **Ask Questions**: Get help from the community
+- **Share Tips**: Pass on what works
+- **Find Inspiration**: Learn from others
+
+### Interactions
+
+- **Like Posts**: Show appreciation
+- **Comment**: Add value to discussions
+- **Follow**: Connect with top performers
+
+---
+
+## 📅 Events & Resources
+
+### Live Events
+
+Join virtual and in-person events:
+
+- **Masterclasses**: Deep dives into specific topics
+- **Q&A Sessions**: Ask experts your questions
+- **Workshops**: Hands-on practice
+- **Networking**: Meet other professionals
+
+### Resource Library
+
+Download helpful materials:
+
+- **Script Books**: Ready-to-use scripts
+- **Templates**: Email and call templates
+- **Guides**: Step-by-step instructions
+- **Cheat Sheets**: Quick reference cards
+
+---
+
+## 💡 Tips for Success
+
+### Daily Habits
+
+1. **Morning Routine** (5 minutes):
+   - Check your training streak
+   - Review your next assignment
+   - Read one quick win
+
+2. **Before Tours** (2 minutes):
+   - Check "Watch Later" for relevant content
+   - Review key moves from recent modules
+   - Pick one technique to focus on
+
+3. **After Tours** (5 minutes):
+   - Note what worked
+   - Identify areas for improvement
+   - Find a relevant module or breakdown
+
+### Weekly Goals
+
+- **Complete**: 3-4 modules
+- **Review**: 2-3 deal breakdowns
+- **Apply**: 2-3 quick wins
+- **Engage**: Post in community
+
+### Best Practices
+
+1. **Consistency Over Intensity**:
+   - Train every day, even for 10 minutes
+   - Maintain your streak
+   - Small progress adds up
+
+2. **Apply What You Learn**:
+   - Use one technique from each module
+   - Practice quick wins on real tours
+   - Share your results
+
+3. **Engage with Community**:
+   - Learn from others' experiences
+   - Share your own wins and struggles
+   - Ask questions when stuck
+
+4. **Track Your Progress**:
+   - Check your readiness score weekly
+   - Aim for stage milestones
+   - Celebrate badge unlocks
+
+5. **Use Watch Later**:
+   - Bookmark content for specific situations
+   - Tag with relevant categories
+   - Review before tours
+
+---
+
+## 🆘 Troubleshooting
+
+### Common Issues
+
+**Problem**: Can't remember my last lesson
+
+**Solution**: Go to Dashboard → "Continue Learning" to pick up where you left off
+
+**Problem**: Streak disappeared
+
+**Solution**: Streaks reset if you miss a day. Start building it again - consistency matters more than perfection!
+
+**Problem**: Videos won't play
+
+**Solution**:
+- Check your internet connection
+- Try a different browser
+- Clear your browser cache
+- Contact support if issues persist
+
+**Problem**: Points not showing up
+
+**Solution**:
+- Refresh the page
+- Check your progress dashboard
+- Points may take a few seconds to update
+
+---
+
+## 📞 Support
+
+### Getting Help
+
+- **Help Center**: https://help.vcsa.com
 - **Email**: support@vcsa.com
-- **Comunidad**: [Feed de Comunidad](https://vcsa.com/community)
-- **FAQ**: [Preguntas Frecuentes](https://vcsa.com/faq)
+- **Community**: Post your question in the community feed
+- **Live Chat**: Available for VIP members
+
+### Feedback
+
+We love hearing from you! Send feedback to:
+- **Feature Requests**: features@vcsa.com
+- **Bug Reports**: bugs@vcsa.com
+- **General Feedback**: feedback@vcsa.com
 
 ---
 
-**¡Bienvenido a VCSA! Tu camino a ser Top Producer comienza ahora.** 🚀
+## 🎓 VIP Membership
+
+Upgrade to VIP for:
+
+- **Advanced Content**: Exclusive modules and masterclasses
+- **Priority Support**: Faster response times
+- **Private Community**: VIP-only discussions
+- **Monthly Coaching**: Live group coaching sessions
+- **Certificate of Completion**: Official VCSA certification
+- **Early Access**: New features before free users
+
+**Upgrade**: Go to Dashboard → Membership → Upgrade to VIP
 
 ---
 
-*Última actualización: Marzo 16, 2026*
-*Versión: 1.0.0*
+**Ready to become a Top Producer? Start your journey today!** 🚀
