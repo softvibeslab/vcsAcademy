@@ -1,0 +1,1019 @@
+{
+  "vacation_club": {
+    "id": "vacation_club",
+    "name": "Vacation Club",
+    "description": "Timeshare & vacation club sales",
+    "icon": "building",
+    "default_theme": {
+      "primary": "#D4AF37",
+      "secondary": "#1E3A8A",
+      "accent": "#F59E0B"
+    },
+    "tracks": [
+      {
+        "id": "pro-mindset",
+        "title": "Pro Mindset",
+        "description": "Develop the elite performer mindset",
+        "icon": "brain",
+        "modules": [
+          {
+            "id": "vc-m1",
+            "title": "Elite Performance Psychology",
+            "keyMove": "Adopt the 1% rule - improve 1% daily",
+            "duration": "8 min",
+            "video_url": ""
+          },
+          {
+            "id": "vc-m2",
+            "title": "Morning Success Ritual",
+            "keyMove": "Create a 20-min pre-shift routine",
+            "duration": "6 min",
+            "video_url": ""
+          },
+          {
+            "id": "vc-m3",
+            "title": "Goal Setting Mastery",
+            "keyMove": "Set weekly micro-goals, not just monthly",
+            "duration": "7 min",
+            "video_url": ""
+          },
+          {
+            "id": "vc-m4",
+            "title": "Resilience Under Pressure",
+            "keyMove": "Use the 5-4-3-2-1 grounding technique",
+            "duration": "9 min",
+            "video_url": ""
+          },
+          {
+            "id": "vc-m5",
+            "title": "Confidence Building",
+            "keyMove": "Track your small wins daily",
+            "duration": "7 min",
+            "video_url": ""
+          },
+          {
+            "id": "vc-m6",
+            "title": "Time Management for Reps",
+            "keyMove": "Time-block your prospecting hours",
+            "duration": "8 min",
+            "video_url": ""
+          }
+        ]
+      },
+      {
+        "id": "discovery-control",
+        "title": "Discovery & Control",
+        "description": "Master the tour discovery phase",
+        "icon": "search",
+        "modules": [
+          {
+            "id": "vc-m7",
+            "title": "The Discovery Framework",
+            "keyMove": "Use NEEDS method: Needs, Experiences, Dreams, Budget, Stakeholders",
+            "duration": "10 min",
+            "video_url": ""
+          },
+          {
+            "id": "vc-m8",
+            "title": "Question Sequencing",
+            "keyMove": "Ask open-ended questions first, specific ones later",
+            "duration": "8 min",
+            "video_url": ""
+          },
+          {
+            "id": "vc-m9",
+            "title": "Active Listening Skills",
+            "keyMove": "Paraphrase what they said before responding",
+            "duration": "7 min",
+            "video_url": ""
+          },
+          {
+            "id": "vc-m10",
+            "title": "Reading Body Language",
+            "keyMove": "Notice clusters of signals, not isolated cues",
+            "duration": "9 min",
+            "video_url": ""
+          },
+          {
+            "id": "vc-m11",
+            "title": "Building Trust Fast",
+            "keyMove": "Share one personal story early in the tour",
+            "duration": "8 min",
+            "video_url": ""
+          },
+          {
+            "id": "vc-m12",
+            "title": "Controlling the Tour Flow",
+            "keyMove": "Set expectations upfront: 'Today we'll explore...'",
+            "duration": "9 min",
+            "video_url": ""
+          }
+        ]
+      },
+      {
+        "id": "value-architecture",
+        "title": "Value Architecture",
+        "description": "Present compelling value propositions",
+        "icon": "gem",
+        "modules": [
+          {
+            "id": "vc-m13",
+            "title": "Value Proposition Design",
+            "keyMove": "Connect features to their specific vacation dreams",
+            "duration": "9 min",
+            "video_url": ""
+          },
+          {
+            "id": "vc-m14",
+            "title": "Storytelling Techniques",
+            "keyMove": "Use STAR method: Situation, Task, Action, Result",
+            "duration": "8 min",
+            "video_url": ""
+          },
+          {
+            "id": "vc-m15",
+            "title": "Visual Presentations",
+            "keyMove": "Use resort photos that match their described interests",
+            "duration": "7 min",
+            "video_url": ""
+          },
+          {
+            "id": "vc-m16",
+            "title": "Handling Price Objections Early",
+            "keyMove": "Reframe price as 'cost of vacations for life' vs 'one-time investment'",
+            "duration": "10 min",
+            "video_url": ""
+          },
+          {
+            "id": "vc-m17",
+            "title": "Creating Urgency",
+            "keyMove": "Use limited-time incentives, not false urgency",
+            "duration": "8 min",
+            "video_url": ""
+          },
+          {
+            "id": "vc-m18",
+            "title": "Differentiation Strategy",
+            "keyMove": "Know your top 3 unique advantages vs competitors",
+            "duration": "9 min",
+            "video_url": ""
+          }
+        ]
+      },
+      {
+        "id": "decision-management",
+        "title": "Decision Management",
+        "description": "Guide prospects to confident decisions",
+        "icon": "users",
+        "modules": [
+          {
+            "id": "vc-m19",
+            "title": "Understanding Decision Makers",
+            "keyMove": "Identify who holds the budget in the first 10 minutes",
+            "duration": "8 min",
+            "video_url": ""
+          },
+          {
+            "id": "vc-m20",
+            "title": "The Decision Process",
+            "keyMove": "Map out their decision journey before asking for the sale",
+            "duration": "9 min",
+            "video_url": ""
+          },
+          {
+            "id": "vc-m21",
+            "title": "Trial Closing Techniques",
+            "keyMove": "Get mini-commitments throughout the tour",
+            "duration": "7 min",
+            "video_url": ""
+          },
+          {
+            "id": "vc-m22",
+            "title": "Handling 'I Need to Think About It'",
+            "keyMove": "Respond: 'Absolutely. What specific aspect would help to clarify?'",
+            "duration": "10 min",
+            "video_url": ""
+          },
+          {
+            "id": "vc-m23",
+            "title": "Spouse Decision Alignment",
+            "keyMove": "Address both partners' concerns separately",
+            "duration": "9 min",
+            "video_url": ""
+          },
+          {
+            "id": "vc-m24",
+            "title": "The Assumptive Close",
+            "keyMove": "Proceed as if they've already decided positively",
+            "duration": "8 min",
+            "video_url": ""
+          }
+        ]
+      },
+      {
+        "id": "objection-mastery",
+        "title": "Objection Mastery",
+        "description": "Handle objections with confidence",
+        "icon": "shield",
+        "modules": [
+          {
+            "id": "vc-m25",
+            "title": "Objection Psychology",
+            "keyMove": "Understand that objections are requests for more information",
+            "duration": "8 min",
+            "video_url": ""
+          },
+          {
+            "id": "vc-m26",
+            "title": "Price Objections",
+            "keyMove": "Break down to daily cost: 'Less than your daily coffee'",
+            "duration": "9 min",
+            "video_url": ""
+          },
+          {
+            "id": "vc-m27",
+            "title": "Timing Objections",
+            "keyMove": "Ask: 'What would need to change for now to be the right time?'",
+            "duration": "8 min",
+            "video_url": ""
+          },
+          {
+            "id": "vc-m28",
+            "title": "Competitor Comparisons",
+            "keyMove": "Acknowledge competitors, then pivot to your unique strengths",
+            "duration": "9 min",
+            "video_url": ""
+          },
+          {
+            "id": "vc-m29",
+            "title": " 'We Can't Afford It'",
+            "keyMove": "Explore financing options before accepting this objection",
+            "duration": "10 min",
+            "video_url": ""
+          },
+          {
+            "id": "vc-m30",
+            "title": "The Feel, Felt, Found Method",
+            "keyMove": "Share how others felt the same, then what they discovered",
+            "duration": "8 min",
+            "video_url": ""
+          }
+        ]
+      },
+      {
+        "id": "post-decision-integrity",
+        "title": "Post-Decision Integrity",
+        "description": "Maintain relationships after the sale",
+        "icon": "heart",
+        "modules": [
+          {
+            "id": "vc-m31",
+            "title": "The First 48 Hours",
+            "keyMove": "Personal call within 48 hours to reinforce their decision",
+            "duration": "7 min",
+            "video_url": ""
+          },
+          {
+            "id": "vc-m32",
+            "title": "Buyer's Remedy Prevention",
+            "keyMove": "Send a personalized 'welcome' package with resort photos",
+            "duration": "8 min",
+            "video_url": ""
+          },
+          {
+            "id": "vc-m33",
+            "title": "Referral Generation",
+            "keyMove": "Ask for referrals at the peak of their excitement",
+            "duration": "7 min",
+            "video_url": ""
+          },
+          {
+            "id": "vc-m34",
+            "title": "Long-term Relationship Building",
+            "keyMove": "Schedule quarterly check-ins, not just during use periods",
+            "duration": "8 min",
+            "video_url": ""
+          },
+          {
+            "id": "vc-m35",
+            "title": "Handling Post-Sale Issues",
+            "keyMove": "Respond to concerns within 24 hours with a clear plan",
+            "duration": "9 min",
+            "video_url": ""
+          },
+          {
+            "id": "vc-m36",
+            "title": "Creating Brand Advocates",
+            "keyMove": "Invite satisfied owners to share their stories",
+            "duration": "7 min",
+            "video_url": ""
+          }
+        ]
+      }
+    ],
+    "contexts": [
+      {
+        "id": "cold_tour",
+        "title": "Cold Tour",
+        "description": "First-time visitors with no prior relationship",
+        "tactics_count": 8
+      },
+      {
+        "id": "warm_tour",
+        "title": "Warm Tour",
+        "description": "Referred or returning prospects",
+        "tactics_count": 8
+      },
+      {
+        "id": "objections",
+        "title": "With Objections",
+        "description": "Prospects with specific concerns",
+        "tactics_count": 10
+      },
+      {
+        "id": "closing",
+        "title": "Closing Mode",
+        "description": "Final decision phase",
+        "tactics_count": 8
+      }
+    ]
+  },
+  "sales_training": {
+    "id": "sales_training",
+    "name": "Sales Training",
+    "description": "Corporate sales team training",
+    "icon": "briefcase",
+    "default_theme": {
+      "primary": "#3B82F6",
+      "secondary": "#6B7280",
+      "accent": "#60A5FA"
+    },
+    "tracks": [
+      {
+        "id": "pipeline-management",
+        "title": "Pipeline Management",
+        "description": "Master your sales pipeline",
+        "icon": "sliders",
+        "modules": [
+          {
+            "id": "st-m1",
+            "title": "Pipeline Stages Mastery",
+            "keyMove": "Define clear exit criteria for each stage",
+            "duration": "9 min",
+            "video_url": ""
+          },
+          {
+            "id": "st-m2",
+            "title": "Forecasting Accuracy",
+            "keyMove": "Update deals weekly with specific next steps",
+            "duration": "8 min",
+            "video_url": ""
+          },
+          {
+            "id": "st-m3",
+            "title": "Pipeline Velocity",
+            "keyMove": "Identify and accelerate stalled deals",
+            "duration": "9 min",
+            "video_url": ""
+          },
+          {
+            "id": "st-m4",
+            "title": "Deal Qualification",
+            "keyMove": "Use MEDDIC criteria consistently",
+            "duration": "10 min",
+            "video_url": ""
+          },
+          {
+            "id": "st-m5",
+            "title": "Pipeline Hygiene",
+            "keyMove": "Remove dead deals monthly to maintain accuracy",
+            "duration": "7 min",
+            "video_url": ""
+          },
+          {
+            "id": "st-m6",
+            "title": "Activity Metrics",
+            "keyMove": "Track leading indicators, not just lagging ones",
+            "duration": "8 min",
+            "video_url": ""
+          }
+        ]
+      },
+      {
+        "id": "lead-qualification",
+        "title": "Lead Qualification",
+        "description": "Identify and qualify the right prospects",
+        "icon": "filter",
+        "modules": [
+          {
+            "id": "st-m7",
+            "title": "Ideal Customer Profile",
+            "keyMove": "Create and use a detailed ICP checklist",
+            "duration": "9 min",
+            "video_url": ""
+          },
+          {
+            "id": "st-m8",
+            "title": "Discovery Calls Framework",
+            "keyMove": "Use BANT: Budget, Authority, Need, Timeline",
+            "duration": "8 min",
+            "video_url": ""
+          },
+          {
+            "id": "st-m9",
+            "title": "Questioning Techniques",
+            "keyMove": "Ask 'why' before 'what' to uncover true pain",
+            "duration": "9 min",
+            "video_url": ""
+          },
+          {
+            "id": "st-m10",
+            "title": "Identifying Decision Makers",
+            "keyMove": "Map the stakeholder landscape early",
+            "duration": "8 min",
+            "video_url": ""
+          },
+          {
+            "id": "st-m11",
+            "title": "Disqualification Skills",
+            "keyMove": "Know when to walk away from bad fits",
+            "duration": "7 min",
+            "video_url": ""
+          },
+          {
+            "id": "st-m12",
+            "title": "Building Champion Relationships",
+            "keyMove": "Coach your internal champion on selling internally",
+            "duration": "9 min",
+            "video_url": ""
+          }
+        ]
+      },
+      {
+        "id": "presentation-skills",
+        "title": "Presentation Skills",
+        "description": "Deliver compelling sales presentations",
+        "icon": "presentation",
+        "modules": [
+          {
+            "id": "st-m13",
+            "title": "Presentation Structure",
+            "keyMove": "Use problem-solution-benefit framework",
+            "duration": "8 min",
+            "video_url": ""
+          },
+          {
+            "id": "st-m14",
+            "title": "Visual Storytelling",
+            "keyMove": "One idea per slide, use visuals not text",
+            "duration": "7 min",
+            "video_url": ""
+          },
+          {
+            "id": "st-m15",
+            "title": "Demo Excellence",
+            "keyMove": "Customize demos to their specific use case",
+            "duration": "10 min",
+            "video_url": ""
+          },
+          {
+            "id": "st-m16",
+            "title": "Handling Questions",
+            "keyMove": "Clarify, acknowledge, then answer",
+            "duration": "8 min",
+            "video_url": ""
+          },
+          {
+            "id": "st-m17",
+            "title": "Virtual Presentations",
+            "keyMove": "Use camera and engage attendees every 5 minutes",
+            "duration": "9 min",
+            "video_url": ""
+          },
+          {
+            "id": "st-m18",
+            "title": "Storytelling in Sales",
+            "keyMove": "Use customer success stories to illustrate value",
+            "duration": "8 min",
+            "video_url": ""
+          }
+        ]
+      },
+      {
+        "id": "negotiation-tactics",
+        "title": "Negotiation Tactics",
+        "description": "Win-win negotiation strategies",
+        "icon": "handshake",
+        "modules": [
+          {
+            "id": "st-m19",
+            "title": "Preparation Framework",
+            "keyMove": "Know your BATNA before entering negotiations",
+            "duration": "9 min",
+            "video_url": ""
+          },
+          {
+            "id": "st-m20",
+            "title": "Value-Based Negotiation",
+            "keyMove": "Anchor on value, not price",
+            "duration": "10 min",
+            "video_url": ""
+          },
+          {
+            "id": "st-m21",
+            "title": "Concession Strategy",
+            "keyMove": "Trade concessions, never give them away",
+            "duration": "8 min",
+            "video_url": ""
+          },
+          {
+            "id": "st-m22",
+            "title": "Handling Procurement",
+            "keyMove": "Focus on TCO, not just purchase price",
+            "duration": "9 min",
+            "video_url": ""
+          },
+          {
+            "id": "st-m23",
+            "title": "Multi-Party Negotiations",
+            "keyMove": "Identify each party's priorities separately",
+            "duration": "9 min",
+            "video_url": ""
+          },
+          {
+            "id": "st-m24",
+            "title": "Closing the Deal",
+            "keyMove": "Use trial closes throughout, not just at the end",
+            "duration": "8 min",
+            "video_url": ""
+          }
+        ]
+      },
+      {
+        "id": "closing-techniques",
+        "title": "Closing Techniques",
+        "description": "Master the art of asking for the sale",
+        "icon": "check-circle",
+        "modules": [
+          {
+            "id": "st-m25",
+            "title": "Buying Signal Recognition",
+            "keyMove": "Listen for questions about implementation, not features",
+            "duration": "7 min",
+            "video_url": ""
+          },
+          {
+            "id": "st-m26",
+            "title": "The Assumptive Close",
+            "keyMove": "Proceed as if they've already decided yes",
+            "duration": "8 min",
+            "video_url": ""
+          },
+          {
+            "id": "st-m27",
+            "title": "Urgency Creation",
+            "keyMove": "Use real deadlines, not artificial ones",
+            "duration": "8 min",
+            "video_url": ""
+          },
+          {
+            "id": "st-m28",
+            "title": "Handling Last-Minute Stalls",
+            "keyMove": "Go back to the original problem and agreed solution",
+            "duration": "9 min",
+            "video_url": ""
+          },
+          {
+            "id": "st-m29",
+            "title": "Contract Negotiation",
+            "keyMove": "Focus on terms that matter most to you",
+            "duration": "9 min",
+            "video_url": ""
+          },
+          {
+            "id": "st-m30",
+            "title": "Post-Close Momentum",
+            "keyMove": "Start onboarding immediately after signing",
+            "duration": "7 min",
+            "video_url": ""
+          }
+        ]
+      },
+      {
+        "id": "account-expansion",
+        "title": "Account Expansion",
+        "description": "Grow existing accounts",
+        "icon": "trending-up",
+        "modules": [
+          {
+            "id": "st-m31",
+            "title": "Account Planning",
+            "keyMove": "Create quarterly account growth plans",
+            "duration": "9 min",
+            "video_url": ""
+          },
+          {
+            "id": "st-m32",
+            "title": "Upselling Strategies",
+            "keyMove": "Identify expansion opportunities during onboarding",
+            "duration": "8 min",
+            "video_url": ""
+          },
+          {
+            "id": "st-m33",
+            "title": "Cross-selling Framework",
+            "keyMove": "Map related products to customer success metrics",
+            "duration": "8 min",
+            "video_url": ""
+          },
+          {
+            "id": "st-m34",
+            "title": "Executive Business Reviews",
+            "keyMove": "Focus on achieved outcomes, not product features",
+            "duration": "9 min",
+            "video_url": ""
+          },
+          {
+            "id": "st-m35",
+            "title": "Customer Success Mapping",
+            "keyMove": "Align your goals with their success metrics",
+            "duration": "8 min",
+            "video_url": ""
+          },
+          {
+            "id": "st-m36",
+            "title": "Renewal Strategies",
+            "keyMove": "Start renewal conversations 90 days before expiration",
+            "duration": "9 min",
+            "video_url": ""
+          }
+        ]
+      }
+    ],
+    "contexts": [
+      {
+        "id": "cold_call",
+        "title": "Cold Call",
+        "description": "Initial outreach to new prospects",
+        "tactics_count": 10
+      },
+      {
+        "id": "discovery",
+        "title": "Discovery Call",
+        "description": "Exploratory conversations",
+        "tactics_count": 8
+      },
+      {
+        "id": "demo",
+        "title": "Demo Meeting",
+        "description": "Product presentations",
+        "tactics_count": 8
+      },
+      {
+        "id": "negotiation",
+        "title": "Negotiation",
+        "description": "Deal closing phase",
+        "tactics_count": 10
+      }
+    ]
+  },
+  "customer_success": {
+    "id": "customer_success",
+    "name": "Customer Success",
+    "description": "Customer onboarding & success",
+    "icon": "users",
+    "default_theme": {
+      "primary": "#10B981",
+      "secondary": "#0D9488",
+      "accent": "34D399"
+    },
+    "tracks": [
+      {
+        "id": "onboarding-mastery",
+        "title": "Onboarding Mastery",
+        "description": "Perfect the customer onboarding experience",
+        "icon": "rocket",
+        "modules": [
+          {
+            "id": "cs-m1",
+            "title": "First 90 Days Blueprint",
+            "keyMove": "Create success plan in week 1",
+            "duration": "9 min",
+            "video_url": ""
+          },
+          {
+            "id": "cs-m2",
+            "title": "Welcome Experience Design",
+            "keyMove": "Personalize onboarding based on their goals",
+            "duration": "8 min",
+            "video_url": ""
+          },
+          {
+            "id": "cs-m3",
+            "title": "Training Milestone Planning",
+            "keyMove": "Set up weekly check-ins for first month",
+            "duration": "8 min",
+            "video_url": ""
+          },
+          {
+            "id": "cs-m4",
+            "title": "Quick Wins Identification",
+            "keyMove": "Deliver one measurable value in week 1",
+            "duration": "7 min",
+            "video_url": ""
+          },
+          {
+            "id": "cs-m5",
+            "title": "Stakeholder Alignment",
+            "keyMove": "Onboard all key stakeholders, not just users",
+            "duration": "9 min",
+            "video_url": ""
+          },
+          {
+            "id": "cs-m6",
+            "title": "Onboarding Metrics",
+            "keyMove": "Track time-to-value as your north star",
+            "duration": "8 min",
+            "video_url": ""
+          }
+        ]
+      },
+      {
+        "id": "customer-health",
+        "title": "Customer Health",
+        "description": "Monitor and improve customer health",
+        "icon": "activity",
+        "modules": [
+          {
+            "id": "cs-m7",
+            "title": "Health Score Framework",
+            "keyMove": "Combine product usage, sentiment, and engagement",
+            "duration": "9 min",
+            "video_url": ""
+          },
+          {
+            "id": "cs-m8",
+            "title": "Usage Analytics",
+            "keyMove": "Monitor leading indicators of churn",
+            "duration": "8 min",
+            "video_url": ""
+          },
+          {
+            "id": "cs-m9",
+            "title": "NPS & Feedback Loops",
+            "keyMove": "Act on feedback within 48 hours",
+            "duration": "7 min",
+            "video_url": ""
+          },
+          {
+            "id": "cs-m10",
+            "title": "Risk Identification",
+            "keyMove": "Create red flag triggers for immediate outreach",
+            "duration": "9 min",
+            "video_url": ""
+          },
+          {
+            "id": "cs-m11",
+            "title": "Health Score Communication",
+            "keyMove": "Share health insights with customer success teams",
+            "duration": "8 min",
+            "video_url": ""
+          },
+          {
+            "id": "cs-m12",
+            "title": "Proactive Health Management",
+            "keyMove": "Reach out before health scores decline",
+            "duration": "8 min",
+            "video_url": ""
+          }
+        ]
+      },
+      {
+        "id": "renewal-strategies",
+        "title": "Renewal Strategies",
+        "description": "Maximize renewal rates",
+        "icon": "refresh-cw",
+        "modules": [
+          {
+            "id": "cs-m13",
+            "title": "Renewal Timeline Planning",
+            "keyMove": "Start conversations 90 days before expiration",
+            "duration": "8 min",
+            "video_url": ""
+          },
+          {
+            "id": "cs-m14",
+            "title": "Value Realization Proof",
+            "keyMove": "Document and share achieved outcomes",
+            "duration": "9 min",
+            "video_url": ""
+          },
+          {
+            "id": "cs-m15",
+            "title": "Renewal Objection Handling",
+            "keyMove": "Address concerns before renewal discussions",
+            "duration": "8 min",
+            "video_url": ""
+          },
+          {
+            "id": "cs-m16",
+            "title": "Multi-Year Deals",
+            "keyMove": "Offer incentives for longer commitments",
+            "duration": "7 min",
+            "video_url": ""
+          },
+          {
+            "id": "cs-m17",
+            "title": "Price Increase Conversations",
+            "keyMove": "Tie increases to additional value delivered",
+            "duration": "9 min",
+            "video_url": ""
+          },
+          {
+            "id": "cs-m18",
+            "title": "Churn Prevention",
+            "keyMove": "Identify at-risk accounts and create recovery plans",
+            "duration": "9 min",
+            "video_url": ""
+          }
+        ]
+      },
+      {
+        "id": "upselling-cross-selling",
+        "title": "Upselling & Cross-selling",
+        "description": "Grow customer value",
+        "icon": "layers",
+        "modules": [
+          {
+            "id": "cs-m19",
+            "title": "Expansion Opportunity Mapping",
+            "keyMove": "Match features to customer success milestones",
+            "duration": "8 min",
+            "video_url": ""
+          },
+          {
+            "id": "cs-m20",
+            "title": "Timing Expansion Offers",
+            "keyMove": "Present upgrades after achieving first success",
+            "duration": "7 min",
+            "video_url": ""
+          },
+          {
+            "id": "cs-m21",
+            "title": "Cross-selling Framework",
+            "keyMove": "Identify related needs through usage patterns",
+            "duration": "8 min",
+            "video_url": ""
+          },
+          {
+            "id": "cs-m22",
+            "title": "Expansion Conversations",
+            "keyMove": "Focus on additional value, not more features",
+            "duration": "9 min",
+            "video_url": ""
+          },
+          {
+            "id": "cs-m23",
+            "title": "Pricing Strategies",
+            "keyMove": "Use tiered pricing to encourage upgrades",
+            "duration": "8 min",
+            "video_url": ""
+          },
+          {
+            "id": "cs-m24",
+            "title": "Customer Advocacy",
+            "keyMove": "Turn satisfied customers into expansion advocates",
+            "duration": "7 min",
+            "video_url": ""
+          }
+        ]
+      },
+      {
+        "id": "churn-prevention",
+        "title": "Churn Prevention",
+        "description": "Reduce customer churn",
+        "icon": "shield",
+        "modules": [
+          {
+            "id": "cs-m25",
+            "title": "Churn Prediction Models",
+            "keyMove": "Identify at-risk customers through behavior patterns",
+            "duration": "9 min",
+            "video_url": ""
+          },
+          {
+            "id": "cs-m26",
+            "title": "Early Warning Systems",
+            "keyMove": "Set up automated alerts for red flag activities",
+            "duration": "8 min",
+            "video_url": ""
+          },
+          {
+            "id": "cs-m27",
+            "title": "Save Strategies",
+            "keyMove": "Respond to churn risks within 24 hours",
+            "duration": "9 min",
+            "video_url": ""
+          },
+          {
+            "id": "cs-m28",
+            "title": "Root Cause Analysis",
+            "keyMove": "Understand why customers leave, not just that they leave",
+            "duration": "8 min",
+            "video_url": ""
+          },
+          {
+            "id": "cs-m29",
+            "title": "Win-back Campaigns",
+            "keyMove": "Re-engage churned customers after 3-6 months",
+            "duration": "8 min",
+            "video_url": ""
+          },
+          {
+            "id": "cs-m30",
+            "title": "Churn Reduction Metrics",
+            "keyMove": "Track both logo and revenue churn",
+            "duration": "7 min",
+            "video_url": ""
+          }
+        ]
+      },
+      {
+        "id": "advocacy-development",
+        "title": "Advocacy Development",
+        "description": "Create customer advocates",
+        "icon": "heart",
+        "modules": [
+          {
+            "id": "cs-m31",
+            "title": "Customer Advocacy Program",
+            "keyMove": "Formalize advocacy with clear benefits",
+            "duration": "8 min",
+            "video_url": ""
+          },
+          {
+            "id": "cs-m32",
+            "title": "Reference Building",
+            "keyMove": "Ask for references at peak satisfaction moments",
+            "duration": "7 min",
+            "video_url": ""
+          },
+          {
+            "id": "cs-m33",
+            "title": "Case Study Development",
+            "keyMove": "Co-create success stories with customers",
+            "duration": "9 min",
+            "video_url": ""
+          },
+          {
+            "id": "cs-m34",
+            "title": "Community Building",
+            "keyMove": "Connect customers with each other",
+            "duration": "8 min",
+            "video_url": ""
+          },
+          {
+            "id": "cs-m35",
+            "title": "Advocate Recognition",
+            "keyMove": "Publicly recognize customer contributions",
+            "duration": "7 min",
+            "video_url": ""
+          },
+          {
+            "id": "cs-m36",
+            "title": "Referral Programs",
+            "keyMove": "Make referrals easy and rewarding",
+            "duration": "8 min",
+            "video_url": ""
+          }
+        ]
+      }
+    ],
+    "contexts": [
+      {
+        "id": "checkin",
+        "title": "Check-in Call",
+        "description": "Regular customer touchpoints",
+        "tactics_count": 8
+      },
+      {
+        "id": "qbr",
+        "title": "QBR Preparation",
+        "description": "Quarterly business reviews",
+        "tactics_count": 10
+      },
+      {
+        "id": "risk",
+        "title": "Risk Mitigation",
+        "description": "At-risk customer interventions",
+        "tactics_count": 8
+      },
+      {
+        "id": "renewal",
+        "title": "Renewal Discussion",
+        "description": "Renewal and expansion conversations",
+        "tactics_count": 8
+      }
+    ]
+  }
+}

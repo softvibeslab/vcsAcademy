@@ -1,0 +1,125 @@
+{
+  "badges": [
+    {
+      "id": "first_win",
+      "name": "First Win",
+      "description": "Complete your first training module",
+      "icon": "trophy",
+      "requirement": "complete_1_module",
+      "points": 10,
+      "tier": "bronze"
+    },
+    {
+      "id": "quick_learner",
+      "name": "Quick Learner",
+      "description": "Complete 5 modules in your first week",
+      "icon": "zap",
+      "requirement": "complete_5_modules_week_1",
+      "points": 25,
+      "tier": "bronze"
+    },
+    {
+      "id": "week_streak",
+      "name": "Week Warrior",
+      "description": "Maintain a 7-day training streak",
+      "icon": "flame",
+      "requirement": "streak_7_days",
+      "points": 15,
+      "tier": "bronze"
+    },
+    {
+      "id": "stage1_complete",
+      "name": "Stage 1 Master",
+      "description": "Complete Stage 1: New Rep",
+      "icon": "star",
+      "requirement": "complete_stage_1",
+      "points": 50,
+      "tier": "silver"
+    },
+    {
+      "id": "track_complete",
+      "name": "Track Champion",
+      "description": "Complete all modules in one track",
+      "icon": "award",
+      "requirement": "complete_1_track",
+      "points": 75,
+      "tier": "silver"
+    },
+    {
+      "id": "month_streak",
+      "name": "Month Master",
+      "description": "Maintain a 30-day training streak",
+      "icon": "fire",
+      "requirement": "streak_30_days",
+      "points": 50,
+      "tier": "silver"
+    },
+    {
+      "id": "stage2_complete",
+      "name": "Stage 2 Achiever",
+      "description": "Complete Stage 2: Developing Rep",
+      "icon": "medal",
+      "requirement": "complete_stage_2",
+      "points": 100,
+      "tier": "silver"
+    },
+    {
+      "id": "halfway_hero",
+      "name": "Halfway Hero",
+      "description": "Complete 50% of all training modules",
+      "icon": "target",
+      "requirement": "complete_50_percent",
+      "points": 125,
+      "tier": "gold"
+    },
+    {
+      "id": "stage3_complete",
+      "name": "Stage 3 Performer",
+      "description": "Complete Stage 3: Performing Rep",
+      "icon": "gem",
+      "requirement": "complete_stage_3",
+      "points": 200,
+      "tier": "gold"
+    },
+    {
+      "id": "expert_navigator",
+      "name": "Expert Navigator",
+      "description": "Review all deal breakdowns",
+      "icon": "compass",
+      "requirement": "review_all_breakdowns",
+      "points": 75,
+      "tier": "silver"
+    },
+    {
+      "id": "top_producer",
+      "name": "Top Producer",
+      "description": "Complete all 4 stages and achieve Top Producer status",
+      "icon": "crown",
+      "requirement": "complete_all_stages",
+      "points": 500,
+      "tier": "platinum"
+    }
+  ],
+  "tiers": {
+    "bronze": {
+      "name": "Bronze",
+      "color": "#CD7F32",
+      "icon": "🥉"
+    },
+    "silver": {
+      "name": "Silver",
+      "color": "#C0C0C0",
+      "icon": "🥈"
+    },
+    "gold": {
+      "name": "Gold",
+      "color": "#FFD700",
+      "icon": "🥇"
+    },
+    "platinum": {
+      "name": "Platinum",
+      "color": "#E5E4E2",
+      "icon": "💎"
+    }
+  }
+}

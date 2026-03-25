@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VCSA Demo Generator - Create Your Custom Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --gold: #D4AF37;
+            --gold-dark: #B4942D;
+            --navy: #1E3A8A;
+            --bg-dark: #020204;
+            --text-primary: #F1F5F9;
+            --text-secondary: #94A3B8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Playfair Display', serif;
+        }
+
+        .gold-text {
+            color: var(--gold);
+        }
+
+        .gold-gradient {
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            border-color: rgba(212, 175, 55, 0.3);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+            color: var(--bg-dark);
+            padding: 0.875rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--gold);
+            padding: 0.875rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            border: 1px solid var(--gold);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(212, 175, 55, 0.1);
+        }
+
+        .step-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .step-indicator.active {
+            background: var(--gold);
+            color: var(--bg-dark);
+        }
+
+        .step-indicator.completed {
+            background: #10B981;
+            color: white;
+        }
+
+        .step-indicator.pending {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-secondary);
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.02);
+            color: var(--text-primary);
+            transition: all 0.2s ease;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+        }
+
+        .org-type-card {
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.02);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .org-type-card:hover {
+            border-color: rgba(212, 175, 55, 0.3);
+            background: rgba(212, 175, 55, 0.05);
+        }
+
+        .org-type-card.selected {
+            border-color: var(--gold);
+            background: rgba(212, 175, 55, 0.1);
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 48px;
+            height: 24px;
+            background: #374151;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-switch.active {
+            background: var(--gold);
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-switch.active::after {
+            transform: translateX(24px);
+        }
+
+        .loading-spinner {
+            border: 3px solid rgba(212, 175, 55, 0.1);
+            border-top: 3px solid var(--gold);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .page {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .progress-bar {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 8px;
+            background: linear-gradient(90deg, var(--gold) 0%, var(--gold-dark) 100%);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="border-b border-white/10 py-6">
+            <div class="max-w-4xl mx-auto px-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-500 to-yellow-600 flex items-center justify-center">
+                            <span class="text-white font-bold text-xl">V</span>
+                        </div>
+                        <div>
+                            <h1 class="text-xl font-bold">VCSA Demo Generator</h1>
+                            <p class="text-sm text-muted-foreground">Create your custom demo in 5 steps</p>
+                        </div>
+                    </div>
+                    <div class="text-sm text-muted-foreground">
+                        Step <span id="current-step">1</span> of 5
+                    </div>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="mt-6">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill" style="width: 20%"></div>
+                    </div>
+                    <div class="flex justify-between mt-2">
+                        <div class="step-indicator active" data-step="1">1</div>
+                        <div class="step-indicator pending" data-step="2">2</div>
+                        <div class="step-indicator pending" data-step="3">3</div>
+                        <div class="step-indicator pending" data-step="4">4</div>
+                        <div class="step-indicator pending" data-step="5">5</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-1 py-8 px-4">
+            <div class="max-w-4xl mx-auto">
+                <!-- Step 1: Organization Type -->
+                <div id="step-1" class="page active">
+                    <div class="text-center mb-8">
+                        <h2 class="text-3xl font-bold mb-2">Welcome to Your Demo Setup</h2>
+                        <p class="text-muted-foreground">First, tell us about your organization type</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="org-type-card" onclick="selectOrgType('vacation_club')" data-type="vacation_club">
+                            <div class="flex items-start space-x-4">
+                                <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-umbrella-beach text-yellow-500 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-lg mb-1">Vacation Club</h3>
+                                    <p class="text-sm text-muted-foreground">Timeshare & vacation club sales</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="org-type-card" onclick="selectOrgType('sales_training')" data-type="sales_training">
+                            <div class="flex items-start space-x-4">
+                                <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500/20 to-blue-600/20 flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-briefcase text-blue-500 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-lg mb-1">Sales Training</h3>
+                                    <p class="text-sm text-muted-foreground">Corporate sales team training</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="org-type-card" onclick="selectOrgType('customer_success')" data-type="customer_success">
+                            <div class="flex items-start space-x-4">
+                                <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-green-500/20 to-green-600/20 flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-users text-green-500 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-lg mb-1">Customer Success</h3>
+                                    <p class="text-sm text-muted-foreground">Customer onboarding & success</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="org-type-card" onclick="selectOrgType('other')" data-type="other">
+                            <div class="flex items-start space-x-4">
+                                <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-500/20 to-purple-600/20 flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-rocket text-purple-500 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-lg mb-1">Other</h3>
+                                    <p class="text-sm text-muted-foreground">Custom training academy</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 flex justify-end">
+                        <button class="btn-primary" onclick="nextStep()" id="step-1-next" disabled>
+                            Continue to Branding →
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 2: Branding -->
+                <div id="step-2" class="page">
+                    <div class="text-center mb-8">
+                        <h2 class="text-3xl font-bold mb-2">Customize Your Brand</h2>
+                        <p class="text-muted-foreground">Make your demo feel like home</p>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div class="glass-card p-6">
+                            <label class="block text-sm font-medium mb-2">Organization Name *</label>
+                            <input type="text" class="input-field" id="siteName" placeholder="e.g., Acme Sales Academy" onchange="updateFormData()">
+                            <p class="text-xs text-muted-foreground mt-1">This will be your organization's official name</p>
+                        </div>
+
+                        <div class="glass-card p-6">
+                            <label class="block text-sm font-medium mb-2">URL Slug *</label>
+                            <input type="text" class="input-field" id="slug" placeholder="e.g., acme-academy" onchange="updateFormData()">
+                            <p class="text-xs text-muted-foreground mt-1">Lowercase letters, numbers, and hyphens only</p>
+                        </div>
+
+                        <div class="glass-card p-6">
+                            <label class="block text-sm font-medium mb-2">Tagline</label>
+                            <input type="text" class="input-field" id="tagline" placeholder="e.g., Transform Your Sales Team" onchange="updateFormData()">
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="glass-card p-6">
+                                <label class="block text-sm font-medium mb-2">Primary Color</label>
+                                <div class="flex items-center space-x-3">
+                                    <input type="color" id="primaryColor" value="#D4AF37" class="w-12 h-10 rounded cursor-pointer" onchange="updateFormData()">
+                                    <input type="text" class="input-field flex-1" id="primaryColorText" value="#D4AF37" onchange="document.getElementById('primaryColor').value = this.value; updateFormData()">
+                                </div>
+                            </div>
+
+                            <div class="glass-card p-6">
+                                <label class="block text-sm font-medium mb-2">Secondary Color</label>
+                                <div class="flex items-center space-x-3">
+                                    <input type="color" id="secondaryColor" value="#1E3A8A" class="w-12 h-10 rounded cursor-pointer" onchange="updateFormData()">
+                                    <input type="text" class="input-field flex-1" id="secondaryColorText" value="#1E3A8A" onchange="document.getElementById('secondaryColor').value = this.value; updateFormData()">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 flex justify-between">
+                        <button class="btn-secondary" onclick="prevStep()">← Back</button>
+                        <button class="btn-primary" onclick="nextStep()">Continue to Content →</button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Content -->
+                <div id="step-3" class="page">
+                    <div class="text-center mb-8">
+                        <h2 class="text-3xl font-bold mb-2">Set Up Your Content</h2>
+                        <p class="text-muted-foreground">Configure your training content and focus areas</p>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div class="glass-card p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h3 class="font-semibold mb-1">Custom Training Tracks</h3>
+                                    <p class="text-sm text-muted-foreground">Create your own industry-specific tracks</p>
+                                </div>
+                                <div class="toggle-switch" id="customTracksToggle" onclick="toggleCustomTracks()"></div>
+                            </div>
+                        </div>
+
+                        <div class="glass-card p-6">
+                            <label class="block text-sm font-medium mb-4">Industry Focus</label>
+                            <div class="space-y-2">
+                                <label class="flex items-center p-3 rounded-lg border-2 cursor-pointer hover:border-yellow-500/30 industry-focus-option" data-value="Sales Representatives">
+                                    <input type="radio" name="industryFocus" value="Sales Representatives" class="mr-3" onchange="updateFormData()">
+                                    <span>Sales Representatives</span>
+                                </label>
+                                <label class="flex items-center p-3 rounded-lg border-2 cursor-pointer hover:border-yellow-500/30 industry-focus-option" data-value="Sales Managers">
+                                    <input type="radio" name="industryFocus" value="Sales Managers" class="mr-3" onchange="updateFormData()">
+                                    <span>Sales Managers</span>
+                                </label>
+                                <label class="flex items-center p-3 rounded-lg border-2 cursor-pointer hover:border-yellow-500/30 industry-focus-option" data-value="Customer Success Teams">
+                                    <input type="radio" name="industryFocus" value="Customer Success Teams" class="mr-3" onchange="updateFormData()">
+                                    <span>Customer Success Teams</span>
+                                </label>
+                                <label class="flex items-center p-3 rounded-lg border-2 cursor-pointer hover:border-yellow-500/30 industry-focus-option" data-value="Account Executives">
+                                    <input type="radio" name="industryFocus" value="Account Executives" class="mr-3" onchange="updateFormData()">
+                                    <span>Account Executives</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 flex justify-between">
+                        <button class="btn-secondary" onclick="prevStep()">← Back</button>
+                        <button class="btn-primary" onclick="nextStep()">Continue to Features →</button>
+                    </div>
+                </div>
+
+                <!-- Step 4: Features -->
+                <div id="step-4" class="page">
+                    <div class="text-center mb-8">
+                        <h2 class="text-3xl font-bold mb-2">Configure Your Features</h2>
+                        <p class="text-muted-foreground">Choose which features to enable for your demo</p>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="glass-card p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h3 class="font-semibold mb-1">Gamification</h3>
+                                    <p class="text-sm text-muted-foreground">Points, badges, and leaderboards</p>
+                                </div>
+                                <div class="toggle-switch active" id="gamificationToggle" onclick="toggleFeature('gamification')"></div>
+                            </div>
+                        </div>
+
+                        <div class="glass-card p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h3 class="font-semibold mb-1">Achievement Badges</h3>
+                                    <p class="text-sm text-muted-foreground">Unlock badges as users progress</p>
+                                </div>
+                                <div class="toggle-switch active" id="badgesToggle" onclick="toggleFeature('badges')"></div>
+                            </div>
+                        </div>
+
+                        <div class="glass-card p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h3 class="font-semibold mb-1">Training Streaks</h3>
+                                    <p class="text-sm text-muted-foreground">Track consecutive days of activity</p>
+                                </div>
+                                <div class="toggle-switch active" id="streaksToggle" onclick="toggleFeature('streaks')"></div>
+                            </div>
+                        </div>
+
+                        <div class="glass-card p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h3 class="font-semibold mb-1">Community Feed</h3>
+                                    <p class="text-sm text-muted-foreground">Posts, comments, and discussions</p>
+                                </div>
+                                <div class="toggle-switch" id="communityToggle" onclick="toggleFeature('community')"></div>
+                            </div>
+                        </div>
+
+                        <div class="glass-card p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h3 class="font-semibold mb-1">Events Calendar</h3>
+                                    <p class="text-sm text-muted-foreground">Schedule training sessions and events</p>
+                                </div>
+                                <div class="toggle-switch" id="eventsToggle" onclick="toggleFeature('events')"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 flex justify-between">
+                        <button class="btn-secondary" onclick="prevStep()">← Back</button>
+                        <button class="btn-primary" onclick="nextStep()">Review & Generate →</button>
+                    </div>
+                </div>
+
+                <!-- Step 5: Complete & Generate -->
+                <div id="step-5" class="page">
+                    <div class="text-center mb-8">
+                        <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-green-500/20 mb-4">
+                            <i class="fas fa-check text-green-500 text-4xl"></i>
+                        </div>
+                        <h2 class="text-3xl font-bold mb-2">You're All Set!</h2>
+                        <p class="text-muted-foreground">Review your configuration and generate your demo</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                        <div class="glass-card p-6">
+                            <h3 class="font-semibold mb-3">Branding</h3>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-muted-foreground">Name:</span>
+                                    <span class="font-medium" id="review-name">-</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-muted-foreground">Slug:</span>
+                                    <span class="font-medium" id="review-slug">-</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-muted-foreground">Colors:</span>
+                                    <div class="flex space-x-2">
+                                        <div class="w-6 h-6 rounded" id="review-primary"></div>
+                                        <div class="w-6 h-6 rounded" id="review-secondary"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="glass-card p-6">
+                            <h3 class="font-semibold mb-3">Content</h3>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-muted-foreground">Type:</span>
+                                    <span class="font-medium" id="review-type">-</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-muted-foreground">Focus:</span>
+                                    <span class="font-medium" id="review-focus">-</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-muted-foreground">Custom Tracks:</span>
+                                    <span class="font-medium" id="review-custom">-</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="glass-card p-6">
+                            <h3 class="font-semibold mb-3">Features</h3>
+                            <div class="flex flex-wrap gap-2" id="review-features">
+                                <!-- Features will be rendered here -->
+                            </div>
+                        </div>
+
+                        <div class="glass-card p-6">
+                            <h3 class="font-semibold mb-3">What You'll Get</h3>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas fa-check text-green-500"></i>
+                                    <span>Interactive Demo HTML</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas fa-check text-green-500"></i>
+                                    <span>CRM Snapshot JSON</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas fa-check text-green-500"></i>
+                                    <span>Complete ZIP Package</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card p-6 mb-8">
+                        <h3 class="font-semibold mb-4">Generate Your Demo</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <button class="btn-secondary" onclick="generatePreview()" id="preview-btn">
+                                <i class="fas fa-eye mr-2"></i>
+                                Preview Demo
+                            </button>
+                            <button class="btn-secondary" onclick="exportSnapshot()" id="snapshot-btn">
+                                <i class="fas fa-download mr-2"></i>
+                                Export Snapshot
+                            </button>
+                            <button class="btn-primary" onclick="generateZIP()" id="zip-btn">
+                                <i class="fas fa-file-archive mr-2"></i>
+                                Download ZIP
+                            </button>
+                        </div>
+                        <div id="generation-status" class="mt-4 text-sm text-center text-muted-foreground"></div>
+                    </div>
+
+                    <div class="flex justify-between">
+                        <button class="btn-secondary" onclick="prevStep()">← Back</button>
+                        <button class="btn-secondary" onclick="restart()">
+                            <i class="fas fa-redo mr-2"></i>
+                            Start Over
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="border-t border-white/10 py-6">
+            <div class="max-w-4xl mx-auto px-4 text-center text-sm text-muted-foreground">
+                <p>© 2026 Vacation Club Sales Academy. Demo Generator v1.0</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Load Scripts -->
+    <script src="js/module-generator.js"></script>
+    <script src="js/snapshot-builder.js"></script>
+    <script src="js/demo-compiler.js"></script>
+    <script src="js/zip-exporter.js"></script>
+
+    <script>
+        // State
+        let currentStep = 1;
+        let onboardingData = {
+            organizationType: null,
+            siteName: '',
+            slug: '',
+            tagline: '',
+            primaryColor: '#D4AF37',
+            secondaryColor: '#1E3A8A',
+            accentColor: '#F59E0B',
+            logoUrl: '',
+            customTracksEnabled: false,
+            industryFocus: 'Sales Representatives',
+            enableGamification: true,
+            enableBadges: true,
+            enableStreaks: true,
+            enableCommunity: false,
+            enableEvents: false,
+            inviteEmails: []
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Load module generator data
+            const moduleGen = new ModuleGenerator();
+            await moduleGen.loadData();
+            window.moduleGenerator = moduleGen;
+            window.snapshotBuilder = new SnapshotBuilder();
+            window.demoCompiler = new DemoCompiler();
+            window.zipExporter = new ZipExporter();
+        });
+
+        // Organization Type Selection
+        function selectOrgType(type) {
+            onboardingData.organizationType = type;
+            document.querySelectorAll('.org-type-card').forEach(card => {
+                card.classList.remove('selected');
+                if (card.dataset.type === type) {
+                    card.classList.add('selected');
+                }
+            });
+            document.getElementById('step-1-next').disabled = false;
+        }
+
+        // Update form data
+        function updateFormData() {
+            onboardingData.siteName = document.getElementById('siteName').value;
+            onboardingData.slug = document.getElementById('slug').value.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+            onboardingData.tagline = document.getElementById('tagline').value;
+            onboardingData.primaryColor = document.getElementById('primaryColor').value;
+            onboardingData.secondaryColor = document.getElementById('secondaryColor').value;
+
+            // Update review
+            document.getElementById('review-name').textContent = onboardingData.siteName || '-';
+            document.getElementById('review-slug').textContent = onboardingData.slug || '-';
+            document.getElementById('review-primary').style.backgroundColor = onboardingData.primaryColor;
+            document.getElementById('review-secondary').style.backgroundColor = onboardingData.secondaryColor;
+        }
+
+        // Toggle Custom Tracks
+        function toggleCustomTracks() {
+            onboardingData.customTracksEnabled = !onboardingData.customTracksEnabled;
+            document.getElementById('customTracksToggle').classList.toggle('active');
+            updateReview();
+        }
+
+        // Toggle Features
+        function toggleFeature(feature) {
+            const map = {
+                'gamification': 'enableGamification',
+                'badges': 'enableBadges',
+                'streaks': 'enableStreaks',
+                'community': 'enableCommunity',
+                'events': 'enableEvents'
+            };
+            onboardingData[map[feature]] = !onboardingData[map[feature]];
+            document.getElementById(feature + 'Toggle').classList.toggle('active');
+            updateReview();
+        }
+
+        // Industry Focus Selection
+        document.querySelectorAll('.industry-focus-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.industry-focus-option').forEach(o => o.classList.remove('border-yellow-500'));
+                this.classList.add('border-yellow-500');
+                onboardingData.industryFocus = this.dataset.value;
+                updateReview();
+            });
+        });
+
+        // Navigation
+        function nextStep() {
+            if (currentStep < 5) {
+                document.getElementById('step-' + currentStep).classList.remove('active');
+                currentStep++;
+                document.getElementById('step-' + currentStep).classList.add('active');
+                updateProgress();
+                if (currentStep === 5) {
+                    updateReview();
+                }
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 1) {
+                document.getElementById('step-' + currentStep).classList.remove('active');
+                currentStep--;
+                document.getElementById('step-' + currentStep).classList.add('active');
+                updateProgress();
+            }
+        }
+
+        function updateProgress() {
+            document.getElementById('current-step').textContent = currentStep;
+            document.getElementById('progress-fill').style.width = (currentStep * 20) + '%';
+
+            document.querySelectorAll('.step-indicator').forEach(indicator => {
+                const step = parseInt(indicator.dataset.step);
+                indicator.classList.remove('active', 'completed');
+                if (step < currentStep) {
+                    indicator.classList.add('completed');
+                } else if (step === currentStep) {
+                    indicator.classList.add('active');
+                } else {
+                    indicator.classList.add('pending');
+                }
+            });
+        }
+
+        function updateReview() {
+            document.getElementById('review-type').textContent = onboardingData.organizationType || '-';
+            document.getElementById('review-focus').textContent = onboardingData.industryFocus || '-';
+            document.getElementById('review-custom').textContent = onboardingData.customTracksEnabled ? 'Enabled' : 'Disabled';
+
+            const features = [];
+            if (onboardingData.enableGamification) features.push('Gamification');
+            if (onboardingData.enableBadges) features.push('Badges');
+            if (onboardingData.enableStreaks) features.push('Streaks');
+            if (onboardingData.enableCommunity) features.push('Community');
+            if (onboardingData.enableEvents) features.push('Events');
+
+            document.getElementById('review-features').innerHTML = features.map(f =>
+                `<span class="px-2 py-1 rounded-md bg-yellow-500/10 text-yellow-500 text-xs font-medium">${f}</span>`
+            ).join('');
+        }
+
+        // Generate Functions
+        async function generatePreview() {
+            setStatus('Generating preview...', 'loading');
+            try {
+                const moduleData = window.moduleGenerator.generateModules(
+                    onboardingData.organizationType,
+                    onboardingData.industryFocus,
+                    { customTracksEnabled: onboardingData.customTracksEnabled }
+                );
+
+                moduleData.stages = window.moduleGenerator.generateStages(onboardingData.organizationType);
+                moduleData.badges = window.moduleGenerator.generateBadges(onboardingData.organizationType);
+                moduleData.milestones = window.moduleGenerator.generateMilestones(moduleData.stages, moduleData.totalModules);
+
+                const snapshot = await window.snapshotBuilder.buildSnapshot(onboardingData, moduleData);
+                const demoHTML = await window.demoCompiler.compileDemo(onboardingData, moduleData, snapshot);
+
+                window.demoCompiler.previewDemo(demoHTML);
+                setStatus('Preview opened in new tab!', 'success');
+            } catch (error) {
+                console.error(error);
+                setStatus('Error generating preview: ' + error.message, 'error');
+            }
+        }
+
+        async function exportSnapshot() {
+            setStatus('Generating snapshot...', 'loading');
+            try {
+                const moduleData = window.moduleGenerator.generateModules(
+                    onboardingData.organizationType,
+                    onboardingData.industryFocus,
+                    { customTracksEnabled: onboardingData.customTracksEnabled }
+                );
+
+                moduleData.stages = window.moduleGenerator.generateStages(onboardingData.organizationType);
+                moduleData.badges = window.moduleGenerator.generateBadges(onboardingData.organizationType);
+                moduleData.milestones = window.moduleGenerator.generateMilestones(moduleData.stages, moduleData.totalModules);
+
+                const snapshot = await window.snapshotBuilder.buildSnapshot(onboardingData, moduleData);
+                const filename = `${onboardingData.slug}-snapshot-${Date.now()}.json`;
+
+                window.zipExporter.exportSnapshotOnly(snapshot, filename);
+                setStatus('Snapshot downloaded!', 'success');
+            } catch (error) {
+                console.error(error);
+                setStatus('Error exporting snapshot: ' + error.message, 'error');
+            }
+        }
+
+        async function generateZIP() {
+            setStatus('Generating ZIP package...', 'loading');
+            try {
+                const moduleData = window.moduleGenerator.generateModules(
+                    onboardingData.organizationType,
+                    onboardingData.industryFocus,
+                    { customTracksEnabled: onboardingData.customTracksEnabled }
+                );
+
+                moduleData.stages = window.moduleGenerator.generateStages(onboardingData.organizationType);
+                moduleData.badges = window.moduleGenerator.generateBadges(onboardingData.organizationType);
+                moduleData.milestones = window.moduleGenerator.generateMilestones(moduleData.stages, moduleData.totalModules);
+
+                const snapshot = await window.snapshotBuilder.buildSnapshot(onboardingData, moduleData);
+                const demoHTML = await window.demoCompiler.compileDemo(onboardingData, moduleData, snapshot);
+                const filename = window.zipExporter.generateFilename(onboardingData.slug);
+
+                const result = await window.zipExporter.downloadZIP(demoHTML, snapshot, filename);
+
+                if (result.success) {
+                    const sizeKB = (result.size / 1024).toFixed(2);
+                    setStatus(`ZIP downloaded! (${sizeKB} KB)`, 'success');
+                } else {
+                    setStatus('Error: ' + result.error, 'error');
+                }
+            } catch (error) {
+                console.error(error);
+                setStatus('Error generating ZIP: ' + error.message, 'error');
+            }
+        }
+
+        function setStatus(message, type) {
+            const statusEl = document.getElementById('generation-status');
+            statusEl.textContent = message;
+
+            statusEl.className = 'mt-4 text-sm text-center';
+            if (type === 'loading') {
+                statusEl.classList.add('text-yellow-500');
+            } else if (type === 'success') {
+                statusEl.classList.add('text-green-500');
+            } else if (type === 'error') {
+                statusEl.classList.add('text-red-500');
+            }
+        }
+
+        function restart() {
+            if (confirm('Are you sure you want to start over? All progress will be lost.')) {
+                location.reload();
+            }
+        }
+    </script>
+</body>
+</html>
