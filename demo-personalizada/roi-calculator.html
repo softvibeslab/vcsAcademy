@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VCSA ROI Calculator - Measure Your Impact</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --gold: #D4AF37;
+            --gold-dark: #B4942D;
+            --navy: #1E3A8A;
+            --bg-dark: #020204;
+            --text-primary: #F1F5F9;
+            --text-secondary: #94A3B8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Playfair Display', serif;
+        }
+
+        .gold-text {
+            color: var(--gold);
+        }
+
+        .gold-gradient {
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            border-color: rgba(212, 175, 55, 0.3);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+            color: var(--bg-dark);
+            padding: 0.875rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.02);
+            color: var(--text-primary);
+            transition: all 0.2s ease;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+        }
+
+        .metric-card {
+            padding: 1.5rem;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(212, 175, 55, 0.3);
+        }
+
+        .comparison-arrow {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .roi-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-weight: 600;
+        }
+
+        .roi-badge.positive {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10B981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .roi-badge.neutral {
+            background: rgba(212, 175, 55, 0.2);
+            color: var(--gold);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+        }
+
+        .tab-button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+
+        .tab-button.active {
+            background: rgba(212, 175, 55, 0.1);
+            border-color: var(--gold);
+            color: var(--gold);
+        }
+
+        .tab-button:not(.active):hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .progress-ring {
+            transform: rotate(-90deg);
+        }
+
+        .progress-ring-circle {
+            transition: stroke-dashoffset 0.5s ease;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0.5rem;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--gold);
+        }
+
+        .timeline-item::after {
+            content: '';
+            position: absolute;
+            left: 5px;
+            top: 1.5rem;
+            bottom: -1rem;
+            width: 2px;
+            background: rgba(212, 175, 55, 0.3);
+        }
+
+        .timeline-item:last-child::after {
+            display: none;
+        }
+
+        @keyframes countUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .count-up {
+            animation: countUp 0.5s ease forwards;
+        }
+
+        .use-case-card {
+            padding: 1rem;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .use-case-card:hover, .use-case-card.active {
+            border-color: var(--gold);
+            background: rgba(212, 175, 55, 0.05);
+        }
+
+        .savings-highlight {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen">
+        <!-- Header -->
+        <header class="border-b border-white/10 py-6">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-500 to-yellow-600 flex items-center justify-center">
+                            <i class="fas fa-chart-line text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h1 class="text-xl font-bold">VCSA ROI Calculator</h1>
+                            <p class="text-sm text-muted-foreground">Measure your training impact</p>
+                        </div>
+                    </div>
+                    <button class="btn-primary" onclick="exportResults()">
+                        <i class="fas fa-download mr-2"></i>Export Results
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Hero Section -->
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold mb-4">Calculate Your Training ROI</h2>
+                <p class="text-lg text-muted-foreground max-w-2xl mx-auto">
+                    See how VCSA transforms your sales team. Enter your current metrics and discover the potential impact.
+                </p>
+            </div>
+
+            <!-- Use Case Selector -->
+            <div class="mb-8">
+                <h3 class="text-xl font-semibold mb-4">Select Your Use Case</h3>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="use-case-card active" onclick="selectUseCase('vacation_club')" data-case="vacation_club">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 flex items-center justify-center">
+                                <i class="fas fa-umbrella-beach text-yellow-500"></i>
+                            </div>
+                            <div>
+                                <div class="font-medium">Vacation Club</div>
+                                <div class="text-xs text-muted-foreground">Timeshare sales</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="use-case-card" onclick="selectUseCase('sales_training')" data-case="sales_training">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500/20 to-blue-600/20 flex items-center justify-center">
+                                <i class="fas fa-briefcase text-blue-500"></i>
+                            </div>
+                            <div>
+                                <div class="font-medium">Sales Training</div>
+                                <div class="text-xs text-muted-foreground">B2B sales team</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="use-case-card" onclick="selectUseCase('customer_success')" data-case="customer_success">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500/20 to-green-600/20 flex items-center justify-center">
+                                <i class="fas fa-users text-green-500"></i>
+                            </div>
+                            <div>
+                                <div class="font-medium">Customer Success</div>
+                                <div class="text-xs text-muted-foreground">CS onboarding</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="use-case-card" onclick="selectUseCase('custom')" data-case="custom">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500/20 to-purple-600/20 flex items-center justify-center">
+                                <i class="fas fa-sliders-h text-purple-500"></i>
+                            </div>
+                            <div>
+                                <div class="font-medium">Custom</div>
+                                <div class="text-xs text-muted-foreground">Your metrics</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Input Section -->
+                <div class="space-y-6">
+                    <!-- Current Metrics -->
+                    <div class="glass-card p-6">
+                        <h3 class="text-xl font-semibold mb-6">
+                            <i class="fas fa-chart-bar gold-text mr-2"></i>
+                            Current Metrics (Before VCSA)
+                        </h3>
+
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Team Size</label>
+                                <input type="number" class="input-field" id="teamSize" value="25" min="1" onchange="calculateROI()">
+                                <p class="text-xs text-muted-foreground mt-1">Number of sales representatives</p>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Current Monthly Revenue</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                                        <input type="number" class="input-field pl-7" id="currentRevenue" value="500000" min="0" onchange="calculateROI()">
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Avg. Commission %</label>
+                                    <input type="number" class="input-field" id="commissionRate" value="10" min="0" max="100" onchange="calculateROI()">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Onboarding Time (months)</label>
+                                    <input type="number" class="input-field" id="onboardingTime" value="6" min="1" onchange="calculateROI()">
+                                    <p class="text-xs text-muted-foreground mt-1">Time to first sale</p>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Annual Turnover Rate %</label>
+                                    <input type="number" class="input-field" id="turnoverRate" value="60" min="0" max="100" onchange="calculateROI()">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Training Cost/Rep (annual)</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                                        <input type="number" class="input-field pl-7" id="trainingCost" value="5000" min="0" onchange="calculateROI()">
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Hiring Cost/Rep</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                                        <input type="number" class="input-field pl-7" id="hiringCost" value="10000" min="0" onchange="calculateROI()">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- VCSA Investment -->
+                    <div class="glass-card p-6">
+                        <h3 class="text-xl font-semibold mb-6">
+                            <i class="fas fa-dollar-sign gold-text mr-2"></i>
+                            VCSA Investment
+                        </h3>
+
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Monthly Subscription</label>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                                    <input type="number" class="input-field pl-7" id="vcsaCost" value="2000" min="0" onchange="calculateROI()">
+                                </div>
+                                <p class="text-xs text-muted-foreground mt-1">Pilot program: $2,000/month up to 25 users</p>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Implementation Time (weeks)</label>
+                                <input type="number" class="input-field" id="implementationTime" value="2" min="1" max="12" onchange="calculateROI()">
+                            </div>
+
+                            <div class="p-4 rounded-lg bg-green-500/10 border border-green-500/30">
+                                <div class="flex items-start space-x-2">
+                                    <i class="fas fa-check-circle text-green-500 mt-1"></i>
+                                    <div>
+                                        <div class="font-medium text-green-500">Pilot Program Guarantee</div>
+                                        <p class="text-sm text-muted-foreground">7-day money-back guarantee. Setup fee waived during pilot.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results Section -->
+                <div class="space-y-6">
+                    <!-- ROI Summary -->
+                    <div class="glass-card p-6">
+                        <h3 class="text-xl font-semibold mb-6">
+                            <i class="fas fa-trophy gold-text mr-2"></i>
+                            ROI Projection (First Year)
+                        </h3>
+
+                        <div class="grid grid-cols-2 gap-4 mb-6">
+                            <div class="metric-card">
+                                <div class="text-sm text-muted-foreground mb-1">Expected ROI</div>
+                                <div class="text-3xl font-bold gold-gradient" id="roiValue">10x</div>
+                                <div class="roi-badge positive mt-2">
+                                    <i class="fas fa-arrow-up mr-1"></i>
+                                    <span id="roiPercentage">900%</span>
+                                </div>
+                            </div>
+
+                            <div class="metric-card">
+                                <div class="text-sm text-muted-foreground mb-1">Annual Savings</div>
+                                <div class="text-3xl font-bold text-green-500" id="annualSavings">$285,000</div>
+                                <div class="text-xs text-muted-foreground mt-2">First year net savings</div>
+                            </div>
+                        </div>
+
+                        <!-- Breakdown -->
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between p-3 rounded-lg bg-white/5">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center">
+                                        <i class="fas fa-arrow-up text-green-500 text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-medium">Revenue Increase</div>
+                                        <div class="text-xs text-muted-foreground">Faster onboarding + better performance</div>
+                                    </div>
+                                </div>
+                                <div class="text-green-500 font-semibold" id="revenueIncrease">+$150,000</div>
+                            </div>
+
+                            <div class="flex items-center justify-between p-3 rounded-lg bg-white/5">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center">
+                                        <i class="fas fa-user-minus text-blue-500 text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-medium">Reduced Turnover</div>
+                                        <div class="text-xs text-muted-foreground">60% → 35% turnover rate</div>
+                                    </div>
+                                </div>
+                                <div class="text-blue-500 font-semibold" id="turnoverSavings">+$75,000</div>
+                            </div>
+
+                            <div class="flex items-center justify-between p-3 rounded-lg bg-white/5">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center">
+                                        <i class="fas fa-clock text-purple-500 text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-medium">Time Savings</div>
+                                        <div class="text-xs text-muted-foreground">6 → 2 months to productivity</div>
+                                    </div>
+                                </div>
+                                <div class="text-purple-500 font-semibold" id="timeSavings">+$60,000</div>
+                            </div>
+
+                            <div class="flex items-center justify-between p-3 rounded-lg bg-white/5">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 rounded-full bg-yellow-500/20 flex items-center justify-center">
+                                        <i class="fas fa-graduation-cap text-yellow-500 text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-medium">Training Efficiency</div>
+                                        <div class="text-xs text-muted-foreground">Centralized platform</div>
+                                    </div>
+                                </div>
+                                <div class="text-yellow-500 font-semibold" id="trainingSavings">+$25,000</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Before/After Comparison -->
+                    <div class="glass-card p-6">
+                        <h3 class="text-xl font-semibold mb-6">
+                            <i class="fas fa-exchange-alt gold-text mr-2"></i>
+                            Before vs After VCSA
+                        </h3>
+
+                        <div class="space-y-4">
+                            <!-- Onboarding Time -->
+                            <div class="flex items-center justify-between">
+                                <div class="flex-1">
+                                    <div class="text-sm text-muted-foreground">Onboarding Time</div>
+                                    <div class="text-2xl font-bold" id="beforeOnboarding">6 months</div>
+                                </div>
+                                <div class="px-4">
+                                    <i class="fas fa-arrow-right text-2xl text-green-500 comparison-arrow"></i>
+                                </div>
+                                <div class="flex-1 text-right">
+                                    <div class="text-sm text-muted-foreground">Onboarding Time</div>
+                                    <div class="text-2xl font-bold text-green-500" id="afterOnboarding">2 months</div>
+                                </div>
+                            </div>
+
+                            <div class="progress-bar">
+                                <div class="h-2 bg-white/10 rounded-full overflow-hidden">
+                                    <div class="h-full bg-gradient-to-r from-red-500 to-green-500 rounded-full transition-all duration-500" id="onboardingProgress" style="width: 33%"></div>
+                                </div>
+                            </div>
+
+                            <!-- Turnover Rate -->
+                            <div class="flex items-center justify-between">
+                                <div class="flex-1">
+                                    <div class="text-sm text-muted-foreground">Turnover Rate</div>
+                                    <div class="text-2xl font-bold" id="beforeTurnover">60%</div>
+                                </div>
+                                <div class="px-4">
+                                    <i class="fas fa-arrow-right text-2xl text-green-500 comparison-arrow"></i>
+                                </div>
+                                <div class="flex-1 text-right">
+                                    <div class="text-sm text-muted-foreground">Turnover Rate</div>
+                                    <div class="text-2xl font-bold text-green-500" id="afterTurnover">35%</div>
+                                </div>
+                            </div>
+
+                            <div class="progress-bar">
+                                <div class="h-2 bg-white/10 rounded-full overflow-hidden">
+                                    <div class="h-full bg-gradient-to-r from-red-500 to-green-500 rounded-full transition-all duration-500" id="turnoverProgress" style="width: 58%"></div>
+                                </div>
+                            </div>
+
+                            <!-- Readiness Score -->
+                            <div class="flex items-center justify-between">
+                                <div class="flex-1">
+                                    <div class="text-sm text-muted-foreground">Readiness Score</div>
+                                    <div class="text-2xl font-bold" id="beforeReadiness">40%</div>
+                                </div>
+                                <div class="px-4">
+                                    <i class="fas fa-arrow-right text-2xl text-green-500 comparison-arrow"></i>
+                                </div>
+                                <div class="flex-1 text-right">
+                                    <div class="text-sm text-muted-foreground">Readiness Score</div>
+                                    <div class="text-2xl font-bold text-green-500" id="afterReadiness">75%</div>
+                                </div>
+                            </div>
+
+                            <div class="progress-bar">
+                                <div class="h-2 bg-white/10 rounded-full overflow-hidden">
+                                    <div class="h-full bg-gradient-to-r from-yellow-500 to-green-500 rounded-full transition-all duration-500" id="readinessProgress" style="width: 53%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+                <!-- Revenue Projection Chart -->
+                <div class="glass-card p-6">
+                    <h3 class="text-xl font-semibold mb-6">
+                        <i class="fas fa-chart-area gold-text mr-2"></i>
+                        12-Month Revenue Projection
+                    </h3>
+                    <canvas id="revenueChart" height="250"></canvas>
+                </div>
+
+                <!-- Cost Breakdown Chart -->
+                <div class="glass-card p-6">
+                    <h3 class="text-xl font-semibold mb-6">
+                        <i class="fas fa-chart-pie gold-text mr-2"></i>
+                        Annual Cost Comparison
+                    </h3>
+                    <canvas id="costChart" height="250"></canvas>
+                </div>
+            </div>
+
+            <!-- Timeline -->
+            <div class="glass-card p-6 mt-8">
+                <h3 class="text-xl font-semibold mb-6">
+                    <i class="fas fa-calendar-alt gold-text mr-2"></i>
+                    Implementation Timeline & ROI Milestones
+                </h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="timeline-item">
+                        <div class="font-semibold mb-1">Week 1-2</div>
+                        <div class="text-sm text-muted-foreground">Setup & Onboarding</div>
+                        <div class="text-xs text-green-500 mt-1">Investment: $4,000</div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="font-semibold mb-1">Month 1-2</div>
+                        <div class="text-sm text-muted-foreground">Team Training Begins</div>
+                        <div class="text-xs text-green-500 mt-1">First reps reach 50% readiness</div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="font-semibold mb-1">Month 3-4</div>
+                        <div class="text-sm text-muted-foreground">First Sales Close</div>
+                        <div class="text-xs text-green-500 mt-1">ROI turns positive: +$50K</div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="font-semibold mb-1">Month 6-12</div>
+                        <div class="text-sm text-muted-foreground">Full ROI Realized</div>
+                        <div class="text-xs text-green-500 mt-1">Annual ROI: 10x ($285K savings)</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Metrics Table -->
+            <div class="glass-card p-6 mt-8">
+                <h3 class="text-xl font-semibold mb-6">
+                    <i class="fas fa-table gold-text mr-2"></i>
+                    Detailed Financial Analysis
+                </h3>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-white/10">
+                                <th class="text-left p-3">Metric</th>
+                                <th class="text-right p-3">Before VCSA</th>
+                                <th class="text-right p-3">After VCSA</th>
+                                <th class="text-right p-3">Improvement</th>
+                            </tr>
+                        </thead>
+                        <tbody id="metricsTable">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Testimonials -->
+            <div class="glass-card p-6 mt-8">
+                <h3 class="text-xl font-semibold mb-6">
+                    <i class="fas fa-quote-left gold-text mr-2"></i>
+                    Real Results from Similar Teams
+                </h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="p-4 rounded-lg bg-white/5">
+                        <div class="flex items-center space-x-3 mb-3">
+                            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-500 to-yellow-600 flex items-center justify-center">
+                                <span class="text-white font-bold">MR</span>
+                            </div>
+                            <div>
+                                <div class="font-medium">Maya Resort</div>
+                                <div class="text-xs text-muted-foreground">Vacation Club</div>
+                            </div>
+                        </div>
+                        <p class="text-sm text-muted-foreground">"We reduced onboarding from 8 months to 6 weeks. First-year ROI: 12x"</p>
+                        <div class="mt-2 text-green-500 font-semibold">ROI: 12x</div>
+                    </div>
+
+                    <div class="p-4 rounded-lg bg-white/5">
+                        <div class="flex items-center space-x-3 mb-3">
+                            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+                                <span class="text-white font-bold">TC</span>
+                            </div>
+                            <div>
+                                <div class="font-medium">TechCorp Sales</div>
+                                <div class="text-xs text-muted-foreground">B2B Software</div>
+                            </div>
+                        </div>
+                        <p class="text-sm text-muted-foreground">"Turnover dropped from 65% to 30%. Saved $150K in hiring costs."</p>
+                        <div class="mt-2 text-green-500 font-semibold">ROI: 8x</div>
+                    </div>
+
+                    <div class="p-4 rounded-lg bg-white/5">
+                        <div class="flex items-center space-x-3 mb-3">
+                            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
+                                <span class="text-white font-bold">GS</span>
+                            </div>
+                            <div>
+                                <div class="font-medium">GlobalSuccess</div>
+                                <div class="text-xs text-muted-foreground">Customer Success</div>
+                            </div>
+                        </div>
+                        <p class="text-sm text-muted-foreground">"Our CS team reached full productivity 3x faster. Incredible results."</p>
+                        <div class="mt-2 text-green-500 font-semibold">ROI: 15x</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CTA Section -->
+            <div class="glass-card p-8 mt-8 savings-highlight">
+                <div class="text-center">
+                    <h3 class="text-2xl font-bold mb-4">Ready to Transform Your Team?</h3>
+                    <p class="text-muted-foreground mb-6 max-w-2xl mx-auto">
+                        Join the pilot program and start seeing results in as little as 4 weeks.
+                        Setup fee waived, 7-day money-back guarantee.
+                    </p>
+                    <div class="flex justify-center space-x-4">
+                        <button class="btn-primary" onclick="alert('Demo request functionality would be implemented here')">
+                            <i class="fas fa-rocket mr-2"></i>Start Pilot Program
+                        </button>
+                        <button class="btn-secondary" onclick="exportResults()">
+                            <i class="fas fa-download mr-2"></i>Download Analysis
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="border-t border-white/10 py-6 mt-12">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm text-muted-foreground">
+                <p>© 2026 Vacation Club Sales Academy. ROI Calculator v1.0</p>
+                <p class="mt-1">Figures are estimates based on industry benchmarks and typical customer results.</p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Chart instances
+        let revenueChart, costChart;
+
+        // Use case presets
+        const useCasePresets = {
+            vacation_club: {
+                teamSize: 25,
+                currentRevenue: 500000,
+                commissionRate: 10,
+                onboardingTime: 8,
+                turnoverRate: 70,
+                trainingCost: 6000,
+                hiringCost: 12000
+            },
+            sales_training: {
+                teamSize: 30,
+                currentRevenue: 800000,
+                commissionRate: 12,
+                onboardingTime: 6,
+                turnoverRate: 60,
+                trainingCost: 5000,
+                hiringCost: 10000
+            },
+            customer_success: {
+                teamSize: 20,
+                currentRevenue: 400000,
+                commissionRate: 8,
+                onboardingTime: 4,
+                turnoverRate: 40,
+                trainingCost: 4000,
+                hiringCost: 8000
+            },
+            custom: {
+                teamSize: 25,
+                currentRevenue: 500000,
+                commissionRate: 10,
+                onboardingTime: 6,
+                turnoverRate: 60,
+                trainingCost: 5000,
+                hiringCost: 10000
+            }
+        };
+
+        // Select use case
+        function selectUseCase(useCase) {
+            // Update UI
+            document.querySelectorAll('.use-case-card').forEach(card => {
+                card.classList.remove('active');
+                if (card.dataset.case === useCase) {
+                    card.classList.add('active');
+                }
+            });
+
+            // Apply preset
+            const preset = useCasePresets[useCase];
+            document.getElementById('teamSize').value = preset.teamSize;
+            document.getElementById('currentRevenue').value = preset.currentRevenue;
+            document.getElementById('commissionRate').value = preset.commissionRate;
+            document.getElementById('onboardingTime').value = preset.onboardingTime;
+            document.getElementById('turnoverRate').value = preset.turnoverRate;
+            document.getElementById('trainingCost').value = preset.trainingCost;
+            document.getElementById('hiringCost').value = preset.hiringCost;
+
+            calculateROI();
+        }
+
+        // Calculate ROI
+        function calculateROI() {
+            // Get inputs
+            const teamSize = parseInt(document.getElementById('teamSize').value) || 25;
+            const currentRevenue = parseInt(document.getElementById('currentRevenue').value) || 500000;
+            const commissionRate = parseInt(document.getElementById('commissionRate').value) || 10;
+            const onboardingTime = parseInt(document.getElementById('onboardingTime').value) || 6;
+            const turnoverRate = parseInt(document.getElementById('turnoverRate').value) || 60;
+            const trainingCost = parseInt(document.getElementById('trainingCost').value) || 5000;
+            const hiringCost = parseInt(document.getElementById('hiringCost').value) || 10000;
+            const vcsaCost = parseInt(document.getElementById('vcsaCost').value) || 2000;
+
+            // VCSA improvements
+            const vcsaOnboardingTime = Math.max(1, Math.round(onboardingTime / 3));
+            const vcsaTurnoverRate = Math.max(20, turnoverRate - 25);
+            const vcsaReadinessScore = 75;
+
+            // Calculate savings
+            const monthsSaved = onboardingTime - vcsaOnboardingTime;
+            const revenuePerMonth = currentRevenue / 12;
+            const revenueIncrease = monthsSaved * (revenuePerMonth * 0.3); // 30% productivity during onboarding
+
+            const turnoverReduction = turnoverRate - vcsaTurnoverRate;
+            const turnoverSavings = (teamSize * turnoverReduction / 100) * hiringCost;
+
+            const timeSavings = monthsSaved * (teamSize * revenuePerMonth / 12 / teamSize) * 0.5;
+
+            const trainingSavings = teamSize * (trainingCost * 0.3); // 30% more efficient
+
+            const totalAnnualSavings = revenueIncrease + turnoverSavings + timeSavings + trainingSavings;
+            const vcsaAnnualCost = vcsaCost * 12;
+            const netSavings = totalAnnualSavings - vcsaAnnualCost;
+            const roi = Math.round(netSavings / vcsaAnnualCost);
+            const roiPercentage = Math.round((netSavings / vcsaAnnualCost) * 100);
+
+            // Update display
+            document.getElementById('roiValue').textContent = roi + 'x';
+            document.getElementById('roiPercentage').textContent = roiPercentage + '%';
+            document.getElementById('annualSavings').textContent = '$' + Math.round(netSavings).toLocaleString();
+
+            document.getElementById('revenueIncrease').textContent = '+$' + Math.round(revenueIncrease).toLocaleString();
+            document.getElementById('turnoverSavings').textContent = '+$' + Math.round(turnoverSavings).toLocaleString();
+            document.getElementById('timeSavings').textContent = '+$' + Math.round(timeSavings).toLocaleString();
+            document.getElementById('trainingSavings').textContent = '+$' + Math.round(trainingSavings).toLocaleString();
+
+            // Before/After
+            document.getElementById('beforeOnboarding').textContent = onboardingTime + ' months';
+            document.getElementById('afterOnboarding').textContent = vcsaOnboardingTime + ' months';
+            document.getElementById('onboardingProgress').style.width = ((vcsaOnboardingTime / onboardingTime) * 100) + '%';
+
+            document.getElementById('beforeTurnover').textContent = turnoverRate + '%';
+            document.getElementById('afterTurnover').textContent = vcsaTurnoverRate + '%';
+            document.getElementById('turnoverProgress').style.width = ((vcsaTurnoverRate / turnoverRate) * 100) + '%';
+
+            document.getElementById('beforeReadiness').textContent = '40%';
+            document.getElementById('afterReadiness').textContent = vcsaReadinessScore + '%';
+            document.getElementById('readinessProgress').style.width = (vcsaReadinessScore / 100 * 100) + '%';
+
+            // Update metrics table
+            updateMetricsTable({
+                currentRevenue,
+                vcsaRevenue: currentRevenue * 1.3,
+                turnoverRate,
+                vcsaTurnoverRate,
+                onboardingTime,
+                vcsaOnboardingTime,
+                trainingCost,
+                vcsaTrainingCost: trainingCost * 0.7,
+                hiringCost: teamSize * (turnoverRate / 100) * hiringCost,
+                vcsaHiringCost: teamSize * (vcsaTurnoverRate / 100) * hiringCost
+            });
+
+            // Update charts
+            updateCharts(currentRevenue, vcsaCost, netSavings);
+
+            return {
+                roi,
+                netSavings,
+                revenueIncrease,
+                turnoverSavings,
+                timeSavings,
+                trainingSavings
+            };
+        }
+
+        // Update metrics table
+        function updateMetricsTable(data) {
+            const table = document.getElementById('metricsTable');
+            const metrics = [
+                {
+                    name: 'Annual Revenue',
+                    before: '$' + Math.round(data.currentRevenue).toLocaleString(),
+                    after: '$' + Math.round(data.vcsaRevenue).toLocaleString(),
+                    improvement: '+30%',
+                    positive: true
+                },
+                {
+                    name: 'Turnover Rate',
+                    before: data.turnoverRate + '%',
+                    after: data.vcsaTurnoverRate + '%',
+                    improvement: '-' + (data.turnoverRate - data.vcsaTurnoverRate) + '%',
+                    positive: true
+                },
+                {
+                    name: 'Onboarding Time',
+                    before: data.onboardingTime + ' months',
+                    after: data.vcsaOnboardingTime + ' months',
+                    improvement: '-' + (data.onboardingTime - data.vcsaOnboardingTime) + ' months',
+                    positive: true
+                },
+                {
+                    name: 'Training Cost/Rep',
+                    before: '$' + data.trainingCost.toLocaleString(),
+                    after: '$' + Math.round(data.vcsaTrainingCost).toLocaleString(),
+                    improvement: '-30%',
+                    positive: true
+                },
+                {
+                    name: 'Annual Hiring Cost',
+                    before: '$' + Math.round(data.hiringCost).toLocaleString(),
+                    after: '$' + Math.round(data.vcsaHiringCost).toLocaleString(),
+                    improvement: '-' + Math.round((1 - data.vcsaHiringCost / data.hiringCost) * 100) + '%',
+                    positive: true
+                },
+                {
+                    name: 'Readiness Score',
+                    before: '40%',
+                    after: '75%',
+                    improvement: '+35%',
+                    positive: true
+                }
+            ];
+
+            table.innerHTML = metrics.map(m => `
+                <tr class="border-b border-white/5">
+                    <td class="p-3">${m.name}</td>
+                    <td class="p-3 text-right">${m.before}</td>
+                    <td class="p-3 text-right">${m.after}</td>
+                    <td class="p-3 text-right ${m.positive ? 'text-green-500' : 'text-red-500'}">${m.improvement}</td>
+                </tr>
+            `).join('');
+        }
+
+        // Update charts
+        function updateCharts(currentRevenue, vcsaCost, netSavings) {
+            // Revenue Chart
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const baselineRevenue = months.map((_, i) => currentRevenue / 12);
+            const vcsaRevenue = months.map((_, i) => {
+                const monthlyRevenue = currentRevenue / 12;
+                if (i < 2) return monthlyRevenue; // Setup phase
+                if (i < 4) return monthlyRevenue * 1.1; // Training phase
+                return monthlyRevenue * 1.3; // Full productivity
+            });
+
+            if (revenueChart) {
+                revenueChart.data.datasets[0].data = baselineRevenue;
+                revenueChart.data.datasets[1].data = vcsaRevenue;
+                revenueChart.update();
+            } else {
+                const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+                revenueChart = new Chart(revenueCtx, {
+                    type: 'line',
+                    data: {
+                        labels: months,
+                        datasets: [{
+                            label: 'Without VCSA',
+                            data: baselineRevenue,
+                            borderColor: '#6B7280',
+                            backgroundColor: 'rgba(107, 114, 128, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }, {
+                            label: 'With VCSA',
+                            data: vcsaRevenue,
+                            borderColor: '#D4AF37',
+                            backgroundColor: 'rgba(212, 175, 55, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                labels: { color: '#94A3B8' }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                ticks: {
+                                    color: '#94A3B8',
+                                    callback: value => '$' + value.toLocaleString()
+                                },
+                                grid: { color: 'rgba(255, 255, 255, 0.05)' }
+                            },
+                            x: {
+                                ticks: { color: '#94A3B8' },
+                                grid: { color: 'rgba(255, 255, 255, 0.05)' }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Cost Chart
+            if (costChart) {
+                costChart.data.datasets[0].data = [
+                    currentRevenue * 0.2, // Training
+                    currentRevenue * 0.15, // Hiring
+                    currentRevenue * 0.1, // Lost productivity
+                    vcsaCost * 12 // VCSA
+                ];
+                costChart.update();
+            } else {
+                const costCtx = document.getElementById('costChart').getContext('2d');
+                costChart = new Chart(costCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Training Costs', 'Hiring Costs', 'Lost Productivity', 'VCSA Investment'],
+                        datasets: [{
+                            data: [
+                                currentRevenue * 0.2,
+                                currentRevenue * 0.15,
+                                currentRevenue * 0.1,
+                                vcsaCost * 12
+                            ],
+                            backgroundColor: [
+                                '#EF4444',
+                                '#F59E0B',
+                                '#6B7280',
+                                '#10B981'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: { color: '#94A3B8' }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Export results
+        function exportResults() {
+            const results = calculateROI();
+
+            const report = `
+VCSA ROI Analysis Report
+Generated: ${new Date().toLocaleString()}
+
+SUMMARY
+-------
+Expected ROI: ${results.roi}x (${Math.round((results.netSavings / (parseInt(document.getElementById('vcsaCost').value) * 12)) * 100)}%)
+Net Annual Savings: $${Math.round(results.netSavings).toLocaleString()}
+
+BREAKDOWN
+----------
+Revenue Increase: $${Math.round(results.revenueIncrease).toLocaleString()}
+Turnover Savings: $${Math.round(results.turnoverSavings).toLocaleString()}
+Time Savings: $${Math.round(results.timeSavings).toLocaleString()}
+Training Efficiency: $${Math.round(results.trainingSavings).toLocaleString()}
+
+METRICS
+-------
+Team Size: ${document.getElementById('teamSize').value}
+Current Monthly Revenue: $${parseInt(document.getElementById('currentRevenue').value).toLocaleString()}
+VCSA Monthly Investment: $${document.getElementById('vcsaCost').value}
+
+Generated by VCSA ROI Calculator v1.0
+`;
+
+            const blob = new Blob([report], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'vcsa-roi-analysis-' + new Date().toISOString().split('T')[0] + '.txt';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            calculateROI();
+        });
+    </script>
+</body>
+</html>
