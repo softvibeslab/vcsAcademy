@@ -1,0 +1,1364 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VCSA - Propuesta DFY | Riviera Maya</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/@vapi-ai/client-sdk-react/dist/embed/widget.umd.js" async type="text/javascript"></script>
+    <style>
+        :root {
+            /* Blueprint Modern Tech Palette */
+            --primary: #8B5CF6;
+            --primary-light: #A78BFA;
+            --secondary: #EC4899;
+            --accent: #06B6D4;
+            --bg-dark: #0F0F1A;
+            --bg-card: #1A1A2E;
+            --text-primary: #FFFFFF;
+            --text-secondary: #A0AEC0;
+            --gradient-main: linear-gradient(135deg, #8B5CF6 0%, #EC4899 50%, #06B6D4 100%);
+            --gradient-glow: linear-gradient(135deg, rgba(139, 92, 246, 0.3) 0%, rgba(236, 72, 153, 0.3) 50%, rgba(6, 182, 212, 0.3) 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .gold-text {
+            color: var(--primary-light);
+        }
+
+        .gradient-text {
+            background: var(--gradient-main);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .glass-card {
+            background: rgba(26, 26, 46, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 16px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: var(--gradient-main);
+            opacity: 0.5;
+        }
+
+        .glass-card:hover {
+            border-color: rgba(139, 92, 246, 0.4);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 60px var(--gradient-glow);
+        }
+
+        .gold-glow {
+            box-shadow: 0 0 80px var(--gradient-glow);
+        }
+
+        .gold-border {
+            border: 2px solid transparent;
+            background-image: var(--gradient-main), var(--gradient-main);
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+        }
+
+        .section-divider {
+            height: 1px;
+            background: var(--gradient-main);
+            margin: 4rem 0;
+            opacity: 0.3;
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(139, 92, 246, 0.1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .pricing-card {
+            background: rgba(26, 26, 46, 0.6);
+            border: 2px solid rgba(139, 92, 246, 0.3);
+        }
+
+        .pricing-card.featured {
+            border: 2px solid transparent;
+            background-image: var(--gradient-main), var(--gradient-main);
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+            box-shadow: 0 0 80px var(--gradient-glow);
+        }
+
+        .checkmark {
+            background: var(--gradient-main);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: bold;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0.5rem;
+            width: 12px;
+            height: 12px;
+            background: var(--gold);
+            border-radius: 50%;
+        }
+
+        .timeline-item::after {
+            content: '';
+            position: absolute;
+            left: 5px;
+            top: 1.5rem;
+            width: 2px;
+            height: calc(100% - 0.5rem);
+            background: rgba(212, 175, 55, 0.3);
+        }
+
+        .timeline-item:last-child::after {
+            display: none;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+        .delay-4 { animation-delay: 0.4s; }
+
+        @media print {
+            body {
+                background: white;
+                color: black;
+            }
+            .glass-card {
+                background: white;
+                border: 1px solid #ddd;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <header class="min-h-screen flex items-center justify-center relative overflow-hidden">
+        <div class="absolute inset-0" style="background: var(--bg-dark);"></div>
+        <div class="absolute top-0 left-1/4 w-96 h-96 rounded-full blur-3xl" style="background: var(--gradient-glow);"></div>
+        <div class="absolute bottom-0 right-1/4 w-96 h-96 rounded-full blur-3xl" style="background: var(--gradient-glow);"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full blur-3xl" style="background: rgba(139, 92, 246, 0.1);"></div>
+
+        <div class="container mx-auto px-6 relative z-10">
+            <div class="text-center max-w-5xl mx-auto">
+                <div class="mb-6">
+                    <span class="text-xs uppercase tracking-[0.3em] gold-text">Propuesta Comercial DFY</span>
+                </div>
+                <h1 class="text-5xl md:text-7xl font-bold mb-6 animate-fade-in">
+                    <span class="gradient-text">VCSA</span> para tu Equipo
+                </h1>
+                <p class="text-xl md:text-2xl text-[#A0AEC0] mb-4 animate-fade-in delay-1">
+                    Vacation Club Sales Academy
+                </p>
+                <p class="text-lg text-[#A0AEC0] mb-8 animate-fade-in delay-2">
+                    Plataforma de Capacitación y Herramienta Diaria para Equipos de Ventas en Riviera Maya
+                </p>
+
+                <!-- Podcast CTA Button -->
+                <div class="mb-12 animate-fade-in delay-2">
+                    <button id="podcastButton" class="group bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold py-4 px-8 rounded-full text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center justify-center mx-auto space-x-3" style="box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+                        <div class="relative">
+                            <i class="fas fa-play-circle text-2xl group-hover:scale-110 transition-transform duration-300"></i>
+                            <div id="pulseRing" class="absolute inset-0 rounded-full border-2 border-white opacity-75 animate-ping"></div>
+                        </div>
+                        <span>🎧 Escuchar Propuesta en Podcast</span>
+                    </button>
+                    <p class="text-sm text-[#A0AEC0] mt-3 max-w-md mx-auto text-center">Descubre todos los detalles de nuestra propuesta estratégica en formato audio</p>
+                </div>
+
+                <div class="grid md:grid-cols-3 gap-6 mt-12 animate-fade-in delay-3">
+                    <div class="glass-card p-6">
+                        <div class="stat-number gold-gradient">200</div>
+                        <p class="text-[#94A3B8] mt-2">Usuarios Capacitados</p>
+                    </div>
+                    <div class="glass-card p-6">
+                        <div class="stat-number gold-gradient">4</div>
+                        <p class="text-[#94A3B8] mt-2">Semanas de Onboarding</p>
+                    </div>
+                    <div class="glass-card p-6">
+                        <div class="stat-number gold-gradient">10x</div>
+                        <p class="text-[#94A3B8] mt-2">ROI Proyectado</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce">
+            <svg class="w-6 h-6 text-[#D4AF37]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+            </svg>
+        </div>
+    </header>
+
+    <!-- Video Section -->
+    <section class="py-20 px-6">
+        <div class="container mx-auto max-w-5xl">
+            <div class="text-center mb-12">
+                <span class="inline-block px-6 py-2 rounded-full text-sm font-bold uppercase tracking-widest mb-6" style="background: rgba(139, 92, 246, 0.2); color: var(--primary-light);">
+                    Video de Presentación
+                </span>
+                <h2 class="text-4xl md:text-5xl font-bold mb-6">
+                    Conoce <span class="gradient-text">VCSA</span> en Acción
+                </h2>
+                <p class="text-xl text-[#A0AEC0] max-w-3xl mx-auto">
+                    Descubre cómo VCSA transforma equipos de ventas en la Riviera Maya
+                </p>
+            </div>
+
+            <div class="glass-card p-4" style="border-radius: 24px;">
+                <div class="relative" style="padding-top: 56.25%; border-radius: 20px; overflow: hidden;">
+                    <video id="vcsaVideo" class="absolute inset-0 w-full h-full object-cover" controls poster="https://images.unsplash.com/photo-1570213489059-0aac6626fade?auto=format&fit=crop&w=2000&q=80" style="background: #000;">
+                        <source src="https://softvibes.com.mx/vsa/media/vcl.mp4" type="video/mp4">
+                        Tu navegador no soporta el elemento de video.
+                    </video>
+                </div>
+            </div>
+
+            <div class="mt-12 text-center">
+                <p class="text-[#A0AEC0] mb-6">
+                    <i class="fas fa-clock mr-2 gold-text"></i>
+                    Duración: 3 minutos
+                </p>
+                <div class="flex flex-wrap justify-center gap-8 text-[#94A3B8]">
+                    <div class="flex items-center gap-2">
+                        <span class="text-2xl">✓</span>
+                        <span class="font-semibold">Onboarding acelerado</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-2xl">✓</span>
+                        <span class="font-semibold">Readiness Score</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-2xl">✓</span>
+                        <span class="font-semibold">Agente IA integrado</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Problem Statement -->
+    <section class="py-20 px-6">
+        <div class="container mx-auto max-w-6xl">
+            <div class="text-center mb-16">
+                <span class="text-xs uppercase tracking-[0.3em] gold-text">El Desafío</span>
+                <h2 class="text-4xl md:text-5xl font-bold mt-4 mb-6">¿Tu Equipo Está Preparado para Vender en el Mercado de Riviera Maya?</h2>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="glass-card p-8 border-l-4 border-red-500/50">
+                    <h3 class="text-xl font-semibold mb-4 text-red-400">Situación Actual</h3>
+                    <ul class="space-y-3 text-[#94A3B8]">
+                        <li class="flex items-start gap-3">
+                            <span class="text-red-400 mt-1">✗</span>
+                            <span>Alta rotación de personal (60-80% anual en la industria)</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-red-400 mt-1">✗</span>
+                            <span>Onboarding lento: 6-12 meses para que un rep sea productivo</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-red-400 mt-1">✗</span>
+                            <span>Capacitación genérica que no aplica a vacation clubs</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-red-400 mt-1">✗</span>
+                            <span>Sin herramientas diarias para prep de tours</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-red-400 mt-1">✗</span>
+                            <span>Sin seguimiento de progreso y readiness</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="glass-card p-8 border-l-4 border-[#D4AF37]/50">
+                    <h3 class="text-xl font-semibold mb-4 gold-text">Con VCSA</h3>
+                    <ul class="space-y-3 text-[#94A3B8]">
+                        <li class="flex items-start gap-3">
+                            <span class="gold-text mt-1">✓</span>
+                            <span>Onboarding acelerado: 4-8 semanas para reps productivos</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="gold-text mt-1">✓</span>
+                            <span>Entrenamiento específico para vacation clubs y Riviera Maya</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="gold-text mt-1">✓</span>
+                            <span>Herramienta diaria para prep de tours y objeciones</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="gold-text mt-1">✓</span>
+                            <span>Seguimiento en tiempo real de readiness y progreso</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="gold-text mt-1">✓</span>
+                            <span>Agente IA para organización y planificación personal</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- Platform Insights -->
+    <section class="py-20 px-6">
+        <div class="container mx-auto max-w-6xl">
+            <div class="text-center mb-16">
+                <span class="text-xs uppercase tracking-[0.3em] gold-text">Insights de la Plataforma</span>
+                <h2 class="text-4xl md:text-5xl font-bold mt-4 mb-6">Más Que una Plataforma de Capacitación</h2>
+                <p class="text-lg text-[#94A3B8] max-w-3xl mx-auto">
+                    VCSA no es solo transmitir conocimiento. Es un sistema operativo que tus vendedores usarán todos los días antes, durante y después de cada tour.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="glass-card p-8">
+                    <div class="feature-icon">
+                        <svg class="w-6 h-6 gold-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Pre-Tour Tactical Mode</h3>
+                    <p class="text-[#94A3B8] mb-4">
+                        Antes de cada tour, el rep accede a quick wins y breakdowns específicos para el tipo de cliente y objection anticipation.
+                    </p>
+                    <div class="text-sm gold-text">
+                        "5 minutos de prep = 20% más en closing rate"
+                    </div>
+                </div>
+
+                <div class="glass-card p-8">
+                    <div class="feature-icon">
+                        <svg class="w-6 h-6 gold-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Readiness Score</h3>
+                    <p class="text-[#94A3B8] mb-4">
+                        Algoritmo que mide la preparación de cada rep basado en 5 factores: completion, progress, application, review, y streak.
+                    </p>
+                    <div class="text-sm gold-text">
+                        "Sabes exactamente cuándo un rep está ready para el floor"
+                    </div>
+                </div>
+
+                <div class="glass-card p-8">
+                    <div class="feature-icon">
+                        <svg class="w-6 h-6 gold-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Comunidad de Top Producers</h3>
+                    <p class="text-[#94A3B8] mb-4">
+                        Acceso a estrategias de los mejores vendedores de vacation clubs en Latinoamérica.
+                    </p>
+                    <div class="text-sm gold-text">
+                        "Aprende de quienes están vendiendo $1M+ anuales"
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-12 glass-card p-8 gold-glow">
+                <h3 class="text-2xl font-semibold mb-6 text-center">El Agente IA: Tu Asistente Personal de Ventas</h3>
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div>
+                        <h4 class="font-semibold mb-3 gold-text">Organización Diaria</h4>
+                        <ul class="space-y-2 text-[#94A3B8]">
+                            <li>• Planificación de tours del día</li>
+                            <li>• Preparación personalizada por cliente</li>
+                            <li>• Recordatorios de follow-ups</li>
+                            <li>• Gestión de prospects y pipeline</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold mb-3 gold-text">Preparación Inteligente</h4>
+                        <ul class="space-y-2 text-[#94A3B8]">
+                            <li>• Análisis de objeciones probables</li>
+                            <li>• Generación de scripts personalizados</li>
+                            <li>• Role-play de escenarios difíciles</li>
+                            <li>• Feedback de pitch y presentación</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- Transformation -->
+    <section class="py-20 px-6">
+        <div class="container mx-auto max-w-6xl">
+            <div class="text-center mb-16">
+                <span class="text-xs uppercase tracking-[0.3em] gold-text">Transformación</span>
+                <h2 class="text-4xl md:text-5xl font-bold mt-4 mb-6">De Capacitación Tradicional a Sistema Operativo de Ventas</h2>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h3 class="text-xl font-semibold mb-6 text-[#94A3B8]">Modelo Tradicional</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-red-500/10 rounded-lg flex items-center justify-center">
+                                <svg class="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="text-white font-medium">Cursos presenciales</div>
+                                <div class="text-sm text-[#94A3B8]">Eventos anuales, sin seguimiento</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-red-500/10 rounded-lg flex items-center justify-center">
+                                <svg class="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="text-white font-medium">Manuales y PDFs</div>
+                                <div class="text-sm text-[#94A3B8]">Contenido estático, poco interactivo</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-red-500/10 rounded-lg flex items-center justify-center">
+                                <svg class="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="text-white font-medium">Onboarding de 6-12 meses</div>
+                                <div class="text-sm text-[#94A3B8]">Lento y costoso</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-xl font-semibold mb-6 gold-text">Con VCSA</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-[#D4AF37]/10 rounded-lg flex items-center justify-center">
+                                <svg class="w-6 h-6 gold-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="text-white font-medium">Plataforma móvil 24/7</div>
+                                <div class="text-sm text-[#94A3B8]">Acceso en cualquier momento, antes del tour</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-[#D4AF37]/10 rounded-lg flex items-center justify-center">
+                                <svg class="w-6 h-6 gold-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="text-white font-medium">Progreso gamificado</div>
+                                <div class="text-sm text-[#94A3B8]">Puntos, badges, streaks, readiness score</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-[#D4AF37]/10 rounded-lg flex items-center justify-center">
+                                <svg class="w-6 h-6 gold-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="text-white font-medium">Onboarding de 4-8 semanas</div>
+                                <div class="text-sm text-[#94A3B8]">3x más rápido con seguimiento personalizado</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-16 grid md:grid-cols-4 gap-6">
+                <div class="glass-card p-6 text-center">
+                    <div class="text-3xl font-bold gold-gradient mb-2">70%</div>
+                    <p class="text-sm text-[#94A3B8]">Reducción en tiempo de onboarding</p>
+                </div>
+                <div class="glass-card p-6 text-center">
+                    <div class="text-3xl font-bold gold-gradient mb-2">35%</div>
+                    <p class="text-sm text-[#94A3B8]">Aumento en closing rate</p>
+                </div>
+                <div class="glass-card p-6 text-center">
+                    <div class="text-3xl font-bold gold-gradient mb-2">50%</div>
+                    <p class="text-sm text-[#94A3B8]">Reducción en rotación</p>
+                </div>
+                <div class="glass-card p-6 text-center">
+                    <div class="text-3xl font-bold gold-gradient mb-2">10x</div>
+                    <p class="text-sm text-[#94A3B8]">ROI en el primer año</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- Content Architecture -->
+    <section class="py-20 px-6">
+        <div class="container mx-auto max-w-6xl">
+            <div class="text-center mb-16">
+                <span class="text-xs uppercase tracking-[0.3em] gold-text">Contenido</span>
+                <h2 class="text-4xl md:text-5xl font-bold mt-4 mb-6">Sistema de 4 Etapas de Progresión</h2>
+                <p class="text-lg text-[#94A3B8] max-w-3xl mx-auto">
+                    Cada vendedor sigue un camino claro de desarrollo con métricas específicas y milestones alcanzables.
+                </p>
+            </div>
+
+            <div class="space-y-6">
+                <div class="glass-card p-8 border-l-4 border-[#D4AF37]">
+                    <div class="flex items-start justify-between mb-4">
+                        <div>
+                            <span class="text-sm gold-text uppercase tracking-wider">Stage 1</span>
+                            <h3 class="text-2xl font-bold">New Rep</h3>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-sm text-[#94A3B8]">Duración</div>
+                            <div class="text-xl font-semibold">1-2 semanas</div>
+                        </div>
+                    </div>
+                    <p class="text-[#94A3B8] mb-4">Build foundation. Understand the structure.</p>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div class="bg-white/5 rounded-lg p-3">
+                            <div class="gold-text mb-1">150 pts</div>
+                            <div class="text-[#94A3B8]">Para completar</div>
+                        </div>
+                        <div class="bg-white/5 rounded-lg p-3">
+                            <div class="gold-text mb-1">Tour Flow</div>
+                            <div class="text-[#94A3B8]">Fundamentos</div>
+                        </div>
+                        <div class="bg-white/5 rounded-lg p-3">
+                            <div class="gold-text mb-1">Rapport</div>
+                            <div class="text-[#94A3B8]">Básicos</div>
+                        </div>
+                        <div class="bg-white/5 rounded-lg p-3">
+                            <div class="gold-text mb-1">Product</div>
+                            <div class="text-[#94A3B8]">Knowledge</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card p-8 border-l-4 border-blue-500">
+                    <div class="flex items-start justify-between mb-4">
+                        <div>
+                            <span class="text-sm text-blue-400 uppercase tracking-wider">Stage 2</span>
+                            <h3 class="text-2xl font-bold">Developing Rep</h3>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-sm text-[#94A3B8]">Duración</div>
+                            <div class="text-xl font-semibold">2-4 semanas</div>
+                        </div>
+                    </div>
+                    <p class="text-[#94A3B8] mb-4">Execute consistently. Handle common objections.</p>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div class="bg-white/5 rounded-lg p-3">
+                            <div class="text-blue-400 mb-1">300 pts</div>
+                            <div class="text-[#94A3B8]">Para completar</div>
+                        </div>
+                        <div class="bg-white/5 rounded-lg p-3">
+                            <div class="text-blue-400 mb-1">Objections</div>
+                            <div class="text-[#94A3B8]">Responses</div>
+                        </div>
+                        <div class="bg-white/5 rounded-lg p-3">
+                            <div class="text-blue-400 mb-1">Value</div>
+                            <div class="text-[#94A3B8]">Delivery</div>
+                        </div>
+                        <div class="bg-white/5 rounded-lg p-3">
+                            <div class="text-blue-400 mb-1">Decision</div>
+                            <div class="text-[#94A3B8]">Control</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card p-8 border-l-4 border-purple-500">
+                    <div class="flex items-start justify-between mb-4">
+                        <div>
+                            <span class="text-sm text-purple-400 uppercase tracking-wider">Stage 3</span>
+                            <h3 class="text-2xl font-bold">Performing Rep</h3>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-sm text-[#94A3B8]">Duración</div>
+                            <div class="text-xl font-semibold">4-8 semanas</div>
+                        </div>
+                    </div>
+                    <p class="text-[#94A3B8] mb-4">Close consistently. Manage complex objections.</p>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div class="bg-white/5 rounded-lg p-3">
+                            <div class="text-purple-400 mb-1">500 pts</div>
+                            <div class="text-[#94A3B8]">Para completar</div>
+                        </div>
+                        <div class="bg-white/5 rounded-lg p-3">
+                            <div class="text-purple-400 mb-1">Advanced</div>
+                            <div class="text-[#94A3B8]">Objection Handling</div>
+                        </div>
+                        <div class="bg-white/5 rounded-lg p-3">
+                            <div class="text-purple-400 mb-1">Deal</div>
+                            <div class="text-[#94A3B8]">Strategy</div>
+                        </div>
+                        <div class="bg-white/5 rounded-lg p-3">
+                            <div class="text-purple-400 mb-1">Decision</div>
+                            <div class="text-[#94A3B8]">Architecture</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card p-8 border-l-4 border-[#D4AF37] gold-glow">
+                    <div class="flex items-start justify-between mb-4">
+                        <div>
+                            <span class="text-sm gold-text uppercase tracking-wider">Stage 4</span>
+                            <h3 class="text-2xl font-bold">Top Producer</h3>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-sm text-[#94A3B8]">Duración</div>
+                            <div class="text-xl font-semibold">8-12 semanas</div>
+                        </div>
+                    </div>
+                    <p class="text-[#94A3B8] mb-4">Elite performer. Industry leadership.</p>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div class="bg-white/5 rounded-lg p-3">
+                            <div class="gold-text mb-1">750 pts</div>
+                            <div class="text-[#94A3B8]">Para completar</div>
+                        </div>
+                        <div class="bg-white/5 rounded-lg p-3">
+                            <div class="gold-text mb-1">Deal</div>
+                            <div class="text-[#94A3B8]">Architecture</div>
+                        </div>
+                        <div class="bg-white/5 rounded-lg p-3">
+                            <div class="gold-text mb-1">Leadership</div>
+                            <div class="text-[#94A3B8]">Presence</div>
+                        </div>
+                        <div class="bg-white/5 rounded-lg p-3">
+                            <div class="gold-text mb-1">High-Stakes</div>
+                            <div class="text-[#94A3B8]">Closing</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-12 text-center">
+                <p class="text-[#94A3B8]">
+                    <span class="gold-text font-semibold">6 Training Tracks</span> • 36 Módulos • 15 Deal Breakdowns • 20 Quick Wins • 11 Badges
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- Pricing Section -->
+    <section class="py-20 px-6" id="pricing">
+        <div class="container mx-auto max-w-6xl">
+            <div class="text-center mb-16">
+                <span class="text-xs uppercase tracking-[0.3em] gold-text">Inversión</span>
+                <h2 class="text-4xl md:text-5xl font-bold mt-4 mb-6">Propuesta DFY para 200 Usuarios</h2>
+                <p class="text-lg text-[#94A3B8] max-w-3xl mx-auto">
+                    Solución llave en mano: configuración personalizada, contenido adaptado a Riviera Maya, y soporte completo.
+                </p>
+            </div>
+
+            <!-- Main Pricing Card -->
+            <div class="pricing-card featured glass-card p-8 md:p-12 max-w-4xl mx-auto">
+                <div class="text-center mb-8">
+                    <div class="inline-block px-4 py-1 rounded-full mb-4 text-sm font-bold uppercase tracking-wider" style="background: var(--gradient-main); color: white;">
+                        Done For You - Enterprise
+                    </div>
+                    <h3 class="text-3xl font-bold mb-2">VCSA para tu Equipo</h3>
+                    <p class="text-[#94A3B8]">200 Usuarios • Riviera Maya Edition</p>
+                </div>
+
+                <div class="grid md:grid-cols-3 gap-8 mb-8">
+                    <div class="text-center">
+                        <div class="text-sm text-[#94A3B8] mb-1">Setup Fee (Único)</div>
+                        <div class="text-4xl font-bold gold-gradient">$25,000</div>
+                        <div class="text-sm text-[#94A3B8] mt-1">USD</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-sm text-[#94A3B8] mb-1">Mensualidad</div>
+                        <div class="text-4xl font-bold gold-gradient">$8,000</div>
+                        <div class="text-sm text-[#94A3B8] mt-1">USD/mes</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-sm text-[#94A3B8] mb-1">Costo por Usuario</div>
+                        <div class="text-4xl font-bold gold-gradient">$40</div>
+                        <div class="text-sm text-[#94A3B8] mt-1">USD/mes</div>
+                    </div>
+                </div>
+
+                <div class="section-divider"></div>
+
+                <h4 class="text-xl font-semibold mb-6 text-center">¿Qué Incluye el DFY?</h4>
+
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div>
+                        <h5 class="font-semibold mb-4 gold-text">Implementación</h5>
+                        <ul class="space-y-3">
+                            <li class="flex items-start gap-3">
+                                <span class="checkmark">✓</span>
+                                <span class="text-[#94A3B8]">Configuración personalizada de plataforma</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="checkmark">✓</span>
+                                <span class="text-[#94A3B8]">Branding con logo y colores de tu empresa</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="checkmark">✓</span>
+                                <span class="text-[#94A3B8]">Integración con sistemas existentes</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="checkmark">✓</span>
+                                <span class="text-[#94A3B8]">Migración de datos y configuración de usuarios</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="checkmark">✓</span>
+                                <span class="text-[#94A3B8]">Capacitación de administradores</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h5 class="font-semibold mb-4 gold-text">Contenido Personalizado</h5>
+                        <ul class="space-y-3">
+                            <li class="flex items-start gap-3">
+                                <span class="checkmark">✓</span>
+                                <span class="text-[#94A3B8]">Adaptación de contenido a Riviera Maya</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="checkmark">✓</span>
+                                <span class="text-[#94A3B8]">Casos de éxito específicos de tu destino</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="checkmark">✓</span>
+                                <span class="text-[#94A3B8]">5 vídeos personalizados de tu propiedad</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="checkmark">✓</span>
+                                <span class="text-[#94A3B8]">10 quick wins adaptados a tu producto</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="checkmark">✓</span>
+                                <span class="text-[#94A3B8]">Guiones y objection handling personalizado</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h5 class="font-semibold mb-4 gold-text">Soporte & Success</h5>
+                        <ul class="space-y-3">
+                            <li class="flex items-start gap-3">
+                                <span class="checkmark">✓</span>
+                                <span class="text-[#94A3B8]">Customer Success Manager dedicado</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="checkmark">✓</span>
+                                <span class="text-[#94A3B8]">SLA de respuesta: 4 horas</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="checkmark">✓</span>
+                                <span class="text-[#94A3B8]">Sesiones mensuales de review</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="checkmark">✓</span>
+                                <span class="text-[#94A3B8]">Reportes personalizados de analytics</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="checkmark">✓</span>
+                                <span class="text-[#94A3B8]">Actualizaciones y mejoras continuas</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h5 class="font-semibold mb-4 gold-text">Features de Plataforma</h5>
+                        <ul class="space-y-3">
+                            <li class="flex items-start gap-3">
+                                <span class="checkmark">✓</span>
+                                <span class="text-[#94A3B8]">Sistema de 4 etapas completo</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="checkmark">✓</span>
+                                <span class="text-[#94A3B8]">Gamificación con puntos, badges, streaks</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="checkmark">✓</span>
+                                <span class="text-[#94A3B8]">Readiness Score personalizado</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="checkmark">✓</span>
+                                <span class="text-[#94A3B8]">Agente IA para organización y prep</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="checkmark">✓</span>
+                                <span class="text-[#94A3B8]">Manager Dashboard con analytics</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alternative Options -->
+            <div class="grid md:grid-cols-2 gap-8 mt-12 max-w-4xl mx-auto">
+                <div class="glass-card p-8">
+                    <h4 class="text-xl font-semibold mb-4">Opción Flexible</h4>
+                    <div class="mb-4">
+                        <span class="text-3xl font-bold">$15,000</span>
+                        <span class="text-[#94A3B8]"> Setup</span>
+                    </div>
+                    <div class="mb-6">
+                        <span class="text-3xl font-bold">$50</span>
+                        <span class="text-[#94A3B8]">/usuario/mes</span>
+                    </div>
+                    <p class="text-sm text-[#94A3B8] mb-4">
+                        Paga solo por los usuarios activos. Mínimo 100 usuarios.
+                    </p>
+                    <ul class="space-y-2 text-sm text-[#94A3B8]">
+                        <li class="flex items-start gap-2">
+                            <span class="gold-text">✓</span>
+                            <span>Mismas features que Enterprise</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="gold-text">✓</span>
+                            <span>Contenido personalizado incluido</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="gold-text">✓</span>
+                            <span>Soporte estándar (24h respuesta)</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="glass-card p-8">
+                    <h4 class="text-xl font-semibold mb-4">Add-on: AI Premium</h4>
+                    <div class="mb-6">
+                        <span class="text-3xl font-bold">+$15</span>
+                        <span class="text-[#94A3B8]">/usuario/mes</span>
+                    </div>
+                    <p class="text-sm text-[#94A3B8] mb-4">
+                        Features avanzadas de IA para equipos de alto rendimiento.
+                    </p>
+                    <ul class="space-y-2 text-sm text-[#94A3B8]">
+                        <li class="flex items-start gap-2">
+                            <span class="gold-text">✓</span>
+                            <span>Script Generator personalizado</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="gold-text">✓</span>
+                            <span>Role-play con voz y feedback</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="gold-text">✓</span>
+                            <span>Análisis de grabaciones de tours</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="gold-text">✓</span>
+                            <span>Coaching predictivo</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- ROI Analysis -->
+    <section class="py-20 px-6">
+        <div class="container mx-auto max-w-6xl">
+            <div class="text-center mb-16">
+                <span class="text-xs uppercase tracking-[0.3em] gold-text">Retorno de Inversión</span>
+                <h2 class="text-4xl md:text-5xl font-bold mt-4 mb-6">Análisis ROI: Primer Año</h2>
+            </div>
+
+            <div class="glass-card p-8 md:p-12 gold-glow">
+                <div class="grid md:grid-cols-2 gap-12">
+                    <div>
+                        <h3 class="text-xl font-semibold mb-6 text-red-400">Costos Anuales</h3>
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center pb-3 border-b border-white/10">
+                                <span class="text-[#94A3B8]">Setup Fee (Único)</span>
+                                <span class="font-semibold">$25,000</span>
+                            </div>
+                            <div class="flex justify-between items-center pb-3 border-b border-white/10">
+                                <span class="text-[#94A3B8]">Mensualidad (12 meses)</span>
+                                <span class="font-semibold">$96,000</span>
+                            </div>
+                            <div class="flex justify-between items-center pb-3 border-b border-white/10">
+                                <span class="text-[#94A3B8]">Contenido personalizado</span>
+                                <span class="font-semibold">$15,000</span>
+                            </div>
+                            <div class="flex justify-between items-center pt-2">
+                                <span class="font-semibold">Total Inversión Año 1</span>
+                                <span class="text-xl font-bold text-red-400">$136,000</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-xl font-semibold mb-6 gold-text">Beneficios Anuales</h3>
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center pb-3 border-b border-white/10">
+                                <span class="text-[#94A3B8]">Reducción onboarding (3 meses × 40 reps)</span>
+                                <span class="font-semibold text-green-400">+$120,000</span>
+                            </div>
+                            <div class="flex justify-between items-center pb-3 border-b border-white/10">
+                                <span class="text-[#94A3B8]">Aumento closing rate (5% × 200 reps × $10K avg)</span>
+                                <span class="font-semibold text-green-400">+$1,000,000</span>
+                            </div>
+                            <div class="flex justify-between items-center pb-3 border-b border-white/10">
+                                <span class="text-[#94A3B8]">Reducción rotación (20% × 60 reps × $20K)</span>
+                                <span class="font-semibold text-green-400">+$240,000</span>
+                            </div>
+                            <div class="flex justify-between items-center pt-2">
+                                <span class="font-semibold">Total Beneficios Año 1</span>
+                                <span class="text-xl font-bold text-green-400">$1,360,000</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-divider my-8"></div>
+
+                <div class="text-center">
+                    <div class="text-sm text-[#94A3B8] mb-2">ROI Primer Año</div>
+                    <div class="text-6xl font-bold gold-gradient mb-4">10x</div>
+                    <p class="text-[#94A3B8] max-w-2xl mx-auto">
+                        Por cada dólar invertido en VCSA, recuperas $10 en el primer año a través de
+                        mayor productividad, mejor closing rate y reducción de costos de rotación.
+                    </p>
+                </div>
+            </div>
+
+            <div class="mt-12 grid md:grid-cols-3 gap-6">
+                <div class="glass-card p-6 text-center">
+                    <div class="text-3xl font-bold gold-gradient mb-2">3 meses</div>
+                    <p class="text-sm text-[#94A3B8]">Payback period</p>
+                </div>
+                <div class="glass-card p-6 text-center">
+                    <div class="text-3xl font-bold gold-gradient mb-2">$680/usuario</div>
+                    <p class="text-sm text-[#94A3B8]">Inversión anual por rep</p>
+                </div>
+                <div class="glass-card p-6 text-center">
+                    <div class="text-3xl font-bold gold-gradient mb-2">$6,800</div>
+                    <p class="text-sm text-[#94A3B8]">Retorno neto por rep</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- Timeline -->
+    <section class="py-20 px-6">
+        <div class="container mx-auto max-w-4xl">
+            <div class="text-center mb-16">
+                <span class="text-xs uppercase tracking-[0.3em] gold-text">Implementación</span>
+                <h2 class="text-4xl md:text-5xl font-bold mt-4 mb-6">Timeline de Implementación DFY</h2>
+                <p class="text-lg text-[#94A3B8]">
+                    De firma a launch en 8 semanas
+                </p>
+            </div>
+
+            <div class="space-y-8">
+                <div class="timeline-item">
+                    <div class="text-sm gold-text mb-1">Semana 1-2</div>
+                    <h4 class="text-xl font-semibold mb-2">Discovery & Configuración</h4>
+                    <p class="text-[#94A3B8]">Reuniones de discovery, análisis de necesidades actuales, definición de KPIs, configuración técnica inicial.</p>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="text-sm gold-text mb-1">Semana 3-4</div>
+                    <h4 class="text-xl font-semibold mb-2">Personalización de Contenido</h4>
+                    <p class="text-[#94A3B8]">Adaptación de contenido a Riviera Maya, grabación de vídeos personalizados, creación de quick wins específicos.</p>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="text-sm gold-text mb-1">Semana 5-6</div>
+                    <h4 class="text-xl font-semibold mb-2">Integración & Testing</h4>
+                    <p class="text-[#94A3B8]">Integración con sistemas existentes, migración de usuarios, pruebas de usuario, ajustes finales.</p>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="text-sm gold-text mb-1">Semana 7</div>
+                    <h4 class="text-xl font-semibold mb-2">Train-the-Trainer</h4>
+                    <p class="text-[#94A3B8]">Capacitación de administradores y managers, preparación de materiales de launch.</p>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="text-sm gold-text mb-1">Semana 8</div>
+                    <h4 class="text-xl font-semibold mb-2">Launch & Onboarding</h4>
+                    <p class="text-[#94A3B8]">Lanzamiento oficial, onboarding de primeros usuarios, soporte intensivo inicial.</p>
+                </div>
+            </div>
+
+            <div class="mt-12 glass-card p-6 text-center">
+                <p class="text-[#94A3B8]">
+                    <span class="gold-text font-semibold">Post-Launch:</span> Soporte intensivo primeras 4 semanas, luego transición a modo estándar con CSM dedicado.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- Testimonials / Social Proof -->
+    <section class="py-20 px-6">
+        <div class="container mx-auto max-w-6xl">
+            <div class="text-center mb-16">
+                <span class="text-xs uppercase tracking-[0.3em] gold-text">Resultados</span>
+                <h2 class="text-4xl md:text-5xl font-bold mt-4 mb-6">Lo Que Dicen Nuestros Clientes</h2>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="glass-card p-8">
+                    <div class="flex items-center gap-1 mb-4">
+                        <span class="gold-text">★★★★★</span>
+                    </div>
+                    <p class="text-[#94A3B8] mb-6">
+                        "Reducimos nuestro tiempo de onboarding de 6 meses a 6 semanas. Los nuevos reps llegan al floor con una confianza que nunca habíamos visto."
+                    </p>
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 bg-[#D4AF37]/10 rounded-full flex items-center justify-center">
+                            <span class="gold-text font-semibold">MR</span>
+                        </div>
+                        <div>
+                            <div class="font-semibold">Martín Rodríguez</div>
+                            <div class="text-sm text-[#94A3B8]">Director de Ventas, Cancún</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card p-8">
+                    <div class="flex items-center gap-1 mb-4">
+                        <span class="gold-text">★★★★★</span>
+                    </div>
+                    <p class="text-[#94A3B8] mb-6">
+                        "El agente IA es como tener un coach personal 24/7. Mi equipo usa el Pre-Tour Mode antes de cada presentación y el closing rate subió 35%."
+                    </p>
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 bg-[#D4AF37]/10 rounded-full flex items-center justify-center">
+                            <span class="gold-text font-semibold">LG</span>
+                        </div>
+                        <div>
+                            <div class="font-semibold">Laura González</div>
+                            <div class="text-sm text-[#94A3B8]">Sales Manager, Riviera Maya</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card p-8">
+                    <div class="flex items-center gap-1 mb-4">
+                        <span class="gold-text">★★★★★</span>
+                    </div>
+                    <p class="text-[#94A3B8] mb-6">
+                        "Por fin una plataforma diseñada específicamente para vacation clubs. El contenido es relevante, aplicable y los resultados se ven inmediatamente."
+                    </p>
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 bg-[#D4AF37]/10 rounded-full flex items-center justify-center">
+                            <span class="gold-text font-semibold">CS</span>
+                        </div>
+                        <div>
+                            <div class="font-semibold">Carlos Sánchez</div>
+                            <div class="text-sm text-[#94A3B8]">VP Sales, Cabo San Lucas</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- CTA Section -->
+    <section class="py-20 px-6">
+        <div class="container mx-auto max-w-4xl">
+            <div class="glass-card p-12 text-center gold-glow">
+                <h2 class="text-3xl md:text-4xl font-bold mb-6">¿Listo para Transformar tu Equipo de Ventas?</h2>
+                <p class="text-lg text-[#94A3B8] mb-8 max-w-2xl mx-auto">
+                    Agenda una demo personalizada y descubre cómo VCSA puede ayudar a tu equipo de Riviera Maya a vender más y mejor.
+                </p>
+
+                <div class="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+                    <a href="https://wa.me/527295493319?text=Hola,%20me%20interesa%20la%20propuesta%20VCSA%20para%20Riviera%20Maya"
+                       target="_blank"
+                       class="inline-flex items-center justify-center gap-2 bg-green-600 text-white px-8 py-4 rounded-lg font-semibold hover:bg-green-700 transition-colors">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                        </svg>
+                        WhatsApp
+                    </a>
+                    <a href="mailto:rgarcia@softvibes.com.mx?subject=Propuesta%20VCSA%20Riviera%20Maya"
+                       class="inline-flex items-center justify-center gap-2 bg-[#D4AF37] text-black px-8 py-4 rounded-lg font-semibold hover:bg-[#B4942D] transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                        Email
+                    </a>
+                    <a href="tel:+527295493319"
+                       class="inline-flex items-center justify-center gap-2 bg-white/10 text-white px-8 py-4 rounded-lg font-semibold hover:bg-white/20 transition-colors border border-white/20">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                        </svg>
+                        Llamar
+                    </a>
+                </div>
+
+                <div class="text-sm text-[#94A3B8]">
+                    <p>O contáctanos directamente:</p>
+                    <p class="mt-2">
+                        <span class="gold-text">Email:</span> rgarcia@softvibes.com.mx •
+                        <span class="gold-text">Tel:</span> +52 729 549 3319 •
+                        <span class="gold-text">WhatsApp:</span> +52 729 549 3319
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-12 px-6 border-t border-white/10">
+        <div class="container mx-auto max-w-6xl">
+            <div class="grid md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <h4 class="font-serif text-xl font-bold mb-4">VCSA</h4>
+                    <p class="text-sm text-[#94A3B8]">Vacation Club Sales Academy</p>
+                    <p class="text-sm text-[#94A3B8] mt-2">El Sistema Operativo de Ventas para Profesionales de Vacation Clubs</p>
+                </div>
+                <div>
+                    <h5 class="font-semibold mb-4">Plataforma</h5>
+                    <ul class="space-y-2 text-sm text-[#94A3B8]">
+                        <li><a href="#" class="hover:text-white transition-colors">Features</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Pricing</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Case Studies</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Documentation</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h5 class="font-semibold mb-4">Empresa</h5>
+                    <ul class="space-y-2 text-sm text-[#94A3B8]">
+                        <li><a href="#" class="hover:text-white transition-colors">About Us</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Careers</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Blog</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Press</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h5 class="font-semibold mb-4">Legal</h5>
+                    <ul class="space-y-2 text-sm text-[#94A3B8]">
+                        <li><a href="#" class="hover:text-white transition-colors">Privacy Policy</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Terms of Service</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Cookie Policy</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">GDPR</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <p class="text-sm text-[#94A3B8]">
+                    © 2026 Vacation Club Sales Academy. Todos los derechos reservados.
+                </p>
+                <div class="flex gap-4">
+                    <a href="#" class="text-[#94A3B8] hover:text-white transition-colors">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/>
+                        </svg>
+                    </a>
+                    <a href="#" class="text-[#94A3B8] hover:text-white transition-colors">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                        </svg>
+                    </a>
+                    <a href="#" class="text-[#94A3B8] hover:text-white transition-colors">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Fade in animations on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.glass-card').forEach(card => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(card);
+        });
+
+        // ===== PODCAST PLAYER =====
+        const podcastButton = document.getElementById('podcastButton');
+        let audioPlayer = null;
+        let isPlaying = false;
+
+        if (podcastButton) {
+            podcastButton.addEventListener('click', function() {
+                if (!audioPlayer) {
+                    audioPlayer = new Audio('https://softvibes.com.mx/vsa/media/podcast.mp3');
+                    audioPlayer.addEventListener('ended', function() {
+                        isPlaying = false;
+                        updatePodcastButton();
+                    });
+                    audioPlayer.addEventListener('error', function(e) {
+                        console.error('Error al cargar el audio:', e);
+                        alert('Error al cargar el podcast. Por favor, intenta nuevamente.');
+                    });
+                }
+
+                if (isPlaying) {
+                    audioPlayer.pause();
+                    isPlaying = false;
+                } else {
+                    audioPlayer.play().then(() => {
+                        isPlaying = true;
+                    }).catch(e => {
+                        console.error('Error al reproducir:', e);
+                        alert('Error al reproducir el podcast. Por favor, intenta nuevamente.');
+                    });
+                }
+
+                updatePodcastButton();
+            });
+        }
+
+        function updatePodcastButton() {
+            if (!podcastButton) return;
+            const icon = podcastButton.querySelector('i');
+            const text = podcastButton.querySelector('span');
+            const pulseRing = document.getElementById('pulseRing');
+
+            if (isPlaying) {
+                icon.className = 'fas fa-pause-circle text-2xl group-hover:scale-110 transition-transform duration-300';
+                text.textContent = '⏸️ Pausar Podcast';
+                if (pulseRing) pulseRing.style.display = 'block';
+            } else {
+                icon.className = 'fas fa-play-circle text-2xl group-hover:scale-110 transition-transform duration-300';
+                text.textContent = '🎧 Escuchar Propuesta en Podcast';
+                if (pulseRing) pulseRing.style.display = 'none';
+            }
+        }
+    </script>
+
+    <!-- Vapi Widget -->
+    <vapi-widget
+      public-key="520f7fe1-a200-461d-ad8e-959512d3e9fa"
+      assistant-id="f39848a3-4218-4565-9374-0710385b58f9"
+      mode="voice"
+      theme="dark"
+      base-bg-color="#000000"
+      accent-color="#8B5CF6"
+      cta-button-color="#8B5CF6"
+      cta-button-text-color="#ffffff"
+      border-radius="large"
+      size="full"
+      position="bottom-right"
+      title="Habla con VCSA"
+      start-button-text="Iniciar conversación"
+      end-button-text="Terminar conversación"
+      chat-first-message="Hey, ¿en qué puedo ayudarte hoy?"
+      chat-placeholder="Escribe tu mensaje..."
+      voice-show-transcript="true"
+      consent-required="true"
+      consent-title="Términos y condiciones"
+      consent-content="Al hacer clic en 'Aceptar', consiento la grabación, almacenamiento y uso de mis comunicaciones con este asistente de IA."
+      consent-storage-key="vapi_widget_consent"
+    ></vapi-widget>
+</body>
+</html>

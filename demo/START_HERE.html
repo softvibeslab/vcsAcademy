@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VCSA Demo - Inicio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #D4AF37;
+            --bg-dark: #020204;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg-dark);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+        }
+
+        .gold-text {
+            color: var(--gold);
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: rgba(212, 175, 55, 0.5);
+            transform: translateY(-4px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--gold) 0%, #B4942D 100%);
+            color: var(--bg-dark);
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="max-w-4xl w-full">
+        <div class="text-center mb-12">
+            <h1 class="text-6xl font-bold mb-4 gold-text">VCSA</h1>
+            <p class="text-2xl text-secondary mb-2">Vacation Club Sales Academy</p>
+            <p class="text-lg text-gray-500">Demo Interactivo</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <!-- Demo Interactivo -->
+            <a href="index.html" class="card p-8 block">
+                <div class="text-4xl mb-4">🚀</div>
+                <h2 class="text-2xl font-bold mb-2">Demo Interactivo</h2>
+                <p class="text-gray-400 mb-4">Explora la plataforma completa con datos de ejemplo</p>
+                <div class="text-sm text-gray-500">
+                    <p>• Login → Dashboard → Tracks</p>
+                    <p>• Pre-Tour Mode → Perfil</p>
+                    <p>• 6 páginas navegables</p>
+                </div>
+            </a>
+
+            <!-- Tour Guiado -->
+            <a href="tour.html" class="card p-8 block">
+                <div class="text-4xl mb-4">📖</div>
+                <h2 class="text-2xl font-bold mb-2">Tour Guiado</h2>
+                <p class="text-gray-400 mb-4">Presentación narrativa de 10 pasos</p>
+                <div class="text-sm text-gray-500">
+                    <p>• Problema → Solución</p>
+                    <p>• Features → ROI</p>
+                    <p>• Ideal para prospects</p>
+                </div>
+            </a>
+        </div>
+
+        <!-- Documentación -->
+        <div class="card p-6 mb-8">
+            <h3 class="text-xl font-bold mb-4 gold-text">📚 Documentación</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <a href="README.md" class="text-gray-400 hover:text-gold transition">
+                    📄 README.md - Guía de uso completa
+                </a>
+                <a href="GUIA_PRESENTACION.md" class="text-gray-400 hover:text-gold transition">
+                    🎯 GUIA_PRESENTACION.md - Cómo presentar el demo
+                </a>
+            </div>
+        </div>
+
+        <!-- Quick Start -->
+        <div class="card p-6">
+            <h3 class="text-xl font-bold mb-4 gold-text">⚡ Quick Start</h3>
+            <div class="space-y-3 text-sm">
+                <div class="flex items-center gap-3">
+                    <span class="text-gold">1.</span>
+                    <span class="text-gray-400">Elige una opción arriba (Demo o Tour)</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="text-gold">2.</span>
+                    <span class="text-gray-400">Usa credenciales: demo@vcsa.com / demo123</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="text-gold">3.</span>
+                    <span class="text-gray-400">Explora libremente o sigue el tour guiado</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-8 text-gray-600 text-sm">
+            <p>Vacation Club Sales Academy © 2026</p>
+            <p class="mt-2">Para soporte: rgarcia@softvibes.com.mx</p>
+        </div>
+    </div>
+</body>
+</html>

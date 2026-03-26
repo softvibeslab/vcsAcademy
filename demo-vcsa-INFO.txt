@@ -1,0 +1,58 @@
+═══════════════════════════════════════════════════════════════
+                    DEMO VCSA - ARCHIVO ZIP
+═══════════════════════════════════════════════════════════════
+
+📦 ARCHIVO: demo-vcsa.zip
+📏 TAMAÑO: 22.9 KB (fácil de compartir por email)
+📍 UBICACIÓN: /rogervibes/vcs/vcs/Vcsa-/demo-vcsa.zip
+
+═══════════════════════════════════════════════════════════════
+                         CONTENIDO
+═══════════════════════════════════════════════════════════════
+
+El ZIP contiene 6 archivos:
+
+1. START_HERE.html      - Página de inicio del demo
+2. index.html           - Demo interactivo completo
+3. tour.html            - Tour guiado de 10 pasos
+4. README.md            - Documentación técnica
+5. GUIA_PRESENTACION.md - Guía para presentar
+6. start.sh             - Script launcher
+
+═══════════════════════════════════════════════════════════════
+                      CÓMO DESCOMPRIMIR
+═══════════════════════════════════════════════════════════════
+
+Windows:
+  - Click derecho → "Extraer todo"
+  - O usa 7-Zip, WinRAR
+
+Mac/Linux:
+  - Doble click (Mac)
+  - O: unzip demo-vcsa.zip
+
+Luego:
+  cd demo
+  open START_HERE.html
+
+═══════════════════════════════════════════════════════════════
+                    CÓMO COMPARTIR
+═══════════════════════════════════════════════════════════════
+
+✓ Email (22.9 KB = ligero)
+✓ Google Drive, Dropbox, OneDrive
+✓ WhatsApp, Telegram
+✓ Publicar en Netlify/Vercel
+
+═══════════════════════════════════════════════════════════════
+                  INFORMACIÓN DE CONTACTO
+═══════════════════════════════════════════════════════════════
+
+Para soporte o preguntas:
+  Email: rgarcia@softvibes.com.mx
+  Tel/WhatsApp: +52 729 549 3319
+
+═══════════════════════════════════════════════════════════════
+                    VACATION CLUB SALES ACADEMY
+                        © 2026 - Demo v1.0
+═══════════════════════════════════════════════════════════════

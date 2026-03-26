@@ -1,0 +1,11 @@
+# VCSA Propuesta - Robots.txt
+
+User-agent: *
+Allow: /
+
+# Sitemap (if you add one)
+# Sitemap: https://your-domain.com/sitemap.xml
+
+# Block common bot paths
+Disallow: /.htaccess
+Disallow: /README.md

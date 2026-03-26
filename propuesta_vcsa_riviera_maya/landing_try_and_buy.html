@@ -1,0 +1,1640 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VCSA - Pruébalo Gratis | Riviera Maya</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@400;500;600&family=Roboto+Slab:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/@vapi-ai/client-sdk-react/dist/embed/widget.umd.js" async type="text/javascript"></script>
+    <style>
+        :root {
+            /* Tropical Luxury Resort Palette - Inspired by Hyatt Zilara/Vivid */
+            --primary-turquoise: #0077BE;
+            --primary-light: #40C4FF;
+            --primary-dark: #005f9e;
+            --accent-green: #2E7D32;
+            --accent-green-light: #4CAF50;
+            --sand-beige: #F5F0E1;
+            --sand-light: #FDFBF7;
+            --sand-medium: #EDE4D9;
+            --sand-dark: #D4C9B0;
+            --overlay-dark: rgba(0, 0, 0, 0.45);
+            --overlay-medium: rgba(0, 0, 0, 0.35);
+            --text-primary: #FFFFFF;
+            --text-secondary: #E0E0E0;
+            --text-muted: #AAAAAA;
+            --text-dark: #333333;
+            --gold-subtle: #D4AF37;
+            --gold-light: #C9A96E;
+            --gradient-hero: linear-gradient(to bottom, rgba(0,0,0,0.35), rgba(0,119,190,0.45));
+            --gradient-ocean: linear-gradient(135deg, #0077BE 0%, #00A5D9 100%);
+            --gradient-palm: linear-gradient(135deg, #2E7D32 0%, #4CAF50 100%);
+            --shadow-subtle: 0 10px 30px rgba(0,0,0,0.12);
+            --shadow-medium: 0 15px 40px rgba(0,0,0,0.18);
+            --border-radius: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--sand-light);
+            color: var(--text-dark);
+            line-height: 1.8;
+            overflow-x: hidden;
+            font-size: 16px;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            line-height: 1.3;
+        }
+
+        h1 {
+            font-size: clamp(3rem, 6vw, 5rem);
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.6), 0 2px 10px rgba(0,0,0,0.4);
+        }
+
+        h2 {
+            font-size: clamp(2.2rem, 4.5vw, 3.5rem);
+            font-weight: 800;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        h3 {
+            font-size: clamp(1.8rem, 3.5vw, 2.5rem);
+            font-weight: 700;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .turquoise-text {
+            color: var(--primary-turquoise);
+        }
+
+        .gold-text {
+            color: var(--gold-subtle);
+        }
+
+        .gradient-text {
+            background: var(--gradient-ocean);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Resort-style cards with elegant shadows */
+        .resort-card {
+            background: #FFFFFF;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-subtle);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+        }
+
+        .resort-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 119, 190, 0.15);
+            border-radius: var(--border-radius);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-card:hover {
+            border-color: rgba(0, 119, 190, 0.3);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .premium-card {
+            background: linear-gradient(135deg, var(--sand-light) 0%, var(--sand-beige) 100%);
+            border: 2px solid var(--primary-turquoise);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-subtle);
+        }
+
+        .pulse-gold {
+            animation: pulseTurquoise 2s infinite;
+        }
+
+        @keyframes pulseTurquoise {
+            0%, 100% {
+                box-shadow: 0 6px 20px rgba(0, 119, 190, 0.3);
+            }
+            50% {
+                box-shadow: 0 8px 30px rgba(0, 119, 190, 0.5), 0 0 40px rgba(0, 119, 190, 0.2);
+            }
+        }
+
+        .scarcity-bar {
+            height: 10px;
+            background: linear-gradient(90deg, var(--sand-dark) 0%, var(--sand-medium) 100%);
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .scarcity-bar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 25%;
+            background: var(--gradient-ocean);
+            border-radius: 8px;
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { opacity: 0.9; }
+            50% { opacity: 1; }
+        }
+
+        .scarcity-indicator {
+            position: absolute;
+            top: -5px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border: 4px solid var(--primary-turquoise);
+            border-radius: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 0 20px rgba(0, 119, 190, 0.4);
+        }
+
+        /* Section spacing */
+        section {
+            padding: 100px 0;
+        }
+
+        @media (min-width: 1024px) {
+            section {
+                padding: 140px 0;
+            }
+        }
+
+        /* Hero section */
+        .hero-section {
+            min-height: 100vh;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .hero-background {
+            position: absolute;
+            inset: 0;
+            background: url('https://images.unsplash.com/photo-1540541338287-41700207dee6?auto=format&fit=crop&w=2000&q=80') center center / cover no-repeat;
+        }
+
+        .hero-overlay {
+            position: absolute;
+            inset: 0;
+            background: var(--gradient-hero);
+        }
+
+        /* Feature icons */
+        .feature-icon {
+            width: 56px;
+            height: 56px;
+            background: var(--gradient-ocean);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 119, 190, 0.25);
+        }
+
+        .feature-icon svg {
+            color: white;
+            width: 28px;
+            height: 28px;
+        }
+
+        .countdown-box {
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid var(--primary-turquoise);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow-subtle);
+        }
+
+        .countdown-number {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 4rem;
+            font-weight: 900;
+            line-height: 1;
+            color: var(--primary-turquoise);
+            text-shadow: 0 2px 10px rgba(0, 119, 190, 0.3);
+        }
+
+        /* Resort-style buttons */
+        .cta-button {
+            background: var(--primary-turquoise);
+            color: #FFFFFF;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 0.95rem;
+            padding: 1.1rem 2.8rem;
+            border-radius: 50px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            box-shadow: 0 6px 20px rgba(0, 119, 190, 0.25);
+            position: relative;
+            overflow: hidden;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary-turquoise) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .cta-button:hover::before {
+            opacity: 1;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 10px 30px rgba(0, 119, 190, 0.35);
+        }
+
+        .cta-button span {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Secondary button */
+        .cta-button-secondary {
+            background: transparent;
+            color: var(--primary-turquoise);
+            border: 2px solid var(--primary-turquoise);
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 1rem 2.5rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .cta-button-secondary:hover {
+            background: var(--primary-turquoise);
+            color: #FFFFFF;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 119, 190, 0.3);
+        }
+
+        .cta-button-large {
+            font-size: 1.25rem;
+            padding: 1.5rem 3rem;
+        }
+
+        .scarcity-bar {
+            background: linear-gradient(90deg, #ef4444 0%, #f97316 50%, #22c55e 100%);
+            height: 8px;
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .scarcity-indicator {
+            position: absolute;
+            top: -4px;
+            width: 16px;
+            height: 16px;
+            background: white;
+            border: 3px solid var(--gold);
+            border-radius: 50%;
+            transform: translateX(-50%);
+        }
+
+        .bonus-card {
+            background: linear-gradient(135deg, var(--sand-light) 0%, var(--sand-beige) 100%);
+            border: 2px solid var(--primary-turquoise);
+            position: relative;
+            overflow: hidden;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-subtle);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .bonus-card::before {
+            content: 'BONUS';
+            position: absolute;
+            top: 25px;
+            right: -35px;
+            background: var(--gradient-ocean);
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 800;
+            padding: 5px 35px;
+            transform: rotate(45deg);
+            box-shadow: 0 2px 10px rgba(0, 119, 190, 0.3);
+        }
+
+        .bonus-card:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-medium);
+            border-color: var(--primary-dark);
+        }
+
+        .testimonial-card {
+            background: #FFFFFF;
+            border-left: 4px solid var(--primary-turquoise);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-subtle);
+            padding: 2rem;
+        }
+
+        .feature-check {
+            color: var(--primary-turquoise);
+            font-size: 1.35rem;
+            font-weight: bold;
+        }
+
+        /* Premium pricing card */
+        .pricing-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(245, 240, 225, 0.95) 100%);
+            border: 2px solid var(--primary-turquoise);
+            border-radius: 24px;
+            box-shadow: var(--shadow-medium);
+            backdrop-filter: blur(20px);
+        }
+
+        .pricing-card.featured {
+            border: 3px solid var(--primary-turquoise);
+            box-shadow: 0 20px 60px rgba(0, 119, 190, 0.25);
+        }
+
+        /* Sticky CTA */
+        .sticky-cta {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            border-top: 2px solid var(--primary-turquoise);
+            padding: 1.25rem;
+            z-index: 1000;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+            box-shadow: 0 -10px 40px rgba(0, 119, 190, 0.15);
+        }
+
+        .sticky-cta.visible {
+            transform: translateY(0);
+        }
+
+        /* Section dividers */
+        .section-divider {
+            height: 2px;
+            background: linear-gradient(90deg, transparent 0%, var(--primary-turquoise) 50%, transparent 100%);
+            margin: 0;
+            opacity: 0.3;
+        }
+
+        /* Animations */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+                letter-spacing: 0.05em;
+            }
+
+            .countdown-number {
+                font-size: 2.5rem;
+            }
+
+            .cta-button {
+                padding: 1rem 2rem;
+                font-size: 0.85rem;
+            }
+
+            section {
+                padding: 60px 0;
+            }
+        }
+
+        .strikethrough {
+            text-decoration: line-through;
+            color: var(--text-secondary);
+        }
+
+        .guarantee-badge {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .testimonial-card {
+            border-left: 4px solid var(--turquoise);
+        }
+
+        .feature-check {
+            color: var(--turquoise-light);
+            font-size: 1.25rem;
+            font-weight: bold;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .shake-animation:hover {
+            animation: shake 0.5s ease-in-out;
+        }
+
+        .sticky-cta {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(6, 182, 212, 0.3);
+            padding: 1rem;
+            z-index: 1000;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .sticky-cta.visible {
+            transform: translateY(0);
+        }
+
+        .price-strike {
+            position: relative;
+        }
+
+        .price-strike::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            width: 100%;
+            height: 3px;
+            background: #ef4444;
+            transform: rotate(-10deg);
+        }
+
+        @media (max-width: 768px) {
+            .countdown-number {
+                font-size: 2rem;
+            }
+            .cta-button-large {
+                font-size: 1rem;
+                padding: 1rem 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Urgency Banner -->
+    <div class="py-3 px-6" style="background: var(--primary-turquoise); border-bottom: 2px solid rgba(255, 255, 255, 0.2);">
+        <div class="container mx-auto text-center">
+            <p class="text-sm md:text-base font-semibold text-white flex items-center justify-center gap-2">
+                <span class="animate-pulse">●</span>
+                <span>OFERTA EXCLUSIVA:</span>
+                <span style="color: #fff; text-shadow: 0 0 20px rgba(255,255,255,0.5);">5 Spots Restantes</span>
+                <span>para el Pilot Program en Riviera Maya</span>
+                <span class="animate-pulse">●</span>
+            </p>
+        </div>
+    </div>
+
+    <!-- Hero Section - Resort Style -->
+    <section class="hero-section">
+        <!-- Background Image -->
+        <div class="hero-background"></div>
+        <div class="hero-overlay"></div>
+
+        <!-- Content -->
+        <div class="container mx-auto px-6 relative z-10">
+            <div class="max-w-5xl mx-auto text-center" style="padding: 80px 0;">
+                <!-- Countdown Timer -->
+                <div class="mb-12">
+                    <p class="text-white/90 text-lg mb-6 font-medium tracking-wide" style="text-shadow: 0 2px 8px rgba(0,0,0,0.3);">⏰ Esta oferta expira en:</p>
+                    <div class="flex justify-center gap-6">
+                        <div class="countdown-box">
+                            <div class="countdown-number" id="days">02</div>
+                            <div class="text-sm font-semibold text-[#005f9e] mt-2">DÍAS</div>
+                        </div>
+                        <div class="countdown-box">
+                            <div class="countdown-number" id="hours">23</div>
+                            <div class="text-sm font-semibold text-[#005f9e] mt-2">HORAS</div>
+                        </div>
+                        <div class="countdown-box">
+                            <div class="countdown-number" id="minutes">59</div>
+                            <div class="text-sm font-semibold text-[#005f9e] mt-2">MINUTOS</div>
+                        </div>
+                        <div class="countdown-box">
+                            <div class="countdown-number" id="seconds">59</div>
+                            <div class="text-sm font-semibold text-[#005f9e] mt-2">SEGUNDOS</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-8">
+                    <span class="inline-block px-8 py-3 rounded-full text-sm font-bold uppercase tracking-widest mb-8" style="background: rgba(255, 255, 255, 0.95); color: var(--primary-turquoise); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);">
+                        Programa Piloto Exclusivo Riviera Maya
+                    </span>
+                </div>
+
+                <h1 class="text-white mb-6" style="text-shadow: 0 4px 20px rgba(0,0,0,0.4);">
+                    Prueba <span style="color: var(--gold-subtle);">VCSA</span> Sin Riesgo
+                </h1>
+
+                <p class="text-2xl md:text-3xl text-white mb-8 max-w-4xl mx-auto font-semibold" style="text-shadow: 0 4px 20px rgba(0,0,0,0.7), 0 2px 10px rgba(0,0,0,0.5);">
+                    <strong class="text-white" style="font-size: 1.2em;">7 Días Gratis</strong> para tu equipo de ventas.
+                    <br class="hidden md:block">
+                    Si no ves resultados en la primera semana, <span style="color: var(--primary-light); font-weight: 700; text-shadow: 0 2px 8px rgba(0,0,0,0.5);">no pagas nada</span>.
+                </p>
+
+                <!-- Podcast CTA Button -->
+                <div class="mb-12">
+                    <button id="podcastButton" class="group bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold py-4 px-8 rounded-full text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center justify-center mx-auto space-x-3" style="box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+                        <div class="relative">
+                            <i class="fas fa-play-circle text-2xl group-hover:scale-110 transition-transform duration-300"></i>
+                            <div id="pulseRing" class="absolute inset-0 rounded-full border-2 border-white opacity-75 animate-ping"></div>
+                        </div>
+                        <span>🎧 Escuchar Propuesta en Podcast</span>
+                    </button>
+                    <p class="text-sm text-white/80 mt-3 max-w-md mx-auto" style="text-shadow: 0 2px 8px rgba(0,0,0,0.5);">Descubre todos los detalles de nuestra propuesta estratégica en formato audio</p>
+                </div>
+
+                <div class="flex flex-col items-center gap-8 mb-16">
+                    <!-- Price Comparison -->
+                    <div class="resort-card p-12 max-w-4xl w-full">
+                        <div class="text-center mb-10">
+                            <h3 class="text-3xl font-bold text-gray-800 mb-8">OFERTA EXCLUSIVA PILOTO</h3>
+                        </div>
+                        <div class="flex items-center justify-center gap-12 mb-10 flex-wrap">
+                            <div class="text-center">
+                                <div class="text-5xl font-bold text-gray-400 mb-4" style="text-decoration: line-through; font-size: 3rem;">$25,000</div>
+                                <div class="text-lg text-gray-500 font-bold">Setup Normal</div>
+                            </div>
+                            <div class="text-7xl turquoise-text">→</div>
+                            <div class="text-center">
+                                <div class="text-8xl font-bold turquoise-text" style="font-size: 4.5rem;">$0</div>
+                                <div class="text-xl font-bold text-gray-600 mt-3">Setup Hoy</div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-center gap-12 mb-10 flex-wrap">
+                            <div class="text-center">
+                                <div class="text-5xl font-bold text-gray-400 mb-4" style="text-decoration: line-through; font-size: 3rem;">$8,000</div>
+                                <div class="text-lg text-gray-500 font-bold">Mensual Normal</div>
+                            </div>
+                            <div class="text-7xl turquoise-text">→</div>
+                            <div class="text-center">
+                                <div class="text-8xl font-bold turquoise-text" style="font-size: 4.5rem;">$2,000</div>
+                                <div class="text-xl font-bold text-gray-600 mt-3">Primer Mes</div>
+                            </div>
+                        </div>
+
+                        <div class="inline-block px-10 py-5 rounded-full font-bold text-white text-xl" style="background: var(--gradient-palm);">
+                            ✅ 7 Días de Garantía: Si no te gusta, te devolvemos el 100%
+                        </div>
+                    </div>
+
+                    <!-- Main CTA -->
+                    <button class="cta-button pulse-gold" onclick="scrollToOffer()" style="padding: 1.4rem 3.2rem; font-size: 1.05rem;">
+                        <span>👉 Reclamar Mi Spot Gratis Ahora</span>
+                    </button>
+
+                    <p class="text-xl text-gray-800 font-semibold mt-6">
+                        Solo <span class="text-red-500 font-bold text-2xl">5 spots</span> disponibles. No requiere tarjeta de crédito.
+                    </p>
+                </div>
+
+                <!-- Social Proof -->
+                <div class="flex flex-wrap justify-center gap-14 text-gray-800">
+                    <div class="flex items-center gap-4">
+                        <span class="text-5xl">✅</span>
+                        <span class="font-bold text-xl">+200 hoteles usan VCSA</span>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <span class="text-5xl">⭐</span>
+                        <span class="font-bold text-xl">4.9/5 rating</span>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <span class="text-5xl">📈</span>
+                        <span class="font-bold text-xl">10x ROI promedio</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Video Section -->
+    <section class="py-20 px-6" style="background: var(--sand-light);">
+        <div class="container mx-auto max-w-5xl">
+            <div class="text-center mb-12">
+                <span class="inline-block px-6 py-2 rounded-full text-sm font-bold uppercase tracking-widest mb-6" style="background: rgba(0, 119, 190, 0.1); color: var(--primary-turquoise);">
+                    Video de Presentación
+                </span>
+                <h2 class="text-4xl md:text-5xl font-bold mb-6" style="color: var(--text-dark);">
+                    Conoce <span class="turquoise-text">VCSA</span> en Acción
+                </h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    Descubre cómo VCSA transforma equipos de ventas en la Riviera Maya
+                </p>
+            </div>
+
+            <div class="resort-card p-4 shadow-2xl" style="border-radius: 24px;">
+                <div class="relative" style="padding-top: 56.25%; border-radius: 20px; overflow: hidden;">
+                    <video id="vcsaVideo" class="absolute inset-0 w-full h-full object-cover" controls poster="https://images.unsplash.com/photo-1570213489059-0aac6626fade?auto=format&fit=crop&w=2000&q=80" style="background: #000;">
+                        <source src="https://softvibes.com.mx/vsa/media/vcl.mp4" type="video/mp4">
+                        Tu navegador no soporta el elemento de video.
+                    </video>
+                </div>
+            </div>
+
+            <div class="mt-12 text-center">
+                <p class="text-gray-600 mb-6">
+                    <i class="fas fa-clock mr-2" style="color: var(--primary-turquoise);"></i>
+                    Duración: 3 minutos
+                </p>
+                <div class="flex flex-wrap justify-center gap-8 text-gray-700">
+                    <div class="flex items-center gap-2">
+                        <span class="text-2xl">✓</span>
+                        <span class="font-semibold">Onboarding acelerado</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-2xl">✓</span>
+                        <span class="font-semibold">Readiness Score</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-2xl">✓</span>
+                        <span class="font-semibold">Agente IA integrado</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="flex flex-col items-center gap-6 mb-12">
+                    <!-- Price Comparison -->
+                    <div class="glass-card p-8 max-w-2xl gold-glow">
+                        <div class="flex items-center justify-center gap-6 mb-6">
+                            <div class="text-center">
+                                <div class="text-2xl price-strike">$25,000</div>
+                                <div class="text-sm text-[#94A3B8]">Setup Normal</div>
+                            </div>
+                            <div class="text-4xl">→</div>
+                            <div class="text-center">
+                                <div class="text-5xl font-bold gold-gradient">$0</div>
+                                <div class="text-sm text-[#94A3B8]">Setup Hoy</div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-center gap-4 mb-6">
+                            <div class="text-center">
+                                <div class="text-2xl price-strike">$8,000</div>
+                                <div class="text-sm text-[#94A3B8]">Mensual Normal</div>
+                            </div>
+                            <div class="text-4xl">→</div>
+                            <div class="text-center">
+                                <div class="text-5xl font-bold gold-gradient">$2,000</div>
+                                <div class="text-sm text-[#94A3B8]">Primer Mes</div>
+                            </div>
+                        </div>
+
+                        <div class="inline-block guarantee-badge">
+                            ✅ 7 Días de Garantía: Si no te gusta, te devolvemos el 100%
+                        </div>
+                    </div>
+
+                    <!-- Main CTA -->
+                    <button class="cta-button cta-button-large pulse-gold shake-animation" onclick="scrollToOffer()">
+                        👉 Reclamar Mi Spot Gratis Ahora
+                    </button>
+
+                    <p class="text-sm text-[#94A3B8]">
+                        Solo <span class="text-red-400 font-bold">5 spots</span> disponibles. No requiere tarjeta de crédito.
+                    </p>
+                </div>
+
+                <!-- Social Proof -->
+                <div class="flex flex-wrap justify-center gap-8 text-sm text-[#CBD5E1]">
+                    <div class="flex items-center gap-2">
+                        <span class="text-2xl">🏨</span>
+                        <span>+200 hoteles usan VCSA</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-2xl">⭐</span>
+                        <span>4.9/5 rating</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-2xl">📈</span>
+                        <span>10x ROI promedio</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Scarcity Section -->
+    <section class="py-16 px-6">
+        <div class="container mx-auto max-w-4xl">
+            <div class="glass-card p-8 border-2 border-red-500/50">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="text-3xl">⚠️</span>
+                    <h3 class="text-xl font-bold text-red-400">Solo 5 Empresas Seleccionarán el Pilot Program</h3>
+                </div>
+
+                <p class="text-[#94A3B8] mb-6">
+                    Este es un programa piloto exclusivo para Riviera Maya. Solo trabajaremos con 5 empresas en esta fase.
+                    Una vez que los 5 spots sean tomados, cerraremos el programa.
+                </p>
+
+                <div class="mb-4">
+                    <div class="flex justify-between text-sm mb-2">
+                        <span class="text-[#94A3B8]">Spots Disponibles</span>
+                        <span class="font-bold text-red-400">5 de 20 restantes</span>
+                    </div>
+                    <div class="scarcity-bar">
+                        <div class="scarcity-indicator" style="left: 75%;"></div>
+                    </div>
+                </div>
+
+                <p class="text-sm text-[#94A3B8]">
+                    🔴 <strong>15 empresas</strong> ya se han pre-inscrito este mes
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Problem Section -->
+    <section class="py-20 px-6">
+        <div class="container mx-auto max-w-6xl">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-bold mb-6">
+                    ¿Sigue Sintiéndote Así?
+                </h2>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="glass-card p-8 border-l-4 border-red-500">
+                    <h3 class="text-xl font-semibold mb-6 text-red-400">😫 El Dilema del Director de Ventas</h3>
+                    <ul class="space-y-4 text-[#94A3B8]">
+                        <li class="flex items-start gap-3">
+                            <span class="text-2xl">💔</span>
+                            <span>Inviertes $15,000+ en entrenar a un rep y se va en 3 meses</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-2xl">⏰</span>
+                            <span>6-12 meses para que un nuevo rep sea productivo</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-2xl">📉</span>
+                            <span>Tus top producers no comparten su conocimiento</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-2xl">🎯</span>
+                            <span>Sin métricas de readiness para saber quién está ready</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-2xl">😤</span>
+                            <span>Los reps usan paper notes y se olvidan del training</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="glass-card p-8 border-l-4 border-[#D4AF37]">
+                    <h3 class="text-xl font-semibold mb-6 gold-text">🎉 Con VCSA Todo Cambia</h3>
+                    <ul class="space-y-4 text-[#94A3B8]">
+                        <li class="flex items-start gap-3">
+                            <span class="feature-check">✓</span>
+                            <span><strong class="text-white">Onboarding de 6 semanas</strong> en lugar de 6-12 meses</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="feature-check">✓</span>
+                            <span><strong class="text-white">Readiness Score</strong> que te dice exactamente cuándo un rep está ready</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="feature-check">✓</span>
+                            <span><strong class="text-white">Herramienta diaria</strong> que tus reps usan antes de cada tour</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="feature-check">✓</span>
+                            <span><strong class="text-white">Agente IA</strong> que organiza y planifica el día de cada rep</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="feature-check">✓</span>
+                            <span><strong class="text-white">35% más closing rate</strong> en el primer mes</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Try Before Buy Section -->
+    <section class="py-20 px-6">
+        <div class="container mx-auto max-w-6xl">
+            <div class="glass-card p-12 gold-glow">
+                <div class="text-center mb-12">
+                    <span class="inline-block bg-[#D4AF37]/20 text-[#D4AF37] px-6 py-2 rounded-full text-sm font-semibold uppercase tracking-wider mb-6">
+                        Try & Buy: Sin Riesgo
+                    </span>
+                    <h2 class="text-4xl md:text-5xl font-bold mb-6">
+                        Pruébalo <span class="gold-gradient">7 Días Gratis</span>
+                    </h2>
+                    <p class="text-xl text-[#94A3B8] max-w-3xl mx-auto">
+                        No queremos que nos creas. Queremos que <strong class="text-white">nos compruebes</strong>.
+                    </p>
+                </div>
+
+                <div class="grid md:grid-cols-3 gap-8 mb-12">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-[#D4AF37]/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-3xl">1️⃣</span>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">Regístrate Hoy</h3>
+                        <p class="text-[#94A3B8]">Sin tarjeta de crédito. Solo tu email y datos básicos.</p>
+                    </div>
+
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-[#D4AF37]/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-3xl">2️⃣</span>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">Prueba 7 Días</h3>
+                        <p class="text-[#94A3B8]">Setup completo + acceso completo para 25 usuarios de tu equipo.</p>
+                    </div>
+
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-[#D4AF37]/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-3xl">3️⃣</span>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">Decide en 7 Días</h3>
+                        <p class="text-[#94A3B8]">Si no te gusta, te vas. Si te gusta, seguimos juntos.</p>
+                    </div>
+                </div>
+
+                <div class="text-center">
+                    <button class="cta-button cta-button-large pulse-gold" onclick="scrollToOffer()">
+                        🎯 Empezar Prueba Gratis de 7 Días
+                    </button>
+                    <p class="text-sm text-[#94A3B8] mt-4">
+                        Solo 5 spots disponibles. No se requiere tarjeta de crédito.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- What You Get Section -->
+    <section class="py-20 px-6">
+        <div class="container mx-auto max-w-6xl">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-bold mb-6">
+                    Lo Que Recibes en los <span class="gold-gradient">7 Días Gratis</span>
+                </h2>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="glass-card p-8">
+                    <h3 class="text-2xl font-semibold mb-6 gold-text">📦 Setup Completo (Valor: $25,000)</h3>
+                    <ul class="space-y-3">
+                        <li class="flex items-start gap-3">
+                            <span class="feature-check">✓</span>
+                            <span class="text-[#94A3B8]">Configuración personalizada de plataforma</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="feature-check">✓</span>
+                            <span class="text-[#94A3B8]">Branding con tu logo y colores</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="feature-check">✓</span>
+                            <span class="text-[#94A3B8]">Configuración de hasta 25 usuarios</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="feature-check">✓</span>
+                            <span class="text-[#94A3B8]">Integración con tus procesos actuales</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="feature-check">✓</span>
+                            <span class="text-[#94A3B8]">Sesión de onboarding con tu equipo</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="glass-card p-8">
+                    <h3 class="text-2xl font-semibold mb-6 gold-text">🎓 Contenido Completo (Valor: $15,000)</h3>
+                    <ul class="space-y-3">
+                        <li class="flex items-start gap-3">
+                            <span class="feature-check">✓</span>
+                            <span class="text-[#94A3B8]">Sistema de 4 etapas completo (36 módulos)</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="feature-check">✓</span>
+                            <span class="text-[#94A3B8]">15 deal breakdowns de escenarios reales</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="feature-check">✓</span>
+                            <span class="text-[#94A3B8]">20 quick wins tácticos</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="feature-check">✓</span>
+                            <span class="text-[#94A3B8]">Sistema de gamificación completo</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="feature-check">✓</span>
+                            <span class="text-[#94A3B8]">Readiness Score personalizado</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="glass-card p-8">
+                    <h3 class="text-2xl font-semibold mb-6 gold-text">🤖 Agente IA (Valor: $5,000)</h3>
+                    <ul class="space-y-3">
+                        <li class="flex items-start gap-3">
+                            <span class="feature-check">✓</span>
+                            <span class="text-[#94A3B8]">Organización diaria de tours</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="feature-check">✓</span>
+                            <span class="text-[#94A3B8]">Prep personalizado por cliente</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="feature-check">✓</span>
+                            <span class="text-[#94A3B8]">Recordatorios de follow-ups</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="feature-check">✓</span>
+                            <span class="text-[#94A3B8]">Análisis de objeciones probables</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="feature-check">✓</span>
+                            <span class="text-[#94A3B8]">Generación de scripts personalizados</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="glass-card p-8">
+                    <h3 class="text-2xl font-semibold mb-6 gold-text">📊 Analytics & Soporte (Valor: $3,000)</h3>
+                    <ul class="space-y-3">
+                        <li class="flex items-start gap-3">
+                            <span class="feature-check">✓</span>
+                            <span class="text-[#94A3B8]">Dashboard de analytics en tiempo real</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="feature-check">✓</span>
+                            <span class="text-[#94A3B8]">Reportes semanales de progreso</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="feature-check">✓</span>
+                            <span class="text-[#94A3B8]">Soporte por chat y email</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="feature-check">✓</span>
+                            <span class="text-[#94A3B8]">Sesión de review al final del mes</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="feature-check">✓</span>
+                            <span class="text-[#94A3B8]">Recomendaciones de optimización</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="text-center mt-12">
+                <p class="text-2xl font-semibold gold-gradient">
+                    Valor Total: $48,000
+                </p>
+                <p class="text-lg text-[#94A3B8]">
+                    Tu precio hoy: <span class="text-4xl font-bold text-white">$0</span>
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Bonuses Section -->
+    <section class="py-20 px-6">
+        <div class="container mx-auto max-w-6xl">
+            <div class="text-center mb-16">
+                <span class="inline-block bg-[#D4AF37]/20 text-[#D4AF37] px-6 py-2 rounded-full text-sm font-semibold uppercase tracking-wider mb-6">
+                    Bonuses Exclusivos Pilot Program
+                </span>
+                <h2 class="text-4xl md:text-5xl font-bold mb-6">
+                    + $10,000 en <span class="gold-gradient">Bonuses Exclusivos</span>
+                </h2>
+                <p class="text-xl text-[#94A3B8]">
+                    Solo para las 5 empresas del pilot program
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="bonus-card glass-card p-8">
+                    <div class="flex items-start justify-between mb-4">
+                        <h3 class="text-xl font-semibold">🎥 2 Videos Personalizados</h3>
+                        <span class="text-2xl font-bold gold-text">$3,000</span>
+                    </div>
+                    <p class="text-[#94A3B8] mb-4">
+                        Crearemos 2 vídeos exclusivos sobre tu propiedad y destino que tu equipo usará en el training.
+                    </p>
+                    <ul class="space-y-2 text-sm text-[#94A3B8]">
+                        <li>• Tour virtual de tu propiedad</li>
+                        <li>• Selling points de Riviera Maya</li>
+                        <li>• Guiones personalizados</li>
+                    </ul>
+                </div>
+
+                <div class="bonus-card glass-card p-8">
+                    <div class="flex items-start justify-between mb-4">
+                        <h3 class="text-xl font-semibold">📋 5 Quick Wins Personalizados</h3>
+                        <span class="text-2xl font-bold gold-text">$2,000</span>
+                    </div>
+                    <p class="text-[#94A3B8] mb-4">
+                        Crearemos 5 quick wins específicos para tus objeciones más comunes en Riviera Maya.
+                    </p>
+                    <ul class="space-y-2 text-sm text-[#94A3B8]">
+                        <li>• Objection handling específico</li>
+                        <li>• Scripts para tu producto</li>
+                        <li>• Scenarios de tu mercado</li>
+                    </ul>
+                </div>
+
+                <div class="bonus-card glass-card p-8">
+                    <div class="flex items-start justify-between mb-4">
+                        <h3 class="text-xl font-semibold">🎯 1 Sesión Strategy Call</h3>
+                        <span class="text-2xl font-bold gold-text">$2,500</span>
+                    </div>
+                    <p class="text-[#94A3B8] mb-4">
+                        Sesión de 2 horas con nuestro equipo para optimizar tu estrategia de capacitación actual.
+                    </p>
+                    <ul class="space-y-2 text-sm text-[#94A3B8]">
+                        <li>• Análisis de proceso actual</li>
+                        <li>• Recomendaciones específicas</li>
+                        <li>• Plan de implementación</li>
+                    </ul>
+                </div>
+
+                <div class="bonus-card glass-card p-8">
+                    <div class="flex items-start justify-between mb-4">
+                        <h3 class="text-xl font-semibold">📊 Report Personalizado + 30 Días Extra</h3>
+                        <span class="text-2xl font-bold gold-text">$2,500</span>
+                    </div>
+                    <p class="text-[#94A3B8] mb-4">
+                        Report detallado de desempeño y recomendaciones por 30 días adicionales después del piloto.
+                    </p>
+                    <ul class="space-y-2 text-sm text-[#94A3B8]">
+                        <li>• Analytics detallados</li>
+                        <li>• Insights de desempeño</li>
+                        <li>• Plan de optimización</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="text-center mt-12">
+                <p class="text-xl text-[#94A3B8]">
+                    Valor Total en Bonuses: <span class="text-2xl font-bold gold-text">$10,000</span>
+                </p>
+                <p class="text-sm text-[#94A3B8] mt-2">
+                    Los bonuses son tuyos para siempre, incluso si decides no continuar.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials - HIDDEN POR AHORA -->
+    <!--
+    <section class="py-20 px-6">
+        <div class="container mx-auto max-w-6xl">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-bold mb-6">
+                    Lo Que Dicen <span class="gold-gradient">Nuestros Clientes</span>
+                </h2>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="testimonial-card glass-card p-8">
+                    <div class="flex items-center gap-1 mb-4">
+                        <span class="gold-text">★★★★★</span>
+                    </div>
+                    <p class="text-[#94A3B8] mb-6">
+                        "En los primeros 30 días, nuestro closing rate subió 35%. Los reps usan VCSA todos los días antes de cada tour. Es transformative."
+                    </p>
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 bg-[#D4AF37]/10 rounded-full flex items-center justify-center">
+                            <span class="gold-text font-semibold">MR</span>
+                        </div>
+                        <div>
+                            <div class="font-semibold">Martín Rodríguez</div>
+                            <div class="text-sm text-[#94A3B8]">Director de Ventas, Cancún</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial-card glass-card p-8">
+                    <div class="flex items-center gap-1 mb-4">
+                        <span class="gold-text">★★★★★</span>
+                    </div>
+                    <p class="text-[#94A3B8] mb-6">
+                        "El onboarding de 6 semanas vs 6 meses es game-changing. Ahora los nuevos reps son productivos 3x más rápido."
+                    </p>
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 bg-[#D4AF37]/10 rounded-full flex items-center justify-center">
+                            <span class="gold-text font-semibold">LG</span>
+                        </div>
+                        <div>
+                            <div class="font-semibold">Laura González</div>
+                            <div class="text-sm text-[#94A3B8]">Sales Manager, Riviera Maya</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial-card glass-card p-8">
+                    <div class="flex items-center gap-1 mb-4">
+                        <span class="gold-text">★★★★★</span>
+                    </div>
+                    <p class="text-[#94A3B8] mb-6">
+                        "La prueba de 30 días nos convenció. Ahora es parte de nuestro stack tecnológico indispensable. ROI de 10x en el primer año."
+                    </p>
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 bg-[#D4AF37]/10 rounded-full flex items-center justify-center">
+                            <span class="gold-text font-semibold">CS</span>
+                        </div>
+                        <div>
+                            <div class="font-semibold">Carlos Sánchez</div>
+                            <div class="text-sm text-[#94A3B8]">VP Sales, Cabo San Lucas</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    -->
+
+    <!-- Guarantee Section -->
+    <section class="py-20 px-6">
+        <div class="container mx-auto max-w-4xl">
+            <div class="glass-card p-12 gold-glow text-center">
+                <div class="w-24 h-24 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <span class="text-5xl">🛡️</span>
+                </div>
+
+                <span class="inline-block guarantee-badge mb-6">
+                    100% SATISFACCIÓN GARANTIZADA
+                </span>
+
+                <h2 class="text-4xl font-bold mb-6">
+                    Garantía de <span class="gold-gradient">7 Días</span>
+                </h2>
+
+                <p class="text-xl text-[#94A3B8] mb-8 max-w-2xl mx-auto">
+                    Si en los primeros 7 días no estás <strong class="text-white">completamente satisfecho</strong>, por cualquier razón,
+                    te devolvemos el 100% de lo que hayas pagado. <strong class="text-white">Sin preguntas.</strong>
+                </p>
+
+                <div class="grid md:grid-cols-2 gap-6 text-left max-w-2xl mx-auto">
+                    <div class="flex items-start gap-3">
+                        <span class="feature-check">✓</span>
+                        <div>
+                            <div class="font-semibold">Setup completo gratis</div>
+                            <div class="text-sm text-[#94A3B8]">Valor $25,000</div>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <span class="feature-check">✓</span>
+                        <div>
+                            <div class="font-semibold">30 días de prueba</div>
+                            <div class="text-sm text-[#94A3B8]">Sin compromiso</div>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <span class="feature-check">✓</span>
+                        <div>
+                            <div class="font-semibold">Bonuses incluidos</div>
+                            <div class="text-sm text-[#94A3B8]">Valor $10,000</div>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <span class="feature-check">✓</span>
+                        <div>
+                            <div class="font-semibold">Devolución 100%</div>
+                            <div class="text-sm text-[#94A3B8]">Si no te gusta</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final CTA Section -->
+    <section class="py-20 px-6" id="offer">
+        <div class="container mx-auto max-w-4xl">
+            <div class="glass-card p-12 border-2 border-[#D4AF37] gold-glow">
+                <div class="text-center mb-8">
+                    <span class="inline-block bg-[#D4AF37]/20 text-[#D4AF37] px-6 py-2 rounded-full text-sm font-semibold uppercase tracking-wider mb-6">
+                        Oferta Exclusiva - Solo 5 Spots
+                    </span>
+                    <h2 class="text-4xl md:text-5xl font-bold mb-6">
+                        Tu <span class="gold-gradient">Pilot Program</span> Te Espera
+                    </h2>
+                </div>
+
+                <!-- Pricing Summary -->
+                <div class="bg-black/30 rounded-xl p-8 mb-8">
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center pb-4 border-b border-white/10">
+                            <span class="text-[#94A3B8]">Setup Completo</span>
+                            <div class="text-right">
+                                <span class="strikethrough">$25,000</span>
+                                <span class="text-green-400 font-bold ml-2">GRATIS</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center pb-4 border-b border-white/10">
+                            <span class="text-[#94A3B8]">7 Días de Plataforma</span>
+                            <div class="text-right">
+                                <span class="strikethrough">$8,000</span>
+                                <span class="text-green-400 font-bold ml-2">$2,000</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center pb-4 border-b border-white/10">
+                            <span class="text-[#94A3B8]">Bonuses Exclusivos</span>
+                            <div class="text-right">
+                                <span class="strikethrough">$10,000</span>
+                                <span class="text-green-400 font-bold ml-2">GRATIS</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center pt-4">
+                            <span class="text-xl font-semibold">Total Hoy</span>
+                            <span class="text-4xl font-bold gold-gradient">$2,000</span>
+                        </div>
+                        <p class="text-sm text-center text-[#94A3B8] mt-4">
+                            Después de 30 días: $2,000/mes o cancela sin costo
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Final CTA -->
+                <div class="text-center mb-8">
+                    <button class="cta-button cta-button-large pulse-gold shake-animation" onclick="handleCTA()">
+                        🔥 Reclamar Mi Spot Ahora - Solo 5 Disponibles
+                    </button>
+                    <p class="text-sm text-[#94A3B8] mt-4">
+                        No se requiere tarjeta de crédito • Garantía de 30 días
+                    </p>
+                </div>
+
+                <!-- Trust Signals -->
+                <div class="flex flex-wrap justify-center gap-6 text-sm text-[#94A3B8]">
+                    <div class="flex items-center gap-2">
+                        <span>🔒</span>
+                        <span>Pago Seguro</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span>✅</span>
+                        <span>Sin Contrato Forzado</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span>🛡️</span>
+                        <span>Garantía 7 Días</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span>💬</span>
+                        <span>Soporte 24/7</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Info -->
+            <div class="text-center mt-12">
+                <p class="text-[#94A3B8] mb-4">
+                    ¿Prefieres hablar primero con un humano?
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="https://wa.me/527295493319?text=Hola,%20me%20interesa%20el%20Pilot%20Program%20de%20VCSA%20para%20Riviera%20Maya"
+                       target="_blank"
+                       class="inline-flex items-center justify-center gap-2 bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors">
+                        💬 WhatsApp
+                    </a>
+                    <a href="mailto:rgarcia@softvibes.com.mx?subject=Pilot%20Program%20VCSA%20Riviera%20Maya"
+                       class="inline-flex items-center justify-center gap-2 bg-white/10 text-white px-6 py-3 rounded-lg font-semibold hover:bg-white/20 transition-colors border border-white/20">
+                        ✉️ rgarcia@softvibes.com.mx
+                    </a>
+                    <a href="tel:+527295493319"
+                       class="inline-flex items-center justify-center gap-2 bg-white/10 text-white px-6 py-3 rounded-lg font-semibold hover:bg-white/20 transition-colors border border-white/20">
+                        📞 +52 729 549 3319
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="py-20 px-6">
+        <div class="container mx-auto max-w-4xl">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold mb-6">
+                    Preguntas <span class="gold-gradient">Frecuentes</span>
+                </h2>
+            </div>
+
+            <div class="space-y-6">
+                <div class="glass-card p-6">
+                    <h3 class="text-xl font-semibold mb-3 gold-text">¿Es realmente gratis por 7 días?</h3>
+                    <p class="text-[#94A3B8]">
+                        Sí. El setup (valor $25,000) es completamente gratis. Solo pagas $2,000 por el primer mes,
+                        y si no te gusta en los primeros 7 días, te devolvemos el 100% sin preguntas.
+                    </p>
+                </div>
+
+                <div class="glass-card p-6">
+                    <h3 class="text-xl font-semibold mb-3 gold-text">¿Qué pasa después de 7 días?</h3>
+                    <p class="text-[#94A3B8]">
+                        Si decides continuar, la mensualidad es de $2,000 para hasta 25 usuarios.
+                        Si decides no continuar, te vas con los bonuses ($10,000 valor) y sin costo adicional.
+                    </p>
+                </div>
+
+                <div class="glass-card p-6">
+                    <h3 class="text-xl font-semibold mb-3 gold-text">¿Por qué solo 5 spots?</h3>
+                    <p class="text-[#94A3B8]">
+                        Es un programa piloto para Riviera Maya. Queremos trabajar de cerca con 5 empresas
+                        para validar el mercado y optimizar el producto antes del launch general.
+                    </p>
+                </div>
+
+                <div class="glass-card p-6">
+                    <h3 class="text-xl font-semibold mb-3 gold-text">¿Necesito tarjeta de crédito?</h3>
+                    <p class="text-[#94A3B8]">
+                        No. Para registrarte solo necesitas tu email y datos básicos.
+                        El pago se puede hacer por transferencia bancaria y solo después de que decidas continuar.
+                    </p>
+                </div>
+
+                <div class="glass-card p-6">
+                    <h3 class="text-xl font-semibold mb-3 gold-text">¿Puedo tener más de 25 usuarios?</h3>
+                    <p class="text-[#94A3B8]">
+                        Sí. El piloto incluye hasta 25 usuarios. Si necesitas más, podemos ajustar
+                        el plan con un pricing especial para el pilot program.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sticky CTA -->
+    <div class="sticky-cta" id="stickyCta">
+        <div class="container mx-auto max-w-4xl">
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="flex items-center gap-4">
+                    <span class="text-2xl">🔥</span>
+                    <div>
+                        <div class="font-semibold">Solo 5 spots disponibles</div>
+                        <div class="text-sm text-[#94A3B8]">Expira en: <span id="stickyTimer">02:23:59:59</span></div>
+                    </div>
+                </div>
+                <button class="cta-button" onclick="scrollToOffer()">
+                    Reclamar Mi Spot
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="py-12 px-6 border-t border-white/10">
+        <div class="container mx-auto max-w-6xl text-center">
+            <h4 class="font-serif text-2xl font-bold mb-4">VCSA</h4>
+            <p class="text-sm text-[#94A3B8] mb-6">Vacation Club Sales Academy</p>
+            <p class="text-sm text-[#94A3B8]">
+                © 2026 Vacation Club Sales Academy. Todos los derechos reservados.
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Countdown Timer
+        function updateCountdown() {
+            // Set expiration date (7 days from now)
+            const expiration = new Date();
+            expiration.setDate(expiration.getDate() + 7);
+            expiration.setHours(23, 59, 59, 999);
+
+            const now = new Date();
+            const diff = expiration - now;
+
+            if (diff > 0) {
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+                document.getElementById('days').textContent = String(days).padStart(2, '0');
+                document.getElementById('hours').textContent = String(hours).padStart(2, '0');
+                document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
+                document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+
+                // Update sticky timer
+                const stickyTimer = `${String(days).padStart(2, '0')}:${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                document.getElementById('stickyTimer').textContent = stickyTimer;
+            }
+        }
+
+        // Update countdown every second
+        setInterval(updateCountdown, 1000);
+        updateCountdown();
+
+        // Scroll to offer
+        function scrollToOffer() {
+            document.getElementById('offer').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Handle CTA click
+        function handleCTA() {
+            // In production, this would redirect to a signup form
+            alert('¡Gracias por tu interés! En producción, esto te llevaría al formulario de registro del Pilot Program.');
+        }
+
+        // Sticky CTA visibility
+        const stickyCta = document.getElementById('stickyCta');
+        let lastScrollY = window.scrollY;
+
+        window.addEventListener('scroll', () => {
+            const currentScrollY = window.scrollY;
+
+            if (currentScrollY > 500 && currentScrollY > lastScrollY) {
+                stickyCta.classList.add('visible');
+            } else {
+                stickyCta.classList.remove('visible');
+            }
+
+            lastScrollY = currentScrollY;
+        });
+
+        // Add urgency animation to spots
+        function animateSpots() {
+            const spotsElement = document.querySelector('.countdown-number');
+            if (spotsElement) {
+                spotsElement.style.transform = 'scale(1.1)';
+                setTimeout(() => {
+                    spotsElement.style.transform = 'scale(1)';
+                }, 200);
+            }
+        }
+
+        // Animate spots every 10 seconds
+        setInterval(animateSpots, 10000);
+
+        // Smooth scroll for all anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Console easter egg
+        console.log('%c🚀 VCSA Pilot Program', 'font-size: 24px; font-weight: bold; color: #D4AF37;');
+        console.log('%c¿Listo para transformar tu equipo de ventas?', 'font-size: 14px; color: #94A3B8;');
+
+        // ===== PODCAST PLAYER =====
+        const podcastButton = document.getElementById('podcastButton');
+        let audioPlayer = null;
+        let isPlaying = false;
+
+        if (podcastButton) {
+            podcastButton.addEventListener('click', function() {
+                if (!audioPlayer) {
+                    // Crear el reproductor de audio
+                    audioPlayer = new Audio('https://softvibes.com.mx/vsa/media/podcast.mp3');
+
+                    audioPlayer.addEventListener('ended', function() {
+                        isPlaying = false;
+                        updatePodcastButton();
+                    });
+
+                    audioPlayer.addEventListener('error', function(e) {
+                        console.error('Error al cargar el audio:', e);
+                        alert('Error al cargar el podcast. Por favor, intenta nuevamente.');
+                    });
+                }
+
+                if (isPlaying) {
+                    // Pausar
+                    audioPlayer.pause();
+                    isPlaying = false;
+                } else {
+                    // Reproducir
+                    audioPlayer.play().then(() => {
+                        isPlaying = true;
+                    }).catch(e => {
+                        console.error('Error al reproducir:', e);
+                        alert('Error al reproducir el podcast. Por favor, intenta nuevamente.');
+                    });
+                }
+
+                updatePodcastButton();
+            });
+        }
+
+        function updatePodcastButton() {
+            if (!podcastButton) return;
+
+            const icon = podcastButton.querySelector('i');
+            const text = podcastButton.querySelector('span');
+            const pulseRing = document.getElementById('pulseRing');
+
+            if (isPlaying) {
+                icon.className = 'fas fa-pause-circle text-2xl group-hover:scale-110 transition-transform duration-300';
+                text.textContent = '⏸️ Pausar Podcast';
+                if (pulseRing) pulseRing.style.display = 'block';
+            } else {
+                icon.className = 'fas fa-play-circle text-2xl group-hover:scale-110 transition-transform duration-300';
+                text.textContent = '🎧 Escuchar Propuesta en Podcast';
+                if (pulseRing) pulseRing.style.display = 'none';
+            }
+        }
+    </script>
+
+    <!-- Vapi Widget -->
+    <vapi-widget
+      public-key="520f7fe1-a200-461d-ad8e-959512d3e9fa"
+      assistant-id="f39848a3-4218-4565-9374-0710385b58f9"
+      mode="voice"
+      theme="dark"
+      base-bg-color="#000000"
+      accent-color="#0077BE"
+      cta-button-color="#0077BE"
+      cta-button-text-color="#ffffff"
+      border-radius="large"
+      size="full"
+      position="bottom-right"
+      title="Habla con VCSA"
+      start-button-text="Iniciar conversación"
+      end-button-text="Terminar conversación"
+      chat-first-message="Hey, ¿en qué puedo ayudarte hoy?"
+      chat-placeholder="Escribe tu mensaje..."
+      voice-show-transcript="true"
+      consent-required="true"
+      consent-title="Términos y condiciones"
+      consent-content="Al hacer clic en 'Aceptar', consiento la grabación, almacenamiento y uso de mis comunicaciones con este asistente de IA."
+      consent-storage-key="vapi_widget_consent"
+    ></vapi-widget>
+</body>
+</html>

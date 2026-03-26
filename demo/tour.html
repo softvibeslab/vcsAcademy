@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VCSA - Tour Guiado | Vacation Club Sales Academy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --gold: #D4AF37;
+            --gold-dark: #B4942D;
+            --navy: #1E3A8A;
+            --bg-dark: #020204;
+            --text-primary: #F1F5F9;
+            --text-secondary: #94A3B8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Playfair Display', serif;
+        }
+
+        .gold-text {
+            color: var(--gold);
+        }
+
+        .gold-gradient {
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+            color: var(--bg-dark);
+            padding: 0.875rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
+        }
+
+        .step-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .step-content {
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        .step-number {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--bg-dark);
+            margin-bottom: 2rem;
+        }
+
+        .feature-highlight {
+            border-left: 4px solid var(--gold);
+            padding-left: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .nav-buttons {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            display: flex;
+            gap: 1rem;
+            z-index: 100;
+        }
+
+        .step {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .step.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--gold), var(--gold-dark));
+            transition: width 0.3s ease;
+            z-index: 100;
+        }
+
+        .demo-badge {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(220, 38, 38, 0.9);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            z-index: 100;
+        }
+
+        .screenshot-placeholder {
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.1), rgba(30, 58, 138, 0.1));
+            border: 2px dashed rgba(212, 175, 55, 0.3);
+            border-radius: 12px;
+            padding: 3rem;
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .checklist {
+            list-style: none;
+            padding: 0;
+        }
+
+        .checklist li {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .checklist li i {
+            color: var(--gold);
+        }
+    </style>
+</head>
+<body>
+    <!-- Progress Bar -->
+    <div class="progress-bar" id="progressBar" style="width: 10%;"></div>
+
+    <!-- Demo Badge -->
+    <div class="demo-badge">
+        <i class="fas fa-flask mr-2"></i>TOUR GUIADO - DEMO
+    </div>
+
+    <!-- Step 1: Welcome -->
+    <div class="step active" id="step1">
+        <div class="step-container">
+            <div class="step-content text-center">
+                <div class="step-number mx-auto">1</div>
+                <h1 class="text-4xl md:text-5xl font-bold mb-4">Bienvenido a <span class="gold-gradient">VCSA</span></h1>
+                <p class="text-xl text-secondary mb-8">Vacation Club Sales Academy - El Performance Operating System para equipos de ventas</p>
+                <div class="glass-card p-8 mb-8">
+                    <p class="text-lg mb-6">En este tour guiado de <strong class="gold-text">10 pasos</strong>, descubrirás cómo VCSA transforma el onboarding de tu equipo de ventas.</p>
+                    <div class="grid grid-cols-3 gap-4 text-center">
+                        <div>
+                            <p class="text-3xl font-bold gold-text">6-12 meses</p>
+                            <p class="text-sm text-secondary">→ 4-8 semanas</p>
+                        </div>
+                        <div>
+                            <p class="text-3xl font-bold gold-text">60-80%</p>
+                            <p class="text-sm text-secondary">Rotación reducida</p>
+                        </div>
+                        <div>
+                            <p class="text-3xl font-bold gold-text">10x</p>
+                            <p class="text-sm text-secondary">ROI promedio</p>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-secondary">Presiona <strong class="gold-text">Siguiente</strong> para comenzar el tour</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 2: The Problem -->
+    <div class="step" id="step2">
+        <div class="step-container">
+            <div class="step-content">
+                <div class="step-number">2</div>
+                <h2 class="text-3xl font-bold mb-4">🎯 El Desafío de la Industria</h2>
+                <p class="text-xl text-secondary mb-8">Los equipos de ventas en vacation clubs enfrentan problemas críticos</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                    <div class="glass-card p-6 border-l-4 border-red-500">
+                        <h3 class="text-xl font-bold mb-2 text-red-400">💔 Alta Rotación</h3>
+                        <p>60-80% anual. Inviertes $15,000+ en entrenar y se van en meses.</p>
+                    </div>
+                    <div class="glass-card p-6 border-l-4 border-red-500">
+                        <h3 class="text-xl font-bold mb-2 text-red-400">⏰ Onboarding Lento</h3>
+                        <p>6-12 meses para que un rep sea productivo. Pierdes ventas valiosas.</p>
+                    </div>
+                    <div class="glass-card p-6 border-l-4 border-red-500">
+                        <h3 class="text-xl font-bold mb-2 text-red-400">📚 Capacitación Genérica</h3>
+                        <p>Training que no aplica a vacation clubs ni a Riviera Maya.</p>
+                    </div>
+                    <div class="glass-card p-6 border-l-4 border-red-500">
+                        <h3 class="text-xl font-bold mb-2 text-red-400">🎯 Sin Herramientas Diarias</h3>
+                        <p>Tus reps no tienen recursos para prepararse antes de cada tour.</p>
+                    </div>
+                </div>
+
+                <div class="feature-highlight">
+                    <p class="text-lg"><strong class="gold-text">¿El resultado?</strong> Pérdida de inversión, oportunidades de venta perdidas, y equipos inconsistentes.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 3: The Solution -->
+    <div class="step" id="step3">
+        <div class="step-container">
+            <div class="step-content text-center">
+                <div class="step-number mx-auto">3</div>
+                <h2 class="text-3xl font-bold mb-4">✨ La Solución: VCSA</h2>
+                <p class="text-xl text-secondary mb-8">Un sistema operativo de performance para ventas</p>
+
+                <div class="glass-card p-8 mb-8">
+                    <div class="screenshot-placeholder">
+                        <i class="fas fa-desktop text-6xl gold-text mb-4"></i>
+                        <p class="text-lg">Dashboard Principal con Readiness Score</p>
+                        <p class="text-sm text-secondary">(Versión demo interactiva disponible)</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+                        <div>
+                            <h3 class="text-xl font-bold mb-4 gold-text">📊 Readiness Score</h3>
+                            <p class="text-secondary mb-4">Algoritmo único que te dice exactamente cuándo un rep está ready para cerrar ventas.</p>
+                            <ul class="checklist">
+                                <li><i class="fas fa-check"></i>Videos completados (40%)</li>
+                                <li><i class="fas fa-check"></i>Progreso en tracks (30%)</li>
+                                <li><i class="fas fa-check"></i>Quick wins aplicados (10%)</li>
+                                <li><i class="fas fa-check"></i>Breakdowns revisados (10%)</li>
+                                <li><i class="fas fa-check"></i>Racha de entrenamiento (10%)</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold mb-4 gold-text">🤖 Agente IA</h3>
+                            <p class="text-secondary mb-4">Planning diario automático para cada representante.</p>
+                            <ul class="checklist">
+                                <li><i class="fas fa-check"></i>Analiza progreso actual</li>
+                                <li><i class="fas fa-check"></i>Sugiere próximos módulos</li>
+                                <li><i class="fas fa-check"></i>Recomienda quick wins</li>
+                                <li><i class="fas fa-check"></i>Adapta al tipo de tour del día</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 4: Top Producer Path -->
+    <div class="step" id="step4">
+        <div class="step-container">
+            <div class="step-content">
+                <div class="step-number">4</div>
+                <h2 class="text-3xl font-bold mb-4">🚀 Top Producer Path</h2>
+                <p class="text-xl text-secondary mb-8">4 etapas claras de New Rep a Top Producer</p>
+
+                <div class="space-y-4">
+                    <div class="glass-card p-6 border-l-4 border-green-500">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <span class="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-sm font-semibold">
+                                    <i class="fas fa-check mr-1"></i>Stage 1: New Rep
+                                </span>
+                                <p class="mt-2">Construye los fundamentos • 150 pts • 1-2 semanas</p>
+                            </div>
+                            <i class="fas fa-check-circle text-green-500 text-3xl"></i>
+                        </div>
+                    </div>
+
+                    <div class="glass-card p-6 border-l-4 border-gold">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <span class="bg-gold/20 text-gold px-3 py-1 rounded-full text-sm font-semibold">
+                                    <i class="fas fa-spinner fa-spin mr-1"></i>Stage 2: Developing Rep
+                                </span>
+                                <p class="mt-2">Ejecuta consistentemente • 300 pts • 2-4 semanas</p>
+                            </div>
+                            <i class="fas fa-arrow-right gold-text text-3xl"></i>
+                        </div>
+                    </div>
+
+                    <div class="glass-card p-6 border-l-4 border-white/20 opacity-60">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <span class="bg-white/10 text-secondary px-3 py-1 rounded-full text-sm font-semibold">
+                                    <i class="fas fa-lock mr-1"></i>Stage 3: Performing Rep
+                                </span>
+                                <p class="mt-2">Cierra consistentemente • 500 pts • 4-8 semanas</p>
+                            </div>
+                            <i class="fas fa-lock text-secondary text-3xl"></i>
+                        </div>
+                    </div>
+
+                    <div class="glass-card p-6 border-l-4 border-white/20 opacity-60">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <span class="bg-white/10 text-secondary px-3 py-1 rounded-full text-sm font-semibold">
+                                    <i class="fas fa-lock mr-1"></i>Stage 4: Top Producer
+                                </span>
+                                <p class="mt-2">Élite: máximo rendimiento • 750 pts • 8-12 semanas</p>
+                            </div>
+                            <i class="fas fa-trophy gold-text text-3xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feature-highlight mt-6">
+                    <p class="text-lg"><strong class="gold-text">Resultado:</strong> Progreso claro y motivador. Los reps saben exactamente dónde están y qué deben hacer para avanzar.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 5: Training Tracks -->
+    <div class="step" id="step5">
+        <div class="step-container">
+            <div class="step-content">
+                <div class="step-number">5</div>
+                <h2 class="text-3xl font-bold mb-4">📚 6 Tracks de Capacitación</h2>
+                <p class="text-xl text-secondary mb-8">Contenido específico para vacation clubs • 36 módulos totales</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+                    <div class="glass-card p-6">
+                        <div class="text-4xl mb-3">🧠</div>
+                        <h3 class="font-bold mb-2">1. Pro Mindset</h3>
+                        <p class="text-sm text-secondary">Mentalidad ganadora para ventas</p>
+                        <p class="text-xs text-gold mt-2">6 módulos • 60 pts</p>
+                    </div>
+                    <div class="glass-card p-6 border-gold/50">
+                        <div class="text-4xl mb-3">🔍</div>
+                        <h3 class="font-bold mb-2">2. Discovery & Control</h3>
+                        <p class="text-sm text-secondary">Domina el tour</p>
+                        <p class="text-xs text-gold mt-2">6 módulos • 60 pts</p>
+                    </div>
+                    <div class="glass-card p-6 opacity-60">
+                        <div class="text-4xl mb-3">🏢</div>
+                        <h3 class="font-bold mb-2">3. Value Architecture</h3>
+                        <p class="text-sm text-secondary">Construye valor</p>
+                        <p class="text-xs text-gold mt-2">6 módulos • 60 pts</p>
+                    </div>
+                    <div class="glass-card p-6 opacity-60">
+                        <div class="text-4xl mb-3">⚖️</div>
+                        <h3 class="font-bold mb-2">4. Decision Management</h3>
+                        <p class="text-sm text-secondary">Guía la decisión</p>
+                        <p class="text-xs text-gold mt-2">6 módulos • 60 pts</p>
+                    </div>
+                    <div class="glass-card p-6 opacity-60">
+                        <div class="text-4xl mb-3">🛡️</div>
+                        <h3 class="font-bold mb-2">5. Objection Mastery</h3>
+                        <p class="text-sm text-secondary">Domina objeciones</p>
+                        <p class="text-xs text-gold mt-2">6 módulos • 60 pts</p>
+                    </div>
+                    <div class="glass-card p-6 opacity-60">
+                        <div class="text-4xl mb-3">🤝</div>
+                        <h3 class="font-bold mb-2">6. Post-Decision Integrity</h3>
+                        <p class="text-sm text-secondary">Genera referidos</p>
+                        <p class="text-xs text-gold mt-2">6 módulos • 60 pts</p>
+                    </div>
+                </div>
+
+                <div class="feature-highlight">
+                    <p class="text-lg"><strong class="gold-text">Key Move:</strong> Cada módulo tiene UNA acción principal que el rep puede implementar inmediatamente en su siguiente tour.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 6: Pre-Tour Mode -->
+    <div class="step" id="step6">
+        <div class="step-container">
+            <div class="step-content text-center">
+                <div class="step-number mx-auto">6</div>
+                <h2 class="text-3xl font-bold mb-4">⚡ Pre-Tour Mode</h2>
+                <p class="text-xl text-secondary mb-8">La diferencia clave: herramienta diaria de uso</p>
+
+                <div class="glass-card p-8 mb-8">
+                    <p class="text-lg mb-6 text-left">Antes de cada presentación con clientes, el rep accede a <strong class="gold-text">Pre-Tour Mode</strong> para prepararse en 5 minutos:</p>
+
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                        <div class="glass-card p-4">
+                            <i class="fas fa-user-plus text-3xl text-blue-400 mb-2"></i>
+                            <p class="font-semibold">Cold Tour</p>
+                            <p class="text-xs text-secondary">Cliente nuevo</p>
+                        </div>
+                        <div class="glass-card p-4">
+                            <i class="fas fa-handshake text-3xl text-green-400 mb-2"></i>
+                            <p class="font-semibold">Warm Tour</p>
+                            <p class="text-xs text-secondary">Ya conoció</p>
+                        </div>
+                        <div class="glass-card p-4">
+                            <i class="fas fa-exclamation-triangle text-3xl text-orange-400 mb-2"></i>
+                            <p class="font-semibold">Con Objeciones</p>
+                            <p class="text-xs text-secondary">Preparado</p>
+                        </div>
+                        <div class="glass-card p-4">
+                            <i class="fas fa-trophy text-3xl gold-text mb-2"></i>
+                            <p class="font-semibold">Cierre</p>
+                            <p class="text-xs text-secondary">Final push</p>
+                        </div>
+                    </div>
+
+                    <div class="text-left">
+                        <h3 class="font-bold mb-4 gold-text">Tácticas Rápidas (3 min cada una):</h3>
+                        <ul class="checklist">
+                            <li><i class="fas fa-play-circle"></i>Opening Power Statement</li>
+                            <li><i class="fas fa-play-circle"></i>The "Magic Question" de Discovery</li>
+                            <li><i class="fas fa-play-circle"></i>Objection "Too Expensive"</li>
+                            <li><i class="fas fa-play-circle"></i>Urgency Builder</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="feature-highlight text-left">
+                    <p class="text-lg"><strong class="gold-text">Resultado:</strong> Tus reps usan VCSA TODOS LOS DÍAS antes de cada tour. No es solo una plataforma de entrenamiento, es una herramienta de trabajo.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 7: Gamification -->
+    <div class="step" id="step7">
+        <div class="step-container">
+            <div class="step-content">
+                <div class="step-number">7</div>
+                <h2 class="text-3xl font-bold mb-4">🎮 Gamificación</h2>
+                <p class="text-xl text-secondary mb-8">Engagement constante con puntos, badges y streaks</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div class="glass-card p-6">
+                        <h3 class="text-xl font-bold mb-4 gold-text">💎 Puntos</h3>
+                        <ul class="checklist">
+                            <li><i class="fas fa-star"></i>10 pts por módulo completado</li>
+                            <li><i class="fas fa-star"></i>5 pts por breakdown revisado</li>
+                            <li><i class="fas fa-star"></i>3 pts por quick win aplicado</li>
+                            <li><i class="fas fa-star"></i>Bonus por racha diaria</li>
+                        </ul>
+                    </div>
+                    <div class="glass-card p-6">
+                        <h3 class="text-xl font-bold mb-4 gold-text">🏆 Badges</h3>
+                        <ul class="checklist">
+                            <li><i class="fas fa-medal"></i>First Steps - Primer módulo</li>
+                            <li><i class="fas fa-medal"></i>On Fire - 7 día racha</li>
+                            <li><i class="fas fa-medal"></i>Track Master - Track completo</li>
+                            <li><i class="fas fa-medal"></i>Top Producer - Stage 4</li>
+                            <li><i class="fas fa-medal"></i>+7 badges más</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="glass-card p-6">
+                    <h3 class="text-xl font-bold mb-4 gold-text">🔥 Racha de Entrenamiento (Streak)</h3>
+                    <p class="mb-4">Ventana de 24 horas para mantener la racha. Competencia amigable entre reps.</p>
+                    <div class="flex items-center gap-4">
+                        <div class="flex-1">
+                            <div class="progress-bar" style="position: relative; height: 12px;">
+                                <div class="progress-bar-fill" style="width: 70%;"></div>
+                            </div>
+                        </div>
+                        <span class="text-2xl font-bold gold-text">7 días</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 8: Additional Resources -->
+    <div class="step" id="step8">
+        <div class="step-container">
+            <div class="step-content">
+                <div class="step-number">8</div>
+                <h2 class="text-3xl font-bold mb-4">📖 Recursos Adicionales</h2>
+                <p class="text-xl text-secondary mb-8">Más allá de los tracks principales</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="glass-card p-6">
+                        <div class="text-4xl mb-3">📊</div>
+                        <h3 class="text-xl font-bold mb-2">Deal Breakdowns</h3>
+                        <p class="text-secondary mb-4">15 análisis de casos reales</p>
+                        <ul class="text-sm text-secondary">
+                            <li>• Ventas exitosas</li>
+                            <li>• Objeciones comunes</li>
+                            <li>• Técnicas de cierre</li>
+                        </ul>
+                        <p class="text-gold text-sm mt-4">5 pts cada uno</p>
+                    </div>
+                    <div class="glass-card p-6">
+                        <div class="text-4xl mb-3">💡</div>
+                        <h3 class="text-xl font-bold mb-2">Quick Wins</h3>
+                        <p class="text-secondary mb-4">20 tácticas rápidas</p>
+                        <ul class="text-sm text-secondary">
+                            <li>• Scripts listos</li>
+                            <li>• One-liners</li>
+                            <li>• Tips instantáneos</li>
+                        </ul>
+                        <p class="text-gold text-sm mt-4">3 pts cada uno</p>
+                    </div>
+                    <div class="glass-card p-6">
+                        <div class="text-4xl mb-3">🔖</div>
+                        <h3 class="text-xl font-bold mb-2">Watch Later</h3>
+                        <p class="text-secondary mb-4">Bookmarks inteligentes</p>
+                        <ul class="text-sm text-secondary">
+                            <li>• Guarda contenido</li>
+                            <li>• Tags personalizados</li>
+                            <li>• Acceso rápido</li>
+                        </ul>
+                        <p class="text-gold text-sm mt-4">Para pre-tour</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 9: ROI -->
+    <div class="step" id="step9">
+        <div class="step-container">
+            <div class="step-content text-center">
+                <div class="step-number mx-auto">9</div>
+                <h2 class="text-3xl font-bold mb-4">💰 ROI Probado</h2>
+                <p class="text-xl text-secondary mb-8">Inversión que se recupera en el primer mes</p>
+
+                <div class="glass-card p-8 mb-8">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+                        <div>
+                            <p class="text-5xl font-bold gold-text mb-2">10x</p>
+                            <p class="text-secondary">ROI Promedio</p>
+                        </div>
+                        <div>
+                            <p class="text-5xl font-bold gold-text mb-2">4 sem</p>
+                            <p class="text-secondary">Onboarding vs 6-12 meses</p>
+                        </div>
+                        <div>
+                            <p class="text-5xl font-bold gold-text mb-2">200+</p>
+                            <p class="text-secondary">Usuarios Capacitados</p>
+                        </div>
+                    </div>
+
+                    <div class="text-left bg-gold/10 p-6 rounded-lg">
+                        <h3 class="font-bold mb-4 gold-text">Cálculo de ROI:</h3>
+                        <ul class="checklist">
+                            <li><i class="fas fa-check"></i>Ahorro en entrenamiento: $15,000 por rep</li>
+                            <li><i class="fas fa-check"></i>Ventas adicionales al ser productivo antes</li>
+                            <li><i class="fas fa-check"></i>Reducción de rotación</li>
+                            <li><i class="fas fa-check"></i>Mejor conversión de tours</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 10: CTA -->
+    <div class="step" id="step10">
+        <div class="step-container">
+            <div class="step-content text-center">
+                <div class="step-number mx-auto">10</div>
+                <h2 class="text-4xl font-bold mb-4">¿Listo para Transformar tu Equipo?</h2>
+                <p class="text-xl text-secondary mb-8">Solo <strong class="gold-text">5 spots</strong> disponibles para el Pilot Program</p>
+
+                <div class="glass-card p-8 mb-8">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                        <div class="text-left">
+                            <h3 class="font-bold mb-4 gold-text">✅ Pilot Program Incluye:</h3>
+                            <ul class="checklist">
+                                <li><i class="fas fa-check"></i>Setup completo: $0 hoy</li>
+                                <li><i class="fas fa-check"></i>Primer mes: $2,000 USD</li>
+                                <li><i class="fas fa-check"></i>Hasta 25 usuarios</li>
+                                <li><i class="fas fa-check"></i>Contenido personalizado Riviera Maya</li>
+                                <li><i class="fas fa-check"></i>Soporte prioritario</li>
+                                <li><i class="fas fa-check"></i>7 días de garantía</li>
+                            </ul>
+                        </div>
+                        <div class="text-left">
+                            <h3 class="font-bold mb-4 gold-text">🚀 Después del Pilot:</h3>
+                            <ul class="checklist">
+                                <li><i class="fas fa-check"></i>$99/usuario/mes</li>
+                                <li><i class="fas fa-check"></i>Sin contrato anual</li>
+                                <li><i class="fas fa-check"></i>Cancela cuando quieras</li>
+                                <li><i class="fas fa-check"></i>Actualizaciones incluidas</li>
+                                <li><i class="fas fa-check"></i>Nuevos módulos mensuales</li>
+                                <li><i class="fas fa-check"></i>Analytics dashboard</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <button class="btn-primary text-xl px-12 py-4">
+                            <i class="fas fa-envelope mr-2"></i>Contactar Ahora
+                        </button>
+                        <p class="text-secondary">o prueba el demo interactivo</p>
+                        <a href="index.html" class="inline-block text-gold underline">Ver Demo Interactivo →</a>
+                    </div>
+                </div>
+
+                <div class="glass-card p-6 text-left">
+                    <h3 class="font-bold mb-4 gold-text">📞 Información de Contacto</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-secondary">Email:</p>
+                            <p class="text-lg">rgarcia@softvibes.com.mx</p>
+                        </div>
+                        <div>
+                            <p class="text-secondary">Tel/WhatsApp:</p>
+                            <p class="text-lg">+52 729 549 3319</p>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="text-secondary text-sm mt-8">© 2026 Vacation Club Sales Academy</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="nav-buttons">
+        <button id="prevBtn" onclick="prevStep()" class="btn-secondary" style="display: none;">
+            <i class="fas fa-arrow-left mr-2"></i>Anterior
+        </button>
+        <button id="nextBtn" onclick="nextStep()" class="btn-primary">
+            Siguiente<i class="fas fa-arrow-right ml-2"></i>
+        </button>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        const totalSteps = 10;
+
+        function updateStep() {
+            // Hide all steps
+            document.querySelectorAll('.step').forEach(step => {
+                step.classList.remove('active');
+            });
+
+            // Show current step
+            document.getElementById('step' + currentStep).classList.add('active');
+
+            // Update progress bar
+            document.getElementById('progressBar').style.width = (currentStep / totalSteps * 100) + '%';
+
+            // Update buttons
+            document.getElementById('prevBtn').style.display = currentStep === 1 ? 'none' : 'inline-block';
+            document.getElementById('nextBtn').innerHTML = currentStep === totalSteps
+                ? '<i class="fas fa-redo mr-2"></i>Reiniciar Tour'
+                : 'Siguiente<i class="fas fa-arrow-right ml-2"></i>';
+
+            // Scroll to top
+            window.scrollTo(0, 0);
+        }
+
+        function nextStep() {
+            if (currentStep < totalSteps) {
+                currentStep++;
+            } else {
+                currentStep = 1;
+            }
+            updateStep();
+        }
+
+        function prevStep() {
+            if (currentStep > 1) {
+                currentStep--;
+                updateStep();
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                e.preventDefault();
+                nextStep();
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                prevStep();
+            }
+        });
+
+        // Initialize
+        updateStep();
+    </script>
+</body>
+</html>

@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VCSA - Presentación | Riviera Maya</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-turquoise: #0077BE;
+            --primary-light: #40C4FF;
+            --primary-dark: #005f9e;
+            --accent-green: #2E7D32;
+            --gold-subtle: #D4AF37;
+            --sand-light: #FDFBF7;
+            --sand-beige: #F5F0E1;
+            --text-dark: #333333;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background: var(--sand-light);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .presentation-container {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 60px;
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: translateX(0);
+            z-index: 10;
+        }
+
+        .slide.prev {
+            transform: translateX(-100%);
+        }
+
+        .slide-content {
+            max-width: 1400px;
+            width: 100%;
+        }
+
+        /* Slide 1: Portada */
+        .slide-1 {
+            background: linear-gradient(135deg, rgba(0, 119, 190, 0.9), rgba(0, 165, 217, 0.85)),
+                        url('https://images.unsplash.com/photo-1570213489059-0aac6626fade?auto=format&fit=crop&w=2000&q=80');
+            background-size: cover;
+            background-position: center;
+        }
+
+        .slide-1 .logo {
+            font-size: 8rem;
+            font-weight: 900;
+            color: white;
+            margin-bottom: 2rem;
+            font-family: 'Montserrat', sans-serif;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .slide-1 h2 {
+            font-size: 3rem;
+            color: white;
+            margin-bottom: 1rem;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .slide-1 p {
+            font-size: 1.5rem;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 2rem;
+        }
+
+        /* Slide 2: El Problema */
+        .slide-2 {
+            background: linear-gradient(135deg, #fff 0%, var(--sand-beige) 100%);
+        }
+
+        .problem-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .problem-item {
+            padding: 2rem;
+            border-radius: 16px;
+            background: white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            border-left: 4px solid #EF4444;
+        }
+
+        .problem-item h3 {
+            font-size: 1.5rem;
+            color: #EF4444;
+            margin-bottom: 1rem;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        /* Slide 3: La Solución */
+        .slide-3 {
+            background: linear-gradient(135deg, var(--primary-turquoise) 0%, var(--primary-light) 100%);
+        }
+
+        .solution-card {
+            background: rgba(255,255,255,0.95);
+            padding: 4rem;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+
+        /* Slide 4: Características */
+        .slide-4 {
+            background: white;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .feature-item {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .feature-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--primary-turquoise), var(--primary-light));
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            color: white;
+            font-size: 2.5rem;
+        }
+
+        /* Slide 5: ROI */
+        .slide-5 {
+            background: linear-gradient(135deg, var(--gold-subtle) 0%, #f1c40f 100%);
+        }
+
+        .roi-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 3rem;
+            margin-top: 3rem;
+        }
+
+        .roi-stat {
+            text-align: center;
+        }
+
+        .roi-number {
+            font-size: 5rem;
+            font-weight: 900;
+            color: white;
+            line-height: 1;
+            margin-bottom: 1rem;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+
+        /* Slide 6: Pricing */
+        .slide-6 {
+            background: var(--sand-light);
+        }
+
+        .pricing-card {
+            background: white;
+            padding: 4rem;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .price-large {
+            font-size: 6rem;
+            font-weight: 900;
+            color: var(--primary-turquoise);
+            line-height: 1;
+        }
+
+        /* Slide 7: CTA */
+        .slide-7 {
+            background: linear-gradient(135deg, rgba(0, 119, 190, 0.95), rgba(0, 165, 217, 0.9)),
+                        url('https://images.unsplash.com/photo-1540541338287-41700207dee6?auto=format&fit=crop&w=2000&q=80');
+            background-size: cover;
+            background-position: center;
+        }
+
+        .slide-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: var(--text-dark);
+            margin-bottom: 2rem;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .slide-subtitle {
+            font-size: 1.5rem;
+            color: #666;
+            margin-bottom: 3rem;
+        }
+
+        .cta-button {
+            background: var(--primary-turquoise);
+            color: white;
+            padding: 1.2rem 3rem;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 10px 30px rgba(0, 119, 190, 0.3);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(0, 119, 190, 0.4);
+        }
+
+        /* Navigation */
+        .nav-button {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: white;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: var(--primary-turquoise);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            transition: all 0.3s;
+            z-index: 100;
+        }
+
+        .nav-button:hover {
+            background: var(--primary-turquoise);
+            color: white;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .nav-prev {
+            left: 30px;
+        }
+
+        .nav-next {
+            right: 30px;
+        }
+
+        /* Progress dots */
+        .progress-dots {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+            z-index: 100;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.5);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .dot.active {
+            background: var(--primary-turquoise);
+            width: 40px;
+            border-radius: 6px;
+        }
+
+        /* Slide counter */
+        .slide-counter {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            background: rgba(255,255,255,0.9);
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 700;
+            color: var(--primary-turquoise);
+            z-index: 100;
+        }
+
+        /* Keyboard hint */
+        .keyboard-hint {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            z-index: 100;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .slide.active .animate-in {
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .animate-in:nth-child(1) { animation-delay: 0.1s; }
+        .animate-in:nth-child(2) { animation-delay: 0.2s; }
+        .animate-in:nth-child(3) { animation-delay: 0.3s; }
+        .animate-in:nth-child(4) { animation-delay: 0.4s; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .slide {
+                padding: 30px;
+            }
+
+            .slide-1 .logo {
+                font-size: 4rem;
+            }
+
+            .slide-1 h2 {
+                font-size: 2rem;
+            }
+
+            .slide-title {
+                font-size: 2rem;
+            }
+
+            .problem-grid,
+            .features-grid,
+            .roi-stats {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .nav-button {
+                width: 45px;
+                height: 45px;
+                font-size: 1.2rem;
+            }
+
+            .nav-prev {
+                left: 15px;
+            }
+
+            .nav-next {
+                right: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation-container">
+        <!-- Slide Counter -->
+        <div class="slide-counter">
+            <span id="currentSlide">1</span> / <span id="totalSlides">7</span>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <button class="nav-button nav-prev" onclick="prevSlide()">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <button class="nav-button nav-next" onclick="nextSlide()">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+
+        <!-- Progress Dots -->
+        <div class="progress-dots" id="progressDots"></div>
+
+        <!-- Keyboard Hint -->
+        <div class="keyboard-hint">
+            <i class="fas fa-keyboard mr-2"></i>
+            Usa ← → o click para navegar
+        </div>
+
+        <!-- Slide 1: Portada -->
+        <div class="slide slide-1 active">
+            <div class="slide-content text-center">
+                <div class="logo animate-in">VCSA</div>
+                <h2 class="animate-in">Vacation Club Sales Academy</h2>
+                <p class="animate-in">Plataforma de Capacitación para Equipos de Ventas en Riviera Maya</p>
+                <div class="animate-in">
+                    <span style="background: rgba(255,255,255,0.2); padding: 1rem 2rem; border-radius: 50px; font-weight: 600;">
+                        Propuesta DFY
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2: El Problema -->
+        <div class="slide slide-2">
+            <div class="slide-content">
+                <h1 class="slide-title animate-in">🎯 El Desafío</h1>
+                <p class="slide-subtitle animate-in">¿Tu equipo de ventas está perdiendo oportunidades?</p>
+                <div class="problem-grid">
+                    <div class="problem-item animate-in">
+                        <h3>💔 Alta Rotación</h3>
+                        <p>60-80% de rotación anual en la industria. Inviertes $15,000+ en entrenar y se van en meses.</p>
+                    </div>
+                    <div class="problem-item animate-in">
+                        <h3>⏰ Onboarding Lento</h3>
+                        <p>6-12 meses para que un nuevo rep sea productivo. Pierdes ventas valiosas en el proceso.</p>
+                    </div>
+                    <div class="problem-item animate-in">
+                        <h3>📚 Capacitación Genérica</h3>
+                        <p>Training que no aplica específicamente a vacation clubs ni al mercado de Riviera Maya.</p>
+                    </div>
+                    <div class="problem-item animate-in">
+                        <h3>🎯 Sin Herramientas Diarias</h3>
+                        <p>Tus reps no tienen recursos para prepararse antes de cada tour con clientes.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: La Solución -->
+        <div class="slide slide-3">
+            <div class="slide-content">
+                <div class="solution-card">
+                    <h1 class="slide-title animate-in" style="color: var(--primary-turquoise);">✨ La Solución: VCSA</h1>
+                    <p class="animate-in" style="font-size: 1.3rem; color: #666; margin-bottom: 2rem;">
+                        Vacation Club Sales Academy transforma el onboarding de <strong>6-12 meses a 4-8 semanas</strong>
+                    </p>
+                    <div class="animate-in" style="font-size: 1.2rem; line-height: 2; color: #444;">
+                        <p>✅ <strong>Readiness Score</strong> que te dice exactamente cuándo un rep está ready</p>
+                        <p>✅ <strong>Herramienta diaria</strong> que tus reps usan antes de cada tour</p>
+                        <p>✅ <strong>Agente IA</strong> que organiza y planifica el día de cada rep</p>
+                        <p>✅ <strong>Contenido específico</strong> para vacation clubs en Riviera Maya</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Características -->
+        <div class="slide slide-4">
+            <div class="slide-content">
+                <h1 class="slide-title animate-in">🚀 Características Clave</h1>
+                <p class="slide-subtitle animate-in">Todo lo que tu equipo necesita para vender más</p>
+                <div class="features-grid">
+                    <div class="feature-item animate-in">
+                        <div class="feature-icon">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">Top Producer Path</h3>
+                        <p style="color: #666;">4 etapas de desarrollo desde New Rep hasta Top Producer</p>
+                    </div>
+                    <div class="feature-item animate-in">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">Readiness Score</h3>
+                        <p style="color: #666;">Métrica precisa de preparación para cerrar ventas</p>
+                    </div>
+                    <div class="feature-item animate-in">
+                        <div class="feature-icon">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">Agente IA</h3>
+                        <p style="color: #666;">Planning diario automático para cada representante</p>
+                    </div>
+                    <div class="feature-item animate-in">
+                        <div class="feature-icon">
+                            <i class="fas fa-video"></i>
+                        </div>
+                        <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">36 Módulos de Video</h3>
+                        <p style="color: #666;">6 tracks con 6 módulos cada uno</p>
+                    </div>
+                    <div class="feature-item animate-in">
+                        <div class="feature-icon">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                        <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">Gamificación</h3>
+                        <p style="color: #666;">Puntos, badges, streaks y leaderboard</p>
+                    </div>
+                    <div class="feature-item animate-in">
+                        <div class="feature-icon">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">Pre-Tour Mode</h3>
+                        <p style="color: #666;">Tácticas rápidas antes de cada presentación</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: ROI -->
+        <div class="slide slide-5">
+            <div class="slide-content">
+                <h1 class="slide-title animate-in" style="color: white;">💰 ROI Probado</h1>
+                <p class="animate-in" style="font-size: 1.5rem; color: rgba(255,255,255,0.9); margin-bottom: 2rem;">
+                    Invierte hoy, recupera en el primer mes
+                </p>
+                <div class="roi-stats">
+                    <div class="roi-stat animate-in">
+                        <div class="roi-number">10x</div>
+                        <p style="font-size: 1.2rem; color: rgba(255,255,255,0.9);">ROI Promedio</p>
+                    </div>
+                    <div class="roi-stat animate-in">
+                        <div class="roi-number">4 sem</div>
+                        <p style="font-size: 1.2rem; color: rgba(255,255,255,0.9);">Onboarding vs 6-12 meses</p>
+                    </div>
+                    <div class="roi-stat animate-in">
+                        <div class="roi-number">200+</div>
+                        <p style="font-size: 1.2rem; color: rgba(255,255,255,0.9);">Usuarios Capacitados</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Pricing -->
+        <div class="slide slide-6">
+            <div class="slide-content">
+                <div class="pricing-card">
+                    <h1 class="slide-title animate-in">💎 Inversión</h1>
+                    <p class="animate-in" style="font-size: 1.2rem; color: #666; margin-bottom: 2rem;">
+                        Pilot Program exclusivo para Riviera Maya
+                    </p>
+                    <div class="animate-in" style="margin-bottom: 2rem;">
+                        <div class="price-large">$0</div>
+                        <p style="font-size: 1.5rem; color: #666;">Setup hoy</p>
+                    </div>
+                    <div class="animate-in" style="margin-bottom: 2rem;">
+                        <p style="font-size: 2rem; color: var(--primary-turquoise); font-weight: 700;">
+                            $2,000 <span style="font-size: 1.2rem; color: #666;">/primer mes</span>
+                        </p>
+                    </div>
+                    <div class="animate-in">
+                        <span style="background: var(--accent-green); color: white; padding: 0.75rem 1.5rem; border-radius: 50px; font-weight: 600;">
+                            ✅ 7 días de garantía
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: CTA -->
+        <div class="slide slide-7">
+            <div class="slide-content text-center">
+                <h1 class="slide-title animate-in" style="color: white; font-size: 4rem;">¿Listo para Transformar tu Equipo?</h1>
+                <p class="animate-in" style="font-size: 1.8rem; color: rgba(255,255,255,0.9); margin-bottom: 3rem;">
+                    Solo <strong style="color: var(--gold-subtle);">5 spots</strong> disponibles para el Pilot Program
+                </p>
+                <div class="animate-in" style="margin-bottom: 2rem;">
+                    <button class="cta-button" style="background: var(--gold-subtle); padding: 1.5rem 4rem; font-size: 1.5rem;">
+                        📩 Contactar Ahora
+                    </button>
+                </div>
+                <div class="animate-in" style="font-size: 1.2rem; color: rgba(255,255,255,0.8);">
+                    <p>📧 rgarcia@softvibes.com.mx</p>
+                    <p>📱 +52 729 549 3319</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        const progressDotsContainer = document.getElementById('progressDots');
+
+        // Create progress dots
+        for (let i = 0; i < totalSlides; i++) {
+            const dot = document.createElement('div');
+            dot.className = 'dot' + (i === 0 ? ' active' : '');
+            dot.onclick = () => goToSlide(i);
+            progressDotsContainer.appendChild(dot);
+        }
+
+        function updateSlide() {
+            slides.forEach((slide, index) => {
+                slide.classList.remove('active', 'prev');
+                if (index === currentSlide) {
+                    slide.classList.add('active');
+                } else if (index < currentSlide) {
+                    slide.classList.add('prev');
+                }
+            });
+
+            // Update counter
+            document.getElementById('currentSlide').textContent = currentSlide + 1;
+            document.getElementById('totalSlides').textContent = totalSlides;
+
+            // Update progress dots
+            const dots = document.querySelectorAll('.dot');
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentSlide);
+            });
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides - 1) {
+                currentSlide++;
+                updateSlide();
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateSlide();
+            }
+        }
+
+        function goToSlide(index) {
+            currentSlide = index;
+            updateSlide();
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                e.preventDefault();
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                prevSlide();
+            }
+        });
+
+        // Touch support for mobile
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+
+        document.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            const swipeThreshold = 50;
+            const diff = touchStartX - touchEndX;
+
+            if (Math.abs(diff) > swipeThreshold) {
+                if (diff > 0) {
+                    nextSlide();
+                } else {
+                    prevSlide();
+                }
+            }
+        }
+
+        // Initialize
+        updateSlide();
+    </script>
+</body>
+</html>

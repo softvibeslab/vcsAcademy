@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VCSA - Propuesta DFY | Riviera Maya</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@400;500;600&family=Roboto+Slab:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/@vapi-ai/client-sdk-react/dist/embed/widget.umd.js" async type="text/javascript"></script>
+    <style>
+        :root {
+            /* Tropical Luxury Resort Palette - Inspired by Hyatt Zilara/Vivid */
+            --primary-turquoise: #0077BE;
+            --primary-light: #40C4FF;
+            --primary-dark: #005f9e;
+            --accent-green: #2E7D32;
+            --accent-green-light: #4CAF50;
+            --sand-beige: #F5F0E1;
+            --sand-light: #FDFBF7;
+            --sand-medium: #EDE4D9;
+            --sand-dark: #D4C9B0;
+            --overlay-dark: rgba(0, 0, 0, 0.45);
+            --overlay-medium: rgba(0, 0, 0, 0.35);
+            --text-primary: #FFFFFF;
+            --text-secondary: #E0E0E0;
+            --text-muted: #AAAAAA;
+            --text-dark: #333333;
+            --gold-subtle: #D4AF37;
+            --gold-light: #C9A96E;
+            --gradient-hero: linear-gradient(to bottom, rgba(0,0,0,0.35), rgba(0,119,190,0.45));
+            --gradient-ocean: linear-gradient(135deg, #0077BE 0%, #00A5D9 100%);
+            --gradient-palm: linear-gradient(135deg, #2E7D32 0%, #4CAF50 100%);
+            --shadow-subtle: 0 10px 30px rgba(0,0,0,0.12);
+            --shadow-medium: 0 15px 40px rgba(0,0,0,0.18);
+            --border-radius: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--sand-light);
+            color: var(--text-dark);
+            line-height: 1.8;
+            overflow-x: hidden;
+            font-size: 16px;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            line-height: 1.3;
+        }
+
+        h1 {
+            font-size: clamp(3rem, 6vw, 5rem);
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        h2 {
+            font-size: clamp(2.2rem, 4.5vw, 3.5rem);
+            font-weight: 800;
+        }
+
+        h3 {
+            font-size: clamp(1.8rem, 3.5vw, 2.5rem);
+            font-weight: 700;
+        }
+
+        /* Body text with better contrast */
+        body p, body li, body span {
+            color: var(--text-dark);
+        }
+
+        /* White text on dark backgrounds */
+        .text-white-overlay {
+            color: #FFFFFF;
+            text-shadow: 0 3px 15px rgba(0,0,0,0.7), 0 2px 8px rgba(0,0,0,0.5);
+        }
+
+        .turquoise-text {
+            color: var(--primary-turquoise);
+        }
+
+        .gold-text {
+            color: var(--gold-subtle);
+        }
+
+        .gradient-text {
+            background: var(--gradient-ocean);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Resort-style cards */
+        .resort-card {
+            background: #FFFFFF;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-subtle);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+        }
+
+        .resort-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 119, 190, 0.15);
+            border-radius: var(--border-radius);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 2rem;
+        }
+
+        .glass-card:hover {
+            border-color: rgba(0, 119, 190, 0.3);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        /* Buttons */
+        .cta-button {
+            background: var(--primary-turquoise);
+            color: #FFFFFF;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 0.95rem;
+            padding: 1.1rem 2.8rem;
+            border-radius: 50px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            box-shadow: 0 6px 20px rgba(0, 119, 190, 0.25);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .cta-button:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 10px 30px rgba(0, 119, 190, 0.35);
+        }
+
+        .cta-button-secondary {
+            background: transparent;
+            color: var(--primary-turquoise);
+            border: 2px solid var(--primary-turquoise);
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            padding: 1rem 2.5rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .cta-button-secondary:hover {
+            background: var(--primary-turquoise);
+            color: #FFFFFF;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 119, 190, 0.3);
+        }
+
+        /* Hero section */
+        .hero-section {
+            min-height: 100vh;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .hero-background {
+            position: absolute;
+            inset: 0;
+            background: url('https://images.unsplash.com/photo-1570213489059-0aac6626cade?auto=format&fit=crop&w=2000&q=80') center center / cover no-repeat;
+        }
+
+        .hero-overlay {
+            position: absolute;
+            inset: 0;
+            background: var(--gradient-hero);
+        }
+
+        /* Feature icons */
+        .feature-icon {
+            width: 56px;
+            height: 56px;
+            background: var(--gradient-ocean);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 119, 190, 0.25);
+        }
+
+        .feature-icon svg {
+            color: white;
+            width: 28px;
+            height: 28px;
+        }
+
+        /* Section spacing */
+        section {
+            padding: 100px 0;
+        }
+
+        @media (min-width: 1024px) {
+            section {
+                padding: 140px 0;
+            }
+        }
+
+        /* Stat numbers */
+        .stat-number {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 3rem;
+            font-weight: 800;
+            line-height: 1;
+            background: var(--gradient-ocean);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Section divider */
+        .section-divider {
+            height: 2px;
+            background: linear-gradient(90deg, transparent 0%, var(--primary-turquoise) 50%, transparent 100%);
+            margin: 4rem 0;
+            opacity: 0.3;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+                letter-spacing: 0.05em;
+            }
+
+            .stat-number {
+                font-size: 2.5rem;
+            }
+
+            .cta-button {
+                padding: 1rem 2rem;
+                font-size: 0.85rem;
+            }
+
+            section {
+                padding: 60px 0;
+            }
+        }
+
+        /* Animations */
+        .animate-fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .animate-fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .delay-1 { transition-delay: 0.1s; }
+        .delay-2 { transition-delay: 0.2s; }
+        .delay-3 { transition-delay: 0.3s; }
+        .delay-4 { transition-delay: 0.4s; }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <header class="hero-section">
+        <div class="hero-background"></div>
+        <div class="hero-overlay"></div>
+
+        <div class="container mx-auto px-6 relative z-10">
+            <div class="max-w-6xl mx-auto text-center py-20">
+                <div class="mb-8 animate-fade-in">
+                    <span class="text-xs uppercase tracking-[0.3em] turquoise-text">Propuesta Comercial DFY</span>
+                </div>
+
+                <h1 class="text-white mb-8 animate-fade-in delay-1" style="text-shadow: 0 6px 25px rgba(0,0,0,0.7), 0 3px 15px rgba(0,0,0,0.5);">
+                    <span class="gradient-text">VCSA</span> para tu Equipo
+                </h1>
+
+                <p class="text-2xl md:text-3xl text-white mb-6 animate-fade-in delay-2 font-semibold" style="text-shadow: 0 4px 20px rgba(0,0,0,0.6), 0 2px 10px rgba(0,0,0,0.4);">
+                    Vacation Club Sales Academy
+                </p>
+
+                <p class="text-xl text-white/95 mb-8 animate-fade-in delay-3" style="text-shadow: 0 3px 15px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3);">
+                    Plataforma de Capacitación y Herramienta Diaria para Equipos de Ventas en Riviera Maya
+                </p>
+
+                <!-- Podcast CTA Button -->
+                <div class="mb-12 animate-fade-in delay-3">
+                    <button id="podcastButton" class="group bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold py-4 px-8 rounded-full text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center justify-center mx-auto space-x-3" style="box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+                        <div class="relative">
+                            <i class="fas fa-play-circle text-2xl group-hover:scale-110 transition-transform duration-300"></i>
+                            <div id="pulseRing" class="absolute inset-0 rounded-full border-2 border-white opacity-75 animate-ping"></div>
+                        </div>
+                        <span>🎧 Escuchar Propuesta en Podcast</span>
+                    </button>
+                    <p class="text-sm text-white/80 mt-3 max-w-md mx-auto text-center" style="text-shadow: 0 2px 8px rgba(0,0,0,0.5);">Descubre todos los detalles de nuestra propuesta estratégica en formato audio</p>
+                </div>
+
+                <div class="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                    <div class="resort-card p-6 animate-fade-in delay-3">
+                        <div class="stat-number">200</div>
+                        <p class="text-gray-600 mt-2 font-medium">Usuarios Capacitados</p>
+                    </div>
+                    <div class="resort-card p-6 animate-fade-in">
+                        <div class="stat-number">4</div>
+                        <p class="text-gray-600 mt-2 font-medium">Semanas de Onboarding</p>
+                    </div>
+                    <div class="resort-card p-6 animate-fade-in">
+                        <div class="stat-number">10x</div>
+                        <p class="text-gray-600 mt-2 font-medium">ROI Proyectado</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Video Section -->
+    <section class="py-20 px-6" style="background: var(--sand-light);">
+        <div class="container mx-auto max-w-5xl">
+            <div class="text-center mb-12">
+                <span class="inline-block px-6 py-2 rounded-full text-sm font-bold uppercase tracking-widest mb-6" style="background: rgba(0, 119, 190, 0.1); color: var(--primary-turquoise);">
+                    Video de Presentación
+                </span>
+                <h2 class="text-4xl md:text-5xl font-bold mb-6" style="color: var(--text-dark);">
+                    Conoce <span class="turquoise-text">VCSA</span> en Acción
+                </h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    Descubre cómo VCSA transforma equipos de ventas en la Riviera Maya
+                </p>
+            </div>
+
+            <div class="resort-card p-4 shadow-2xl" style="border-radius: 24px;">
+                <div class="relative" style="padding-top: 56.25%; border-radius: 20px; overflow: hidden;">
+                    <video id="vcsaVideo" class="absolute inset-0 w-full h-full object-cover" controls poster="https://images.unsplash.com/photo-1570213489059-0aac6626fade?auto=format&fit=crop&w=2000&q=80" style="background: #000;">
+                        <source src="https://softvibes.com.mx/vsa/media/vcl.mp4" type="video/mp4">
+                        Tu navegador no soporta el elemento de video.
+                    </video>
+                </div>
+            </div>
+
+            <div class="mt-12 text-center">
+                <p class="text-gray-600 mb-6">
+                    <i class="fas fa-clock mr-2" style="color: var(--primary-turquoise);"></i>
+                    Duración: 3 minutos
+                </p>
+                <div class="flex flex-wrap justify-center gap-8 text-gray-700">
+                    <div class="flex items-center gap-2">
+                        <span class="text-2xl">✓</span>
+                        <span class="font-semibold">Onboarding acelerado</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-2xl">✓</span>
+                        <span class="font-semibold">Readiness Score</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-2xl">✓</span>
+                        <span class="font-semibold">Agente IA integrado</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Problem Statement -->
+    <section class="py-20 px-6">
+        <div class="container mx-auto max-w-6xl">
+            <div class="text-center mb-16">
+                <span class="text-xs uppercase tracking-[0.3em] turquoise-text">El Desafío</span>
+                <h2 class="text-4xl md:text-5xl font-bold mt-4 mb-6 text-gray-800">¿Tu Equipo Está Preparado para Vender en el Mercado de Riviera Maya?</h2>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="resort-card p-8 border-l-4" style="border-left-color: #EF4444;">
+                    <h3 class="text-xl font-semibold mb-4 text-red-500">Situación Actual</h3>
+                    <ul class="space-y-3 text-gray-600">
+                        <li class="flex items-start gap-3">
+                            <span class="text-red-500 mt-1">✗</span>
+                            <span>Alta rotación de personal (60-80% anual en la industria)</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-red-500 mt-1">✗</span>
+                            <span>Onboarding lento: 6-12 meses vs. nuestro objetivo de 4-8 semanas</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-red-500 mt-1">✗</span>
+                            <span>Capacitación genérica que no aplica a vacation clubs</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-red-500 mt-1">✗</span>
+                            <span>Sin herramientas diarias para prep de tours</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-red-500 mt-1">✗</span>
+                            <span>Sin seguimiento de progreso y readiness</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="resort-card p-8 border-l-4" style="border-left-color: var(--primary-turquoise);">
+                    <h3 class="text-xl font-semibold mb-4 turquoise-text">Con VCSA</h3>
+                    <ul class="space-y-3 text-gray-600">
+                        <li class="flex items-start gap-3">
+                            <span class="turquoise-text mt-1">✓</span>
+                            <span><strong class="text-gray-800">Onboarding de 6 semanas</strong> en lugar de 6-12 meses</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="turquoise-text mt-1">✓</span>
+                            <span><strong class="text-gray-800">Entrenamiento específico</strong> para vacation clubs y Riviera Maya</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="turquoise-text mt-1">✓</span>
+                            <span><strong class="text-gray-800">Herramienta diaria</strong> para prep de tours y objeciones</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="turquoise-text mt-1">✓</span>
+                            <span><strong class="text-gray-800">Seguimiento en tiempo real</strong> de readiness y progreso</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="turquoise-text mt-1">✓</span>
+                            <span><strong class="text-gray-800">35% más closing rate</strong> en el primer mes</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- Platform Insights -->
+    <section class="py-20 px-6">
+        <div class="container mx-auto max-w-6xl">
+            <div class="text-center mb-16">
+                <span class="text-xs uppercase tracking-[0.3em] turquoise-text">Insights de la Plataforma</span>
+                <h2 class="text-4xl md:text-5xl font-bold mt-4 mb-6 text-gray-800">Más Que una Plataforma de Capacitación</h2>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto">
+                    VCSA no es solo transmitir conocimiento. Es un sistema operativo que tus vendedores usarán todos los días.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="resort-card p-8">
+                    <div class="feature-icon">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3 text-gray-800">Pre-Tour Tactical Mode</h3>
+                    <p class="text-gray-600 mb-4">
+                        Antes de cada tour, el rep accede a quick wins y breakdowns específicos.
+                    </p>
+                    <div class="text-sm turquoise-text font-semibold">
+                        "5 minutos de prep = 20% más en closing rate"
+                    </div>
+                </div>
+
+                <div class="resort-card p-8">
+                    <div class="feature-icon">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3 text-gray-800">Readiness Score</h3>
+                    <p class="text-gray-600 mb-4">
+                        Algoritmo que mide la preparación de cada rep basado en 5 factores.
+                    </p>
+                    <div class="text-sm turquoise-text font-semibold">
+                        "Sabes exactamente cuándo un rep está ready"
+                    </div>
+                </div>
+
+                <div class="resort-card p-8">
+                    <div class="feature-icon">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3 text-gray-800">Comunidad de Top Producers</h3>
+                    <p class="text-gray-600 mb-4">
+                        Acceso a estrategias de los mejores vendedores de vacation clubs.
+                    </p>
+                    <div class="text-sm turquoise-text font-semibold">
+                        "Aprende de quienes venden $1M+ anuales"
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- Pricing Section -->
+    <section class="py-20 px-6" id="pricing">
+        <div class="container mx-auto max-w-6xl">
+            <div class="text-center mb-16">
+                <span class="text-xs uppercase tracking-[0.3em] turquoise-text">Inversión</span>
+                <h2 class="text-4xl md:text-5xl font-bold mt-4 mb-6 text-gray-800">Propuesta DFY para 200 Usuarios</h2>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto">
+                    Solución llave en mano: configuración personalizada, contenido adaptado a Riviera Maya.
+                </p>
+            </div>
+
+            <!-- Main Pricing Card -->
+            <div class="resort-card p-12 max-w-4xl mx-auto" style="border: 3px solid var(--primary-turquoise); box-shadow: var(--shadow-medium);">
+                <div class="text-center mb-8">
+                    <div class="inline-block px-6 py-2 rounded-full text-sm font-bold uppercase tracking-wider mb-6" style="background: var(--gradient-ocean); color: white;">
+                        Done For You - Enterprise
+                    </div>
+                    <h3 class="text-3xl font-bold mb-2 text-gray-800">VCSA para tu Equipo</h3>
+                    <p class="text-gray-600">200 Usuarios • Riviera Maya Edition</p>
+                </div>
+
+                <div class="grid md:grid-cols-3 gap-8 mb-8">
+                    <div class="text-center p-6" style="background: var(--sand-light); border-radius: 12px;">
+                        <div class="text-sm text-gray-500 mb-1">Setup Fee (Único)</div>
+                        <div class="text-4xl font-bold turquoise-text">$25,000</div>
+                        <div class="text-sm text-gray-500 mt-1">USD</div>
+                    </div>
+                    <div class="text-center p-6" style="background: var(--sand-light); border-radius: 12px;">
+                        <div class="text-sm text-gray-500 mb-1">Mensualidad</div>
+                        <div class="text-4xl font-bold turquoise-text">$8,000</div>
+                        <div class="text-sm text-gray-500 mt-1">USD/mes</div>
+                    </div>
+                    <div class="text-center p-6" style="background: var(--sand-light); border-radius: 12px;">
+                        <div class="text-sm text-gray-500 mb-1">Costo por Usuario</div>
+                        <div class="text-4xl font-bold turquoise-text">$40</div>
+                        <div class="text-sm text-gray-500 mt-1">USD/mes</div>
+                    </div>
+                </div>
+
+                <div class="text-center mt-12">
+                    <button class="cta-button pulse-glow" onclick="scrollToContact()">
+                        Solicitar Propuesta Completa
+                    </button>
+                    <p class="text-sm text-gray-500 mt-4">
+                        Configuración personalizada • Contenido adaptado • Soporte dedicado
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-20 px-6" style="background: linear-gradient(135deg, var(--sand-beige) 0%, var(--sand-light) 100%);">
+        <div class="container mx-auto max-w-4xl text-center">
+            <h2 class="text-4xl md:text-5xl font-bold mb-6 text-gray-800">¿Listo para Transformar tu Equipo de Ventas?</h2>
+            <p class="text-xl text-gray-600 mb-12 max-w-2xl mx-auto">
+                Agenda una demo personalizada y descubre cómo VCSA puede ayudar a tu equipo de Riviera Maya.
+            </p>
+
+            <div class="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+                <a href="https://wa.me/527295493319?text=Hola,%20me%20interesa%20la%20propuesta%20VCSA%20para%20Riviera%20Maya"
+                   target="_blank"
+                   class="cta-button">
+                    💬 WhatsApp
+                </a>
+                <a href="mailto:rgarcia@softvibes.com.mx?subject=Propuesta%20VCSA%20Riviera%20Maya"
+                   class="cta-button-secondary">
+                    ✉️ Email
+                </a>
+                <a href="tel:+527295493319"
+                   class="cta-button-secondary">
+                    📞 Llamar
+                </a>
+            </div>
+
+            <div class="text-sm text-gray-500">
+                <p>O contáctanos directamente:</p>
+                <p class="mt-2">
+                    <span class="turquoise-text font-semibold">Email:</span> rgarcia@softvibes.com.mx •
+                    <span class="turquoise-text font-semibold">Tel:</span> +52 729 549 3319
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-16 px-6" style="background: #1A1A1A;">
+        <div class="container mx-auto max-w-6xl text-center">
+            <h4 class="font-serif text-3xl font-bold mb-4" style="font-family: 'Montserrat', sans-serif;">VCSA</h4>
+            <p class="text-sm text-gray-400 mb-6">Vacation Club Sales Academy</p>
+            <p class="text-sm text-gray-500">
+                © 2026 Vacation Club Sales Academy. Todos los derechos reservados.
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        function scrollToContact() {
+            window.scrollTo({
+                top: document.body.scrollHeight,
+                behavior: 'smooth'
+            });
+        }
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Fade in animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.animate-fade-in').forEach(card => {
+            observer.observe(card);
+        });
+
+        // Pulse animation for CTA
+        const pulsingElements = document.querySelectorAll('.pulse-glow');
+        setInterval(() => {
+            pulsingElements.forEach(el => {
+                el.style.transform = 'scale(1.02)';
+                setTimeout(() => {
+                    el.style.transform = 'scale(1)';
+                }, 200);
+            });
+        }, 3000);
+
+        // ===== PODCAST PLAYER =====
+        const podcastButton = document.getElementById('podcastButton');
+        let audioPlayer = null;
+        let isPlaying = false;
+
+        if (podcastButton) {
+            podcastButton.addEventListener('click', function() {
+                if (!audioPlayer) {
+                    audioPlayer = new Audio('https://softvibes.com.mx/vsa/media/podcast.mp3');
+                    audioPlayer.addEventListener('ended', function() {
+                        isPlaying = false;
+                        updatePodcastButton();
+                    });
+                    audioPlayer.addEventListener('error', function(e) {
+                        console.error('Error al cargar el audio:', e);
+                        alert('Error al cargar el podcast. Por favor, intenta nuevamente.');
+                    });
+                }
+
+                if (isPlaying) {
+                    audioPlayer.pause();
+                    isPlaying = false;
+                } else {
+                    audioPlayer.play().then(() => {
+                        isPlaying = true;
+                    }).catch(e => {
+                        console.error('Error al reproducir:', e);
+                        alert('Error al reproducir el podcast. Por favor, intenta nuevamente.');
+                    });
+                }
+
+                updatePodcastButton();
+            });
+        }
+
+        function updatePodcastButton() {
+            if (!podcastButton) return;
+            const icon = podcastButton.querySelector('i');
+            const text = podcastButton.querySelector('span');
+            const pulseRing = document.getElementById('pulseRing');
+
+            if (isPlaying) {
+                icon.className = 'fas fa-pause-circle text-2xl group-hover:scale-110 transition-transform duration-300';
+                text.textContent = '⏸️ Pausar Podcast';
+                if (pulseRing) pulseRing.style.display = 'block';
+            } else {
+                icon.className = 'fas fa-play-circle text-2xl group-hover:scale-110 transition-transform duration-300';
+                text.textContent = '🎧 Escuchar Propuesta en Podcast';
+                if (pulseRing) pulseRing.style.display = 'none';
+            }
+        }
+    </script>
+
+    <!-- Vapi Widget -->
+    <vapi-widget
+      public-key="520f7fe1-a200-461d-ad8e-959512d3e9fa"
+      assistant-id="f39848a3-4218-4565-9374-0710385b58f9"
+      mode="voice"
+      theme="dark"
+      base-bg-color="#000000"
+      accent-color="#0077BE"
+      cta-button-color="#0077BE"
+      cta-button-text-color="#ffffff"
+      border-radius="large"
+      size="full"
+      position="bottom-right"
+      title="Habla con VCSA"
+      start-button-text="Iniciar conversación"
+      end-button-text="Terminar conversación"
+      chat-first-message="Hey, ¿en qué puedo ayudarte hoy?"
+      chat-placeholder="Escribe tu mensaje..."
+      voice-show-transcript="true"
+      consent-required="true"
+      consent-title="Términos y condiciones"
+      consent-content="Al hacer clic en 'Aceptar', consiento la grabación, almacenamiento y uso de mis comunicaciones con este asistente de IA."
+      consent-storage-key="vapi_widget_consent"
+    ></vapi-widget>
+</body>
+</html>
