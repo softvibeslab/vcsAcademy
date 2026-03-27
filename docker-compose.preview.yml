@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  mongodb-preview:
+    image: mongo:8
+    container_name: vcsa-mongodb-preview
+    ports:
+      - "27020:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: preview2024
+      MONGO_INITDB_DATABASE: vcsa_preview
+    volumes:
+      - mongodb_preview_data:/data/db
+    networks:
+      - vcsa-preview
+
+  backend-preview:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: vcsa-backend-preview
+    ports:
+      - "8002:8000"
+    environment:
+      MONGO_URL: mongodb://admin:preview2024@mongodb-preview:27017
+      DB_NAME: vcsa_preview
+      PYTHONUNBUFFERED: 1
+    depends_on:
+      - mongodb-preview
+    networks:
+      - vcsa-preview
+    restart: unless-stopped
+
+  frontend-preview:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        REACT_APP_BACKEND_URL: http://31.220.63.211:8002
+    container_name: vcsa-frontend-preview
+    ports:
+      - "3002:80"
+    environment:
+      REACT_APP_BACKEND_URL: http://31.220.63.211:8002
+      BACKEND_HOST: backend-preview
+    depends_on:
+      - backend-preview
+    networks:
+      - vcsa-preview
+    restart: unless-stopped
+
+volumes:
+  mongodb_preview_data:
+
+networks:
+  vcsa-preview:
+    driver: bridge

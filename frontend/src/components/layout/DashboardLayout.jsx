@@ -1,11 +1,12 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { 
-  LayoutDashboard, BookOpen, Users, Calendar, 
-  Download, Crown, User, Settings, LogOut, 
-  Trophy, Menu, X, Shield, Target, Zap
+import {
+  LayoutDashboard, BookOpen, Users, Calendar,
+  Download, Crown, User, Settings, LogOut,
+  Trophy, Menu, X, Shield, Target, Zap, TrendingUp, Award
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '@/App';
+import { useOrganization } from '@/contexts/OrganizationContext';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -13,8 +14,10 @@ const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
   { icon: Target, label: 'Top Producer Path', path: '/path', highlight: true },
   { icon: BookOpen, label: 'Training Library', path: '/courses' },
+  { icon: Award, label: 'Masterclasses', path: '/masterclasses' },
   { icon: Users, label: 'Community', path: '/community' },
   { icon: Calendar, label: 'Events', path: '/events' },
+  { icon: TrendingUp, label: 'Coaching', path: '/coaching' },
   { icon: Download, label: 'Resources', path: '/resources' },
   { icon: Crown, label: 'Membership', path: '/membership' },
 ];
@@ -23,6 +26,7 @@ export const DashboardLayout = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const { organization, branding, siteName, logoUrl, isGamificationEnabled } = useOrganization();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleLogout = async () => {
@@ -45,11 +49,15 @@ export const DashboardLayout = ({ children }) => {
         {/* Logo */}
         <div className="p-6 border-b border-white/5">
           <Link to="/dashboard" className="flex items-center gap-3">
-            <div className="w-10 h-10 gradient-gold flex items-center justify-center">
-              <Trophy className="w-5 h-5 text-black" />
-            </div>
+            {logoUrl && logoUrl !== '/logo.png' ? (
+              <img src={logoUrl} alt={siteName} className="w-10 h-10 object-contain" />
+            ) : (
+              <div className="w-10 h-10 gradient-gold flex items-center justify-center">
+                <Trophy className="w-5 h-5 text-black" />
+              </div>
+            )}
             <div className="flex flex-col">
-              <span className="font-serif text-sm font-semibold leading-tight">Vacation Club</span>
+              <span className="font-serif text-sm font-semibold leading-tight">{siteName || 'Vacation Club'}</span>
               <span className="text-[10px] text-[#D4AF37] uppercase tracking-widest">Sales Academy</span>
             </div>
           </Link>
@@ -103,21 +111,37 @@ export const DashboardLayout = ({ children }) => {
               </Link>
             );
           })}
-          
-          {user?.role === 'admin' && (
-            <Link
-              to="/admin"
-              className={cn(
-                "flex items-center gap-3 px-4 py-3 rounded-sm transition-colors",
-                location.pathname === '/admin'
-                  ? "bg-[#D4AF37]/10 text-[#D4AF37] border-l-2 border-[#D4AF37]" 
-                  : "text-[#94A3B8] hover:text-white hover:bg-white/5"
+
+          {(user?.role === 'admin' || user?.role === 'org_admin') && (
+            <>
+              <Link
+                to="/admin"
+                className={cn(
+                  "flex items-center gap-3 px-4 py-3 rounded-sm transition-colors",
+                  location.pathname === '/admin'
+                    ? "bg-[#D4AF37]/10 text-[#D4AF37] border-l-2 border-[#D4AF37]"
+                    : "text-[#94A3B8] hover:text-white hover:bg-white/5"
+                )}
+                data-testid="nav-admin"
+              >
+                <Shield className="w-5 h-5" />
+                <span className="font-medium">Admin</span>
+              </Link>
+              {user?.role === 'org_admin' && organization && (
+                <Link
+                  to="/settings/organization"
+                  className={cn(
+                    "flex items-center gap-3 px-4 py-3 rounded-sm transition-colors",
+                    location.pathname.startsWith('/settings/organization')
+                      ? "bg-[#D4AF37]/10 text-[#D4AF37] border-l-2 border-[#D4AF37]"
+                      : "text-[#94A3B8] hover:text-white hover:bg-white/5"
+                  )}
+                >
+                  <Settings className="w-5 h-5" />
+                  <span className="font-medium">Organization</span>
+                </Link>
               )}
-              data-testid="nav-admin"
-            >
-              <Shield className="w-5 h-5" />
-              <span className="font-medium">Admin</span>
-            </Link>
+            </>
           )}
         </nav>
 
@@ -151,15 +175,19 @@ export const DashboardLayout = ({ children }) => {
       <header className="lg:hidden fixed top-0 left-0 right-0 z-50 glass">
         <div className="flex items-center justify-between px-4 py-3">
           <Link to="/dashboard" className="flex items-center gap-2">
-            <div className="w-8 h-8 gradient-gold flex items-center justify-center">
-              <Trophy className="w-4 h-4 text-black" />
-            </div>
+            {logoUrl && logoUrl !== '/logo.png' ? (
+              <img src={logoUrl} alt={siteName} className="w-8 h-8 object-contain" />
+            ) : (
+              <div className="w-8 h-8 gradient-gold flex items-center justify-center">
+                <Trophy className="w-4 h-4 text-black" />
+              </div>
+            )}
             <div className="flex flex-col">
-              <span className="font-serif text-sm font-semibold leading-tight">Vacation Club</span>
+              <span className="font-serif text-sm font-semibold leading-tight">{siteName || 'Vacation Club'}</span>
               <span className="text-[9px] text-[#D4AF37] uppercase tracking-wider">Sales Academy</span>
             </div>
           </Link>
-          <button 
+          <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="p-2 text-white"
             data-testid="mobile-menu-toggle"
@@ -209,15 +237,27 @@ export const DashboardLayout = ({ children }) => {
                   </Link>
                 );
               })}
-              {user?.role === 'admin' && (
-                <Link
-                  to="/admin"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3 rounded-sm text-[#94A3B8]"
-                >
-                  <Shield className="w-5 h-5" />
-                  <span>Admin</span>
-                </Link>
+              {(user?.role === 'admin' || user?.role === 'org_admin') && (
+                <>
+                  <Link
+                    to="/admin"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 rounded-sm text-[#94A3B8]"
+                  >
+                    <Shield className="w-5 h-5" />
+                    <span>Admin</span>
+                  </Link>
+                  {user?.role === 'org_admin' && organization && (
+                    <Link
+                      to="/settings/organization"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 rounded-sm text-[#94A3B8]"
+                    >
+                      <Settings className="w-5 h-5" />
+                      <span>Organization</span>
+                    </Link>
+                  )}
+                </>
               )}
               <Link
                 to="/profile"

@@ -26,8 +26,21 @@ export default function RegisterPage() {
     try {
       const response = await axios.post(`${API}/auth/register`, { name, email, password }, { withCredentials: true });
       login(response.data);
-      toast.success('Welcome to Vacation Club Sales Academy!');
-      navigate('/dashboard');
+
+      // Store user data for onboarding
+      sessionStorage.setItem('userData', JSON.stringify(response.data));
+
+      toast.success('¡Cuenta creada exitosamente! 🎉', {
+        description: 'Completa tu perfil para personalizar tu experiencia',
+        duration: 3000
+      });
+
+      // Redirect to student onboarding instead of dashboard
+      navigate('/onboarding/student', {
+        state: {
+          userData: response.data
+        }
+      });
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Registration failed');
     } finally {
@@ -36,9 +49,9 @@ export default function RegisterPage() {
   };
 
   const handleGoogleLogin = () => {
-    // REMINDER: DO NOT HARDCODE THE URL, OR ADD ANY FALLBACKS OR REDIRECT URLS, THIS BREAKS THE AUTH
-    const redirectUrl = window.location.origin + '/dashboard';
-    window.location.href = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
+    // Google OAuth - To be implemented with your own OAuth provider
+    toast.info('Google OAuth coming soon!');
+    // For now, use email/password registration
   };
 
   return (

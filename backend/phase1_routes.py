@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
 from datetime import datetime, timezone, timedelta
 import uuid
+import asyncio
 
 # Import from main server
 from server import db, require_auth, User
@@ -17,6 +18,14 @@ from server import db, require_auth, User
 phase1_router = APIRouter(prefix="/api/development", tags=["development"])
 
 # ============== CONTENT LAYER MODELS ==============
+
+class Expert(BaseModel):
+    """Expert information for masterclass content"""
+    name: str
+    title: str
+    company: str
+    bio: str
+    photo_url: Optional[str] = None
 
 class Content(BaseModel):
     """Universal content model - videos, breakdowns, quick wins, simulations"""
@@ -30,6 +39,12 @@ class Content(BaseModel):
     video_url: Optional[str] = None
     key_move: Optional[str] = None  # The one actionable takeaway
     tags: List[str] = []
+    # Masterclass-specific fields
+    content_type: Optional[str] = None  # masterclass, module
+    expert: Optional[Expert] = None
+    view_count: Optional[int] = 0
+    rating: Optional[float] = None
+    recorded_date: Optional[datetime] = None
     created_at: datetime
 
 class TrackContent(BaseModel):
@@ -323,7 +338,18 @@ CONTENT = [
         "duration": 10,
         "video_url": PLACEHOLDER_VIDEO,
         "key_move": "Ask: 'If time and money weren't factors, what would your dream vacation look like?' Then listen for emotional triggers.",
-        "tags": ["discovery", "questions", "motivation", "before_tour"]
+        "tags": ["discovery", "questions", "motivation", "before_tour"],
+        "content_type": "masterclass",
+        "expert": {
+            "name": "James Rodriguez",
+            "title": "VP of Sales",
+            "company": "Premier Resorts International",
+            "bio": "20+ years in vacation club sales. Built sales teams that generate $200M+ annually.",
+            "photo_url": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop"
+        },
+        "view_count": 1247,
+        "rating": 4.8,
+        "recorded_date": datetime(2024, 2, 15, tzinfo=timezone.utc)
     },
     {
         "content_id": "mod_2_4",
@@ -437,7 +463,18 @@ CONTENT = [
         "duration": 10,
         "video_url": PLACEHOLDER_VIDEO,
         "key_move": "Decisions are emotional, justified logically. Build emotion first, then provide the logical justification.",
-        "tags": ["decision", "psychology", "closing"]
+        "tags": ["decision", "psychology", "closing"],
+        "content_type": "masterclass",
+        "expert": {
+            "name": "Dr. Marcus Chen",
+            "title": "Behavioral Scientist",
+            "company": "VCSA Founder",
+            "bio": "PhD in Behavioral Economics. Studies decision-making in high-stakes sales environments for 15 years.",
+            "photo_url": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop"
+        },
+        "view_count": 1892,
+        "rating": 4.7,
+        "recorded_date": datetime(2024, 1, 20, tzinfo=timezone.utc)
     },
     {
         "content_id": "mod_4_2",
@@ -516,7 +553,18 @@ CONTENT = [
         "duration": 12,
         "video_url": PLACEHOLDER_VIDEO,
         "key_move": "'Too expensive compared to what? Are we talking about monthly budget or total investment? Let's find what works.'",
-        "tags": ["objections", "price", "closing"]
+        "tags": ["objections", "price", "closing"],
+        "content_type": "masterclass",
+        "expert": {
+            "name": "Sarah Mitchell",
+            "title": "Sales Psychologist",
+            "company": "VCSA",
+            "bio": "PhD in Sales Psychology. 15 years on the sales floor. Specializes in objection handling and buyer psychology.",
+            "photo_url": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop"
+        },
+        "view_count": 2341,
+        "rating": 4.9,
+        "recorded_date": datetime(2024, 3, 1, tzinfo=timezone.utc)
     },
     {
         "content_id": "mod_5_3",
@@ -584,7 +632,18 @@ CONTENT = [
         "duration": 10,
         "video_url": PLACEHOLDER_VIDEO,
         "key_move": "Reinforce immediately: 'You made a great decision. Here's why this is perfect for your family...'",
-        "tags": ["post-decision", "remorse", "protection"]
+        "tags": ["post-decision", "remorse", "protection"],
+        "content_type": "masterclass",
+        "expert": {
+            "name": "Jennifer Walsh",
+            "title": "Customer Success Director",
+            "company": "Premier Resorts",
+            "bio": "Specializes in post-sale experience and retention. Maintains 94% retention rate across 5,000+ members.",
+            "photo_url": "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&h=150&fit=crop"
+        },
+        "view_count": 987,
+        "rating": 4.6,
+        "recorded_date": datetime(2024, 2, 28, tzinfo=timezone.utc)
     },
     {
         "content_id": "mod_6_3",
@@ -1389,6 +1448,85 @@ async def get_quickwin(quickwin_id: str, user: User = Depends(require_auth)):
     if not win:
         raise HTTPException(status_code=404, detail="Quick win not found")
     return win
+
+# ============== MASTERCLASSES ==============
+
+@phase1_router.get("/masterclasses")
+async def get_masterclasses(
+    topic: Optional[str] = None,
+    expert: Optional[str] = None,
+    difficulty: Optional[str] = None,
+    sort: Optional[str] = "newest",
+    user: User = Depends(require_auth)
+):
+    """
+    Get all masterclass-type content with optional filtering
+
+    Filters:
+    - topic: Filter by topic tag (objections, closing, discovery, etc.)
+    - expert: Filter by expert name
+    - difficulty: beginner, intermediate, advanced
+
+    Sort options:
+    - newest: Most recently recorded
+    - popular: Most views
+    - rating: Highest rated
+    """
+    # Get all track content
+    all_content = []
+    for track in TRACKS:
+        modules = get_track_modules(track["track_id"])
+        for module in modules:
+            if module.get("content_type") == "masterclass":
+                # Add track info for context
+                module["track_name"] = track["name"]
+                module["track_id"] = track["track_id"]
+                all_content.append(module)
+
+    # Apply filters
+    if topic:
+        all_content = [c for c in all_content if topic in c.get("tags", [])]
+
+    if expert:
+        all_content = [c for c in all_content if expert.lower() in c.get("expert", {}).get("name", "").lower()]
+
+    if difficulty:
+        all_content = [c for c in all_content if c.get("difficulty") == difficulty]
+
+    # Apply sorting
+    if sort == "popular":
+        all_content.sort(key=lambda x: x.get("view_count", 0), reverse=True)
+    elif sort == "rating":
+        all_content.sort(key=lambda x: x.get("rating", 0), reverse=True)
+    else:  # newest
+        all_content.sort(key=lambda x: x.get("recorded_date", x.get("created_at", datetime.min)), reverse=True)
+
+    return all_content
+
+@phase1_router.get("/masterclasses/{content_id}")
+async def get_masterclass(content_id: str, user: User = Depends(require_auth)):
+    """Get single masterclass with full details"""
+    # Search in all track content
+    for track in TRACKS:
+        modules = get_track_modules(track["track_id"])
+        for module in modules:
+            if module.get("content_id") == content_id:
+                if module.get("content_type") != "masterclass":
+                    raise HTTPException(status_code=404, detail="Not a masterclass")
+                # Add track info
+                module["track_name"] = track["name"]
+                module["track_id"] = track["track_id"]
+                # Increment view count asynchronously
+                asyncio.create_task(increment_view_count(content_id))
+                return module
+
+    raise HTTPException(status_code=404, detail="Masterclass not found")
+
+async def increment_view_count(content_id: str):
+    """Increment view count for content (non-blocking)"""
+    # This would update in database if using DB storage
+    # For now, content is in-memory so we'd need to add DB tracking
+    pass
 
 @phase1_router.get("/progress")
 async def get_user_progress(user: User = Depends(require_auth)):
