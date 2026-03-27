@@ -1,46 +1,41 @@
-services:
-  # MongoDB Database (Free tier on Render)
-  - type: pserv
-    name: vcsa-mongodb
-    env: docker
-    region: oregon
-    plan: free
-    envVars:
-      - key: MONGO_INITDB_ROOT_USERNAME
-        value: admin
-      - key: MONGO_INITDB_ROOT_PASSWORD
-        generateValue: true
-      - key: MONGO_INITDB_DATABASE
-        value: vcsa
-    disk:
-      name: data
-      mountPath: /data/db
-      sizeGB: 1
+previews:
+  generation: automatic
 
-  # Backend API
+services:
+  # Backend API - FastAPI
   - type: web
     name: vcsa-backend
-    env: docker
+    runtime: docker
     region: oregon
     plan: free
     dockerContext: ./backend
     dockerfilePath: ./backend/Dockerfile
     healthCheckPath: /api/health
     envVars:
-      - key: MONGO_URL
-        sync: false # Set manually after MongoDB is deployed
-      - key: DB_NAME
-        value: vcsa
-      - key: STRIPE_API_KEY
-        sync: false # Set manually
-      - key: PYTHON_VERSION
-        value: 3.13
       - key: PORT
         value: 8000
+      - key: PYTHON_VERSION
+        value: 3.13
+      - key: DB_NAME
+        value: vcsa
+      - key: MONGO_URL
+        fromDatabase:
+          name: vcsa-mongodb
+          property: connectionString
+      - key: STRIPE_API_KEY
+        sync: false
+
+databases:
+  # MongoDB Database (Managed by Render)
+  - name: vcsa-mongodb
+    databaseName: vcsa
+    user: vcsa_user
+    plan: free
 
 # Instructions:
 # 1. Create a Render account at https://render.com
 # 2. Fork this repository
 # 3. Connect your GitHub repo to Render
-# 4. Render will detect render.yaml and deploy the services
-# 5. After MongoDB is deployed, copy its internal URL and set it as MONGO_URL in the backend service
+# 4. Create New + → "Blueprint" → Select your repo
+# 5. Render will detect render.yaml and deploy both services
+# 6. The backend will automatically connect to MongoDB using the connection string

@@ -9,12 +9,15 @@
 2. Fork this repository
 3. Click "New +" → "Blueprint" in Render
 4. Connect your GitHub repository
-5. Render will detect `render.yaml` and deploy both services
+5. Render will automatically detect `render.yaml` and deploy:
+   - **vcsa-mongodb** (Managed MongoDB database)
+   - **vcsa-backend** (FastAPI service)
 
 **After Deployment:**
-1. Get your MongoDB URL from Render dashboard
-2. Set it as `MONGO_URL` in backend environment variables
-3. Update frontend `.env.production` with your backend URL
+1. Get your backend URL from Render dashboard (e.g., `https://vcsa-backend.onrender.com`)
+2. Update frontend configuration:
+   - Option A: Set `REACT_APP_BACKEND_URL` in Netlify environment variables
+   - Option B: Update `frontend/.env.production` and rebuild
 
 **Backend URL format:** `https://vcsa-backend.onrender.com`
 
