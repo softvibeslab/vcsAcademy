@@ -63,33 +63,41 @@ export function OrganizationProvider({ children }) {
       setLoading(true);
       setError(null);
 
-      // Use relative URLs in production, full URL in development
-      const isProduction = process.env.NODE_ENV === 'production';
-      const backendUrl = isProduction ? '' : (process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000');
+      // MOCK MODE: Skip API call completely for demo
+      console.log('[OrganizationContext] MOCK MODE - Using simulated organization data');
 
-      // Try to get organization by slug
-      const response = await axios.get(`${backendUrl}/api/organizations/by-slug/${slug}`);
+      // Simulated organization data
+      const mockOrgData = {
+        organization_id: 'mock-org-123',
+        name: 'VCSA Academy Demo',
+        slug: slug || 'demo',
+        branding: {
+          logo_url: '',
+          primary_color: '#D4AF37',
+          secondary_color: '#1E3A8A',
+          site_name: 'VCSA Academy',
+          tagline: 'Demo Mode - No Backend'
+        },
+        settings: {
+          enable_gamification: true,
+          enable_community: true,
+          enable_events: true
+        }
+      };
 
-      const orgData = response.data;
-
-      setOrganization(orgData);
-      setBranding(orgData.branding);
-      setSettings(orgData.settings);
+      setOrganization(mockOrgData);
+      setBranding(mockOrgData.branding);
+      setSettings(mockOrgData.settings);
 
       // Apply branding theme
-      if (orgData.branding) {
-        applyOrganizationTheme(orgData.branding);
+      if (mockOrgData.branding) {
+        applyOrganizationTheme(mockOrgData.branding);
       }
 
       setLoading(false);
     } catch (err) {
       console.error('Error loading organization:', err);
-
-      if (err.response?.status === 404) {
-        setError('Organization not found');
-      } else {
-        setError('Failed to load organization configuration');
-      }
+      setError('Failed to load organization configuration');
 
       // Set default branding as fallback
       const defaultBranding = {

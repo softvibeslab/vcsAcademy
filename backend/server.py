@@ -1330,3 +1330,11 @@ try:
 except ImportError:
     print("Warning: phase1_routes not available")
 
+# Branding Configuration Routes
+try:
+    from branding_routes import branding_router
+    app.include_router(branding_router)
+    print("Branding routes loaded successfully")
+except ImportError:
+    print("Warning: branding_routes not available")
+
