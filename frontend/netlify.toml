@@ -2,10 +2,22 @@
   command = "npm run build"
   publish = "build"
 
+[build.environment]
+  NODE_VERSION = "22"
+  # Backend API URL - Update this with your deployed backend URL
+  # Or set via Netlify dashboard: Site Settings → Environment Variables
+  REACT_APP_BACKEND_URL = "https://vcsa-backend.onrender.com"
+
+# SPA fallback
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
 
-[build.environment]
-  NODE_VERSION = "22"
+# Optional: API proxy (if using same domain)
+# [[redirects]]
+#   from = "/api/*"
+#   to = "https://vcsa-backend.onrender.com/api/:splat"
+#   status = 200
+#   force = true
+#   headers = {X-Forwarded-Host = "vcsa-backend.onrender.com"}

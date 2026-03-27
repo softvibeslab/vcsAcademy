@@ -62,10 +62,9 @@ import BrandingConfigPage from "@/pages/BrandingConfigPage";
 // Student Onboarding
 import StudentOnboardingPage from "@/pages/StudentOnboardingPage";
 
-// Use relative URLs in production (proxied through nginx)
-// Use full URL in development (direct backend access)
-// TEMPORARY FIX: Force localhost for development
-const BACKEND_URL = 'http://localhost:8000';
+// Use environment variable for backend URL
+// Falls back to localhost for development
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
 export const API = `${BACKEND_URL}/api`;
 
 // Auth Context
