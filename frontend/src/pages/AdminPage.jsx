@@ -292,8 +292,11 @@ export default function AdminPage() {
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="member">Member</SelectItem>
-                              <SelectItem value="admin">Admin</SelectItem>
+                              <SelectItem value="rep">Sales Rep</SelectItem>
+                              <SelectItem value="manager">Manager</SelectItem>
+                              <SelectItem value="director">Director</SelectItem>
+                              <SelectItem value="org_admin">Org Admin</SelectItem>
+                              <SelectItem value="admin">System Admin</SelectItem>
                             </SelectContent>
                           </Select>
                         </td>

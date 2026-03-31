@@ -48,6 +48,21 @@ import OnboardingWizard from "@/pages/OnboardingWizard";
 import OrganizationSettings from "@/pages/OrganizationSettings";
 // Create School Flow
 import CreateSchoolPage from "@/pages/CreateSchoolPage";
+// Manager Dashboard
+import ManagerDashboardPage from "@/pages/ManagerDashboardPage";
+
+// Role hierarchy for permission checks (higher = more permissions)
+const ROLE_HIERARCHY = {
+  rep: 1,
+  manager: 2,
+  director: 3,
+  org_admin: 4,
+  admin: 5,
+};
+
+const hasRolePermission = (userRole, requiredRole) => {
+  return (ROLE_HIERARCHY[userRole] || 0) >= (ROLE_HIERARCHY[requiredRole] || 0);
+};
 import InterviewPage from "@/pages/InterviewPage";
 import GeneratePage from "@/pages/GeneratePage";
 import ReviewPage from "@/pages/ReviewPage";
@@ -85,29 +100,18 @@ export const AuthProvider = ({ children }) => {
       const response = await axios.get(`${API}/auth/me`, { withCredentials: true });
       setUser(response.data);
     } catch (error) {
-      // Set mock user for demo purposes when no auth
-      setUser({
-        id: 'demo-user',
-        email: 'demo@vcsa.com',
-        name: 'Demo User',
-        role: 'admin'
-      });
+      // Don't set mock user - require real authentication
+      console.log('No authenticated user found');
+      setUser(null);
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    // For demo purposes, skip auth check and set mock user directly
-    // This allows testing without authentication
-    setLoading(false);
-    setUser({
-      id: 'demo-user',
-      email: 'demo@vcsa.com',
-      name: 'Demo User',
-      role: 'admin'
-    });
-  }, []);
+    // Check authentication on mount
+    checkAuth();
+  }, [checkAuth]);
 
   const login = (userData) => {
     setUser(userData);
@@ -134,7 +138,7 @@ export const AuthProvider = ({ children }) => {
 };
 
 // Protected Route
-const ProtectedRoute = ({ children, adminOnly = false }) => {
+const ProtectedRoute = ({ children, adminOnly = false, requiredRole = null }) => {
   const { user, loading } = useAuth();
   const location = useLocation();
 
@@ -150,7 +154,13 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (adminOnly && user.role !== "admin") {
+  // Legacy adminOnly support
+  if (adminOnly && !hasRolePermission(user.role, "admin")) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  // New role-based access control
+  if (requiredRole && !hasRolePermission(user.role, requiredRole)) {
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -190,6 +200,8 @@ function AppRouter() {
       <Route path="/payment/success" element={<ProtectedRoute><PaymentSuccessPage /></ProtectedRoute>} />
       <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
       <Route path="/admin" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
+      {/* Manager Dashboard - Manager role required */}
+      <Route path="/manager" element={<ProtectedRoute requiredRole="manager"><ManagerDashboardPage /></ProtectedRoute>} />
       {/* Organization Management - Onboarding is public */}
       <Route path="/onboarding" element={<OnboardingWizard />} />
       <Route path="/onboarding/:orgId" element={<OnboardingWizard />} />

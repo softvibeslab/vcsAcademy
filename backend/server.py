@@ -56,6 +56,27 @@ except Exception as e:
 app = FastAPI()
 api_router = APIRouter(prefix="/api")
 
+# ============== ROLE HIERARCHY ==============
+
+# Role levels for permission hierarchy (higher = more permissions)
+ROLE_HIERARCHY = {
+    "rep": 1,           # Sales Representative - basic access
+    "manager": 2,       # Team Manager - team management, progress tracking
+    "director": 3,      # Director - organization management, all teams
+    "org_admin": 4,     # Organization Admin - white-label admin
+    "admin": 5,         # System Admin - full platform access
+}
+
+VALID_ROLES = list(ROLE_HIERARCHY.keys())
+
+def get_role_level(role: str) -> int:
+    """Get the permission level for a role"""
+    return ROLE_HIERARCHY.get(role, 0)
+
+def has_role_permission(user_role: str, required_role: str) -> bool:
+    """Check if user has at least the required role level"""
+    return get_role_level(user_role) >= get_role_level(required_role)
+
 # ============== MODELS ==============
 
 class UserCreate(BaseModel):
@@ -76,7 +97,9 @@ class User(BaseModel):
     level: int = 1
     points: int = 0
     membership: str = "free"  # free or vip
-    role: str = "member"  # member or admin
+    role: str = "rep"  # rep, manager, director, org_admin, admin
+    team_id: Optional[str] = None  # Team assignment for reps
+    manager_id: Optional[str] = None  # Direct manager for reps
     created_at: datetime
 
 class UserPublic(BaseModel):
@@ -85,6 +108,31 @@ class UserPublic(BaseModel):
     picture: Optional[str] = None
     level: int = 1
     membership: str = "free"
+    role: str = "rep"
+    team_id: Optional[str] = None
+
+class Team(BaseModel):
+    """Team model for grouping sales reps under a manager"""
+    model_config = ConfigDict(extra="ignore")
+    team_id: str
+    name: str
+    organization_id: str
+    manager_id: str  # User ID of the team manager
+    description: Optional[str] = None
+    members: List[str] = []  # List of user_ids
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
+class TeamCreate(BaseModel):
+    name: str
+    manager_id: str
+    description: Optional[str] = None
+
+class TeamUpdate(BaseModel):
+    name: Optional[str] = None
+    manager_id: Optional[str] = None
+    description: Optional[str] = None
+    members: Optional[List[str]] = None
 
 class Course(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -312,10 +360,36 @@ async def require_auth(request: Request) -> User:
     return user
 
 async def require_admin(request: Request) -> User:
-    """Require admin role"""
+    """Require admin role (system admin only)"""
     user = await require_auth(request)
     if user.role != "admin":
         raise HTTPException(status_code=403, detail="Admin access required")
+    return user
+
+async def require_role(required_role: str):
+    """Factory for role-based access control"""
+    async def role_checker(request: Request) -> User:
+        user = await require_auth(request)
+        if not has_role_permission(user.role, required_role):
+            raise HTTPException(
+                status_code=403, 
+                detail=f"{required_role.title()} access required"
+            )
+        return user
+    return role_checker
+
+async def require_manager(request: Request) -> User:
+    """Require manager role or higher"""
+    user = await require_auth(request)
+    if not has_role_permission(user.role, "manager"):
+        raise HTTPException(status_code=403, detail="Manager access required")
+    return user
+
+async def require_director(request: Request) -> User:
+    """Require director role or higher"""
+    user = await require_auth(request)
+    if not has_role_permission(user.role, "director"):
+        raise HTTPException(status_code=403, detail="Director access required")
     return user
 
 # ============== AUTH ROUTES ==============
@@ -339,7 +413,7 @@ async def register(data: UserCreate, response: Response):
         "level": 1,
         "points": 0,
         "membership": "free",
-        "role": "member",
+        "role": "rep",
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     await db.users.insert_one(user_doc)
@@ -357,8 +431,8 @@ async def register(data: UserCreate, response: Response):
         key="session_token",
         value=session_token,
         httponly=True,
-        secure=True,
-        samesite="none",
+        secure=False,  # Changed for HTTP local development
+        samesite="lax",  # Changed for HTTP local development
         path="/",
         max_age=7 * 24 * 60 * 60
     )
@@ -390,8 +464,8 @@ async def login(data: UserLogin, response: Response):
         key="session_token",
         value=session_token,
         httponly=True,
-        secure=True,
-        samesite="none",
+        secure=False,  # Changed for HTTP local development
+        samesite="lax",  # Changed for HTTP local development
         path="/",
         max_age=7 * 24 * 60 * 60
     )
@@ -439,7 +513,7 @@ async def process_google_session(request: Request, response: Response):
             "level": 1,
             "points": 0,
             "membership": "free",
-            "role": "member",
+            "role": "rep",
             "created_at": datetime.now(timezone.utc).isoformat()
         }
         await db.users.insert_one(user_doc)
@@ -457,8 +531,8 @@ async def process_google_session(request: Request, response: Response):
         key="session_token",
         value=session_token,
         httponly=True,
-        secure=True,
-        samesite="none",
+        secure=False,  # Changed for HTTP local development
+        samesite="lax",  # Changed for HTTP local development
         path="/",
         max_age=7 * 24 * 60 * 60
     )
@@ -1245,12 +1319,42 @@ async def update_user_role(user_id: str, request: Request, user: User = Depends(
     """Update user role (admin only)"""
     body = await request.json()
     new_role = body.get("role")
+    team_id = body.get("team_id")  # Optional team assignment
+    manager_id = body.get("manager_id")  # Optional manager assignment
     
-    if new_role not in ["member", "admin"]:
-        raise HTTPException(status_code=400, detail="Invalid role")
+    if new_role not in VALID_ROLES:
+        raise HTTPException(status_code=400, detail=f"Invalid role. Valid roles: {VALID_ROLES}")
     
-    await db.users.update_one({"user_id": user_id}, {"$set": {"role": new_role}})
-    return {"message": "Role updated"}
+    update_data = {"role": new_role}
+    
+    # Handle team assignment for reps
+    if new_role == "rep":
+        if team_id:
+            # Verify team exists
+            team = await db.teams.find_one({"team_id": team_id})
+            if not team:
+                raise HTTPException(status_code=404, detail="Team not found")
+            update_data["team_id"] = team_id
+        if manager_id:
+            # Verify manager exists and has appropriate role
+            manager = await db.users.find_one({"user_id": manager_id})
+            if not manager or manager.get("role") not in ["manager", "director"]:
+                raise HTTPException(status_code=400, detail="Manager not found or invalid role")
+            update_data["manager_id"] = manager_id
+    
+    # Handle manager role - can be assigned to manage a team
+    elif new_role == "manager":
+        # Remove any previous team membership
+        update_data["team_id"] = None
+        update_data["manager_id"] = None
+    
+    # Handle director role - oversees all teams
+    elif new_role == "director":
+        update_data["team_id"] = None
+        update_data["manager_id"] = None
+    
+    await db.users.update_one({"user_id": user_id}, {"$set": update_data})
+    return {"message": "Role updated", "role": new_role}
 
 @api_router.put("/admin/users/{user_id}/membership")
 async def update_user_membership(user_id: str, request: Request, user: User = Depends(require_admin)):
@@ -1263,6 +1367,181 @@ async def update_user_membership(user_id: str, request: Request, user: User = De
     
     await db.users.update_one({"user_id": user_id}, {"$set": {"membership": new_membership}})
     return {"message": "Membership updated"}
+
+
+# ============== TEAM MANAGEMENT ROUTES ==============
+
+@api_router.get("/teams")
+async def get_teams(user: User = Depends(require_auth)):
+    """Get all teams (managers see their teams, directors see all)"""
+    if has_role_permission(user.role, "director"):
+        # Directors see all teams in their organization
+        teams = await db.teams.find({}, {"_id": 0}).to_list(100)
+    elif user.role == "manager":
+        # Managers see only their teams
+        teams = await db.teams.find({"manager_id": user.user_id}, {"_id": 0}).to_list(100)
+    else:
+        # Reps see only their assigned team
+        if user.team_id:
+            teams = await db.teams.find({"team_id": user.team_id}, {"_id": 0}).to_list(100)
+        else:
+            teams = []
+    
+    return teams
+
+@api_router.post("/teams")
+async def create_team(data: TeamCreate, user: User = Depends(require_director)):
+    """Create a new team (director only)"""
+    # Verify manager exists and has manager role
+    manager = await db.users.find_one({"user_id": data.manager_id})
+    if not manager:
+        raise HTTPException(status_code=404, detail="Manager not found")
+    if manager.get("role") not in ["manager", "director"]:
+        raise HTTPException(status_code=400, detail="User must have manager role")
+    
+    team_id = f"team_{uuid.uuid4().hex[:12]}"
+    team_doc = {
+        "team_id": team_id,
+        "name": data.name,
+        "organization_id": user.organization_id if hasattr(user, 'organization_id') else "default",
+        "manager_id": data.manager_id,
+        "description": data.description,
+        "members": [],
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.teams.insert_one(team_doc)
+    return {"message": "Team created", "team_id": team_id}
+
+@api_router.get("/teams/{team_id}")
+async def get_team(team_id: str, user: User = Depends(require_auth)):
+    """Get team details"""
+    team = await db.teams.find_one({"team_id": team_id}, {"_id": 0})
+    if not team:
+        raise HTTPException(status_code=404, detail="Team not found")
+    
+    # Check access - only team members, managers, and directors can view
+    if not has_role_permission(user.role, "director"):
+        if user.role == "manager" and team["manager_id"] != user.user_id:
+            raise HTTPException(status_code=403, detail="Access denied")
+        elif user.role == "rep" and user.team_id != team_id:
+            raise HTTPException(status_code=403, detail="Access denied")
+    
+    return team
+
+@api_router.put("/teams/{team_id}")
+async def update_team(team_id: str, data: TeamUpdate, user: User = Depends(require_manager)):
+    """Update team (manager can update their teams, director can update any)"""
+    team = await db.teams.find_one({"team_id": team_id})
+    if not team:
+        raise HTTPException(status_code=404, detail="Team not found")
+    
+    # Check access
+    if user.role == "manager" and team["manager_id"] != user.user_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    update_data = {k: v for k, v in data.model_dump().items() if v is not None}
+    if update_data:
+        update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+        await db.teams.update_one({"team_id": team_id}, {"$set": update_data})
+    
+    return {"message": "Team updated"}
+
+@api_router.post("/teams/{team_id}/members")
+async def add_team_member(team_id: str, request: Request, user: User = Depends(require_manager)):
+    """Add member to team"""
+    body = await request.json()
+    member_id = body.get("user_id")
+    
+    if not member_id:
+        raise HTTPException(status_code=400, detail="user_id required")
+    
+    team = await db.teams.find_one({"team_id": team_id})
+    if not team:
+        raise HTTPException(status_code=404, detail="Team not found")
+    
+    # Check access
+    if user.role == "manager" and team["manager_id"] != user.user_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    # Verify user exists and is a rep
+    member = await db.users.find_one({"user_id": member_id})
+    if not member:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Add to team
+    await db.teams.update_one(
+        {"team_id": team_id},
+        {"$addToSet": {"members": member_id}}
+    )
+    
+    # Update user's team_id and manager_id
+    await db.users.update_one(
+        {"user_id": member_id},
+        {"$set": {"team_id": team_id, "manager_id": team["manager_id"]}}
+    )
+    
+    return {"message": "Member added to team"}
+
+@api_router.delete("/teams/{team_id}/members/{member_id}")
+async def remove_team_member(team_id: str, member_id: str, user: User = Depends(require_manager)):
+    """Remove member from team"""
+    team = await db.teams.find_one({"team_id": team_id})
+    if not team:
+        raise HTTPException(status_code=404, detail="Team not found")
+    
+    # Check access
+    if user.role == "manager" and team["manager_id"] != user.user_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    # Remove from team
+    await db.teams.update_one(
+        {"team_id": team_id},
+        {"$pull": {"members": member_id}}
+    )
+    
+    # Update user's team_id and manager_id
+    await db.users.update_one(
+        {"user_id": member_id},
+        {"$set": {"team_id": None, "manager_id": None}}
+    )
+    
+    return {"message": "Member removed from team"}
+
+@api_router.get("/teams/{team_id}/progress")
+async def get_team_progress(team_id: str, user: User = Depends(require_manager)):
+    """Get progress summary for all team members"""
+    team = await db.teams.find_one({"team_id": team_id})
+    if not team:
+        raise HTTPException(status_code=404, detail="Team not found")
+    
+    # Check access
+    if user.role == "manager" and team["manager_id"] != user.user_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    # Get progress for all team members
+    member_progress = []
+    for member_id in team.get("members", []):
+        user_doc = await db.users.find_one({"user_id": member_id}, {"_id": 0, "password_hash": 0})
+        progress = await db.user_progress.find_one({"user_id": member_id})
+        
+        if user_doc:
+            member_progress.append({
+                "user_id": member_id,
+                "name": user_doc.get("name"),
+                "email": user_doc.get("email"),
+                "role": user_doc.get("role"),
+                "level": user_doc.get("level", 1),
+                "points": user_doc.get("points", 0),
+                "progress": progress or {}
+            })
+    
+    return {
+        "team_id": team_id,
+        "team_name": team.get("name"),
+        "manager_id": team.get("manager_id"),
+        "members": member_progress
+    }
 
 # ============== ROOT ==============
 

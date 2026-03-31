@@ -2,7 +2,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, BookOpen, Users, Calendar,
   Download, Crown, User, Settings, LogOut,
-  Trophy, Menu, X, Shield, Target, Zap, TrendingUp, Award
+  Trophy, Menu, X, Shield, Target, Zap, TrendingUp, Award, Briefcase
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '@/App';
@@ -112,6 +112,24 @@ export const DashboardLayout = ({ children }) => {
             );
           })}
 
+          {/* Manager Dashboard - for managers and directors */}
+          {(user?.role === 'manager' || user?.role === 'director' || user?.role === 'admin' || user?.role === 'org_admin') && (
+            <Link
+              to="/manager"
+              className={cn(
+                "flex items-center gap-3 px-4 py-3 rounded-sm transition-colors",
+                location.pathname === '/manager'
+                  ? "bg-[#D4AF37]/10 text-[#D4AF37] border-l-2 border-[#D4AF37]"
+                  : "text-[#94A3B8] hover:text-white hover:bg-white/5"
+              )}
+              data-testid="nav-manager"
+            >
+              <Briefcase className="w-5 h-5" />
+              <span className="font-medium">Team Dashboard</span>
+            </Link>
+          )}
+
+          {/* Admin - for admins only */}
           {(user?.role === 'admin' || user?.role === 'org_admin') && (
             <>
               <Link
