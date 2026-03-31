@@ -5,6 +5,8 @@ import axios from "axios";
 import { Toaster } from "@/components/ui/sonner";
 import { OrganizationProvider } from "@/contexts/OrganizationContext";
 import { BrandingProvider } from "@/contexts/BrandingContext";
+import { RoleProvider } from "@/contexts/RoleContext";
+import { RoleGuard } from "@/components/auth/RoleGuard";
 
 // ============== SENTRY MONITORING ==============
 try {
@@ -50,6 +52,8 @@ import OrganizationSettings from "@/pages/OrganizationSettings";
 import CreateSchoolPage from "@/pages/CreateSchoolPage";
 // Manager Dashboard
 import ManagerDashboardPage from "@/pages/ManagerDashboardPage";
+// Director Dashboard
+import DirectorDashboardPage from "@/pages/DirectorDashboardPage";
 
 // Role hierarchy for permission checks (higher = more permissions)
 const ROLE_HIERARCHY = {
@@ -138,7 +142,7 @@ export const AuthProvider = ({ children }) => {
 };
 
 // Protected Route
-const ProtectedRoute = ({ children, adminOnly = false, requiredRole = null }) => {
+const ProtectedRoute = ({ children, adminOnly = false, requiredRole = null, allowedRoles = null }) => {
   const { user, loading } = useAuth();
   const location = useLocation();
 
@@ -161,6 +165,11 @@ const ProtectedRoute = ({ children, adminOnly = false, requiredRole = null }) =>
 
   // New role-based access control
   if (requiredRole && !hasRolePermission(user.role, requiredRole)) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  // Multiple roles support
+  if (allowedRoles && !allowedRoles.some(role => hasRolePermission(user.role, role))) {
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -202,6 +211,8 @@ function AppRouter() {
       <Route path="/admin" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
       {/* Manager Dashboard - Manager role required */}
       <Route path="/manager" element={<ProtectedRoute requiredRole="manager"><ManagerDashboardPage /></ProtectedRoute>} />
+      {/* Director Dashboard - Director role required */}
+      <Route path="/director/dashboard" element={<ProtectedRoute allowedRoles={["director", "admin"]}><DirectorDashboardPage /></ProtectedRoute>} />
       {/* Organization Management - Onboarding is public */}
       <Route path="/onboarding" element={<OnboardingWizard />} />
       <Route path="/onboarding/:orgId" element={<OnboardingWizard />} />
@@ -239,8 +250,10 @@ function App() {
       <OrganizationProvider>
         <BrandingProvider>
           <AuthProvider>
-            <AppRouter />
-            <Toaster position="bottom-right" richColors />
+            <RoleProvider>
+              <AppRouter />
+              <Toaster position="bottom-right" richColors />
+            </RoleProvider>
           </AuthProvider>
         </BrandingProvider>
       </OrganizationProvider>
