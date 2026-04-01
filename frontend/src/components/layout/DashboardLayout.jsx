@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils';
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
   { icon: Target, label: 'Top Producer Path', path: '/path', highlight: true },
+  { icon: Zap, label: 'Goal Sheets', path: '/goals' },
   { icon: BookOpen, label: 'Training Library', path: '/courses' },
   { icon: Award, label: 'Masterclasses', path: '/masterclasses' },
   { icon: Users, label: 'Community', path: '/community' },

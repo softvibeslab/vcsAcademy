@@ -45,6 +45,8 @@ import TopProducerPath from "@/pages/TopProducerPath";
 import TrackDetailPage from "@/pages/TrackDetailPage";
 import DealBreakdownsPage from "@/pages/DealBreakdownsPage";
 import QuickWinsPage from "@/pages/QuickWinsPage";
+// Goal Sheets
+import GoalSheetPage from "@/pages/GoalSheetPage";
 // Organization Management
 import OnboardingWizard from "@/pages/OnboardingWizard";
 import OrganizationSettings from "@/pages/OrganizationSettings";
@@ -197,6 +199,8 @@ function AppRouter() {
       <Route path="/path/track/:trackId" element={<ProtectedRoute><TrackDetailPage /></ProtectedRoute>} />
       <Route path="/path/breakdowns" element={<ProtectedRoute><DealBreakdownsPage /></ProtectedRoute>} />
       <Route path="/path/quickwins" element={<ProtectedRoute><QuickWinsPage /></ProtectedRoute>} />
+      {/* Goal Sheets */}
+      <Route path="/goals" element={<ProtectedRoute><GoalSheetPage /></ProtectedRoute>} />
       {/* Training Library (Legacy) */}
       <Route path="/courses" element={<ProtectedRoute><CoursesPage /></ProtectedRoute>} />
       <Route path="/courses/:courseId" element={<ProtectedRoute><CourseDetailPage /></ProtectedRoute>} />
