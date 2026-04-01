@@ -45,11 +45,11 @@ export default function GoalSheetPage() {
     }
   };
 
-  const handleMetricsSubmit = async (metrics, goals, notes) => {
+  const handleMetricsSubmit = async (expandedData) => {
     try {
       const response = await axios.post(
         `${API}/goalsheet/daily`,
-        { metrics, goals, notes },
+        expandedData,
         { withCredentials: true }
       );
 

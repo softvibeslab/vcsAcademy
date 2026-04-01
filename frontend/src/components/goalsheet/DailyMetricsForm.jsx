@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Target, TrendingUp, Save, Plus, Minus } from 'lucide-react';
+import { Target, TrendingUp, Save, Plus, Minus, ChevronDown, ChevronUp } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
+import { EventTypeSelector } from '@/components/goalsheet/EventTypeSelector';
+import { ContractDetailsForm } from '@/components/goalsheet/ContractDetailsForm';
+import { PurchaseInfoForm } from '@/components/goalsheet/PurchaseInfoForm';
+import { PaymentPlanForm } from '@/components/goalsheet/PaymentPlanForm';
 
 export const DailyMetricsForm = ({ initialData, onSubmit }) => {
   const [metrics, setMetrics] = useState({
@@ -34,6 +38,13 @@ export const DailyMetricsForm = ({ initialData, onSubmit }) => {
   const [notes, setNotes] = useState(initialData?.notes || '');
   const [showGoals, setShowGoals] = useState(!!initialData?.goals);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // New fields for expanded functionality
+  const [selectedEventType, setSelectedEventType] = useState(initialData?.event_type || null);
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [contractDetails, setContractDetails] = useState(initialData?.contract_details || null);
+  const [purchaseInfo, setPurchaseInfo] = useState(initialData?.purchase_info || null);
+  const [paymentPlan, setPaymentPlan] = useState(initialData?.payment_plan || null);
 
   const metricFields = [
     { key: 'tours_given', label: 'Tours Given', icon: '🎯', color: 'text-[#D4AF37]' },
@@ -64,7 +75,19 @@ export const DailyMetricsForm = ({ initialData, onSubmit }) => {
     setIsSubmitting(true);
     try {
       const goalsToSubmit = showGoals ? goals : null;
-      await onSubmit(metrics, goalsToSubmit, notes);
+
+      // Prepare expanded data structure
+      const expandedData = {
+        metrics,
+        goals: goalsToSubmit,
+        notes,
+        event_type: selectedEventType,
+        contract_details: contractDetails,
+        purchase_info: purchaseInfo,
+        payment_plan: paymentPlan
+      };
+
+      await onSubmit(expandedData);
     } finally {
       setIsSubmitting(false);
     }
@@ -162,16 +185,28 @@ export const DailyMetricsForm = ({ initialData, onSubmit }) => {
           </div>
 
           {/* Submit Button */}
-          <div className="flex items-center justify-between pt-4">
-            <div className="flex items-center gap-2">
-              <Switch
-                checked={showGoals}
-                onCheckedChange={setShowGoals}
-                className="data-[state=checked]:bg-[#D4AF37]"
-              />
-              <Label className="text-sm text-[#94A3B8] cursor-pointer">
-                Set Weekly Goals
-              </Label>
+          <div className="flex items-center justify-between pt-4 border-t border-white/10">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Switch
+                  checked={showGoals}
+                  onCheckedChange={setShowGoals}
+                  className="data-[state=checked]:bg-[#D4AF37]"
+                />
+                <Label className="text-sm text-[#94A3B8] cursor-pointer">
+                  Set Weekly Goals
+                </Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <Switch
+                  checked={showAdvanced}
+                  onCheckedChange={setShowAdvanced}
+                  className="data-[state=checked]:bg-[#D4AF37]"
+                />
+                <Label className="text-sm text-[#94A3B8] cursor-pointer">
+                  Advanced Options
+                </Label>
+              </div>
             </div>
             <Button
               onClick={handleSubmit}
@@ -182,6 +217,48 @@ export const DailyMetricsForm = ({ initialData, onSubmit }) => {
               {isSubmitting ? 'Saving...' : 'Save Goal Sheet'}
             </Button>
           </div>
+
+          {/* Event Type Selector */}
+          <div className="mt-4">
+            <EventTypeSelector
+              selectedEventType={selectedEventType}
+              onEventTypeChange={setSelectedEventType}
+            />
+          </div>
+
+          {/* Advanced Options - Contract Details, Purchase Info, Payment Plan */}
+          {showAdvanced && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              transition={{ duration: 0.3 }}
+              className="mt-6 space-y-6"
+            >
+              <div className="p-4 bg-[#D4AF37]/10 border border-[#D4AF37]/20 rounded-sm">
+                <p className="text-sm text-[#D4AF37] font-medium">
+                  🎯 Advanced Options - Sales Tracking
+                </p>
+                <p className="text-xs text-[#D4AF37] mt-1">
+                  Complete these fields when you have a sale or contract to track.
+                </p>
+              </div>
+
+              <ContractDetailsForm
+                contractDetails={contractDetails}
+                onChange={setContractDetails}
+              />
+
+              <PurchaseInfoForm
+                purchaseInfo={purchaseInfo}
+                onChange={setPurchaseInfo}
+              />
+
+              <PaymentPlanForm
+                paymentPlan={paymentPlan}
+                onChange={setPaymentPlan}
+              />
+            </motion.div>
+          )}
         </CardContent>
       </Card>
 

@@ -11,7 +11,8 @@ from pydantic import BaseModel, Field
 from server import db, require_auth
 from models.goal_sheet import (
     GoalSheet, GoalSheetCreate, GoalSheetUpdate,
-    DailyMetrics, WeeklyGoals, GoalSheetSummary
+    DailyMetrics, WeeklyGoals, GoalSheetSummary,
+    EventType, ContractDetails, PurchaseInfo, PaymentPlan, EventLog
 )
 import uuid
 
@@ -37,15 +38,47 @@ class WeeklyGoalsInput(BaseModel):
     demos_booked: Optional[int] = Field(default=None, ge=0)
     presentations: Optional[int] = Field(default=None, ge=0)
 
+class ContractDetailsInput(BaseModel):
+    contract_number: Optional[str] = None
+    manager: Optional[str] = None
+    legal_officer: Optional[str] = None
+    hostess: Optional[str] = None
+    notes: Optional[str] = None
+    start_follow_up: bool = False
+    is_pending: bool = False
+    cancel_contract: bool = False
+
+class PurchaseInfoInput(BaseModel):
+    purchase_price: Optional[float] = Field(default=None, ge=0)
+    category: Optional[str] = None
+    membership_type: Optional[str] = None
+    initial_investment: Optional[float] = Field(default=None, ge=0)
+    percentage: Optional[float] = Field(default=None, ge=0)
+    nights: Optional[int] = Field(default=None, ge=0)
+    interest_rate: Optional[float] = Field(default=None, ge=0)
+    adjustment: Optional[float] = Field(default=None, ge=0)
+    balance: Optional[float] = Field(default=None, ge=0)
+
+class PaymentPlanInput(BaseModel):
+    payment_plan_months: Optional[int] = Field(default=None, ge=0)
+    monthly_payment: Optional[float] = Field(default=None, ge=0)
+
 class GoalSheetCreateInput(BaseModel):
     metrics: DailyMetricsInput
     goals: Optional[WeeklyGoalsInput] = None
     notes: Optional[str] = None
+    event_type: Optional[EventType] = None
+    contract_details: Optional[ContractDetailsInput] = None
+    purchase_info: Optional[PurchaseInfoInput] = None
+    payment_plan: Optional[PaymentPlanInput] = None
 
 class GoalSheetUpdateInput(BaseModel):
     metrics: Optional[DailyMetricsInput] = None
     goals: Optional[WeeklyGoalsInput] = None
     notes: Optional[str] = None
+    contract_details: Optional[ContractDetailsInput] = None
+    purchase_info: Optional[PurchaseInfoInput] = None
+    payment_plan: Optional[PaymentPlanInput] = None
 
 # ============== HELPERS ==============
 
@@ -103,6 +136,30 @@ async def create_or_update_goal_sheet(
 
     if data.notes:
         goal_sheet_data["notes"] = data.notes
+
+    # New fields: contract details, purchase info, payment plan
+    if data.contract_details:
+        goal_sheet_data["contract_details"] = data.contract_details.model_dump()
+
+    if data.purchase_info:
+        goal_sheet_data["purchase_info"] = data.purchase_info.model_dump()
+
+    if data.payment_plan:
+        goal_sheet_data["payment_plan"] = data.payment_plan.model_dump()
+
+    # Event logging
+    if data.event_type:
+        event_log = {
+            "event_type": data.event_type.value,
+            "timestamp": datetime.now(timezone.utc)
+        }
+        if data.contract_details and data.contract_details.notes:
+            event_log["notes"] = data.contract_details.notes
+
+        # Add to event logs
+        if "event_logs" not in goal_sheet_data:
+            goal_sheet_data["event_logs"] = []
+        goal_sheet_data["event_logs"].append(event_log)
 
     if existing:
         # Update
