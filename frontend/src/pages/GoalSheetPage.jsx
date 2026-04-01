@@ -40,6 +40,9 @@ export default function GoalSheetPage() {
       setWeeklySummary(weeklyResponse.data.data);
     } catch (error) {
       console.error('Goal sheet error:', error);
+      // Don't block the page if goal sheet fails - might not be set up yet
+      setTodayData(null);
+      setWeeklySummary(null);
     } finally {
       setLoading(false);
     }

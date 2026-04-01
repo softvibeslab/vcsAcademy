@@ -63,8 +63,8 @@ services:
       backend:
         condition: service_healthy
     ports:
-      - "3001:80"
-      - "3443:443"
+      - "80:80"
+      - "443:443"
     networks:
       - vcsa-network
     healthcheck:

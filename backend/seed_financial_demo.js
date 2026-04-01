@@ -13,12 +13,27 @@
  *   mongo vcsa < backend/seed_financial_demo.js
  */
 
-// Get demo user
-const demoUser = db.users.findOne({ email: 'demo@vcsa.com' });
+// Get or create demo user
+let demoUser = db.users.findOne({ email: 'demo@vcsa.com' });
 
 if (!demoUser) {
-  print('ERROR: Demo user not found. Please run demo user seed first.');
-  quit(1);
+  print('Demo user not found. Creating demo user...');
+
+  // Create demo user
+  const userId = 'demo_user_' + Date.now();
+  demoUser = {
+    user_id: userId,
+    email: 'demo@vcsa.com',
+    name: 'Demo User',
+    role: 'member',
+    created_at: new Date(),
+    updated_at: new Date()
+  };
+
+  db.users.insertOne(demoUser);
+  print(`✓ Demo user created: ${demoUser.email} (${demoUser.user_id})`);
+} else {
+  print(`✓ Demo user found: ${demoUser.email} (${demoUser.user_id})`);
 }
 
 const userId = demoUser.user_id;
@@ -185,6 +200,20 @@ const attributeNotes = {
   ]
 };
 
+// Helper function to get points for attribute type
+function getAttributePoints(attrType) {
+  const points = {
+    attitude: 10,
+    courage: 10,
+    focus: 10,
+    training: 15,
+    discipline: 20,
+    persistence: 15,
+    commitment: 25
+  };
+  return points[attrType] || 10;
+}
+
 const dailyAttributes = [];
 
 for (let day = 1; day <= 7; day++) {
@@ -213,19 +242,6 @@ for (let day = 1; day <= 7; day++) {
 
 db.daily_attributes.insertMany(dailyAttributes);
 print(`✓ Created ${dailyAttributes.length} personal attribute records`);
-
-function getAttributePoints(attrType) {
-  const points = {
-    attitude: 10,
-    courage: 10,
-    focus: 10,
-    training: 15,
-    discipline: 20,
-    persistence: 15,
-    commitment: 25
-  };
-  return points[attrType] || 10;
-}
 
 // ============== DAILY CHALLENGES (last 7 days) ==============
 
