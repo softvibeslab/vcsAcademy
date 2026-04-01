@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Trophy, RefreshCw, X, Clock, MapPin, More, Umbrella, Thermometer, ChevronRight } from 'lucide-react';
+import { Trophy, RefreshCw, X, Clock, MapPin, MoreHorizontal, Umbrella, Thermometer, ChevronRight } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
@@ -10,7 +10,7 @@ const EVENT_TYPES = [
   { value: 'no_sale', label: 'No Sale', icon: X, color: 'text-[#EF4444]', bgColor: 'bg-[#EF4444]/10', borderColor: 'border-[#EF4444]/30' },
   { value: 'pending', label: 'Pending', icon: Clock, color: 'text-[#F59E0B]', bgColor: 'bg-[#F59E0B]/10', borderColor: 'border-[#F59E0B]/30' },
   { value: 'no_tour', label: 'No Tour', icon: MapPin, color: 'text-[#8B5CF6]', bgColor: 'bg-[#8B5CF6]/10', borderColor: 'border-[#8B5CF6]/30' },
-  { value: 'overflow', label: 'Overflow', icon: More, color: 'text-[#6B7280]', bgColor: 'bg-[#6B7280]/10', borderColor: 'border-[#6B7280]/30' },
+  { value: 'overflow', label: 'Overflow', icon: MoreHorizontal, color: 'text-[#6B7280]', bgColor: 'bg-[#6B7280]/10', borderColor: 'border-[#6B7280]/30' },
   { value: 'day_off', label: 'Day Off', icon: Umbrella, color: 'text-[#3B82F6]', bgColor: 'bg-[#3B82F6]/10', borderColor: 'border-[#3B82F6]/30' },
   { value: 'sick', label: 'Sick', icon: Thermometer, color: 'text-[#EC4899]', bgColor: 'bg-[#EC4899]/10', borderColor: 'border-[#EC4899]/30' },
 ];
