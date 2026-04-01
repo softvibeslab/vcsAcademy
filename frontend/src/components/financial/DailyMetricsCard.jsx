@@ -45,6 +45,27 @@ export const DailyMetricsCard = () => {
 
   const { financial, attributes } = metrics;
 
+  // Handle case when financial goal is not set yet
+  if (!financial) {
+    return (
+      <Card className="bg-gradient-to-br from-white/5 to-transparent border border-white/10">
+        <CardContent className="p-12 text-center">
+          <Target className="w-16 h-16 text-[#94A3B8] mx-auto mb-4" />
+          <h3 className="text-xl font-bold text-[#F8FAFC] mb-2">No Financial Goal Set Yet</h3>
+          <p className="text-[#94A3B8] mb-4">
+            Start by setting your monthly income goal in Financial Planning
+          </p>
+          <Button
+            onClick={() => window.location.href = '/financial'}
+            className="bg-[#D4AF37] text-black font-bold uppercase tracking-wider hover:bg-[#B4942D]"
+          >
+            Set Financial Goal
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
   // Calculate daily targets from monthly
   const dailyTargetIncome = financial.target_income / 30; // Rough estimate
   const currentRevenue = financial.current_revenue || 0;
