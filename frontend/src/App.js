@@ -51,6 +51,7 @@ import GoalSheetPage from "@/pages/GoalSheetPage";
 import FinancialPlanningPage from "@/pages/FinancialPlanningPage";
 import DailyPerformancePage from "@/pages/DailyPerformancePage";
 import AnalyticsPage from "@/pages/AnalyticsPage";
+import StrategyPlanningPage from "@/pages/StrategyPlanningPage";
 // Organization Management
 import OnboardingWizard from "@/pages/OnboardingWizard";
 import OrganizationSettings from "@/pages/OrganizationSettings";
@@ -211,6 +212,8 @@ function AppRouter() {
       <Route path="/daily-performance" element={<ProtectedRoute><DailyPerformancePage /></ProtectedRoute>} />
       {/* Analytics */}
       <Route path="/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
+      {/* Strategy Planning */}
+      <Route path="/strategy" element={<ProtectedRoute><StrategyPlanningPage /></ProtectedRoute>} />
       {/* Training Library (Legacy) */}
       <Route path="/courses" element={<ProtectedRoute><CoursesPage /></ProtectedRoute>} />
       <Route path="/courses/:courseId" element={<ProtectedRoute><CourseDetailPage /></ProtectedRoute>} />
