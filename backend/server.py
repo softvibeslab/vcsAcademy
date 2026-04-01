@@ -1625,3 +1625,11 @@ try:
 except ImportError:
     print("Warning: goal_sheet_routes not available")
 
+# Financial Goals Routes (Phase 1.5)
+try:
+    from financial_routes import router as financial_router
+    app.include_router(financial_router)
+    print("Financial goals routes loaded successfully")
+except ImportError:
+    print("Warning: financial_routes not available")
+

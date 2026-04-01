@@ -47,6 +47,8 @@ import DealBreakdownsPage from "@/pages/DealBreakdownsPage";
 import QuickWinsPage from "@/pages/QuickWinsPage";
 // Goal Sheets
 import GoalSheetPage from "@/pages/GoalSheetPage";
+// Financial Planning
+import FinancialPlanningPage from "@/pages/FinancialPlanningPage";
 // Organization Management
 import OnboardingWizard from "@/pages/OnboardingWizard";
 import OrganizationSettings from "@/pages/OrganizationSettings";
@@ -201,6 +203,8 @@ function AppRouter() {
       <Route path="/path/quickwins" element={<ProtectedRoute><QuickWinsPage /></ProtectedRoute>} />
       {/* Goal Sheets */}
       <Route path="/goals" element={<ProtectedRoute><GoalSheetPage /></ProtectedRoute>} />
+      {/* Financial Planning */}
+      <Route path="/financial" element={<ProtectedRoute><FinancialPlanningPage /></ProtectedRoute>} />
       {/* Training Library (Legacy) */}
       <Route path="/courses" element={<ProtectedRoute><CoursesPage /></ProtectedRoute>} />
       <Route path="/courses/:courseId" element={<ProtectedRoute><CourseDetailPage /></ProtectedRoute>} />
