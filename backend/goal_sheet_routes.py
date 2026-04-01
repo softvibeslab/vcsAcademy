@@ -116,7 +116,7 @@ async def create_or_update_goal_sheet(
 
     # Check if already exists
     existing = await db.goal_sheets.find_one({
-        "user_id": user["user_id"],
+        "user_id": user.user_id,
         "date": today
     })
 
@@ -178,7 +178,7 @@ async def create_or_update_goal_sheet(
 
         # Give points for first goal sheet of the day
         await db.user_progress.update_one(
-            {"user_id": user["user_id"]},
+            {"user_id": user.user_id},
             {"$inc": {"points": 5}}  # +5 points por llenar goal sheet
         )
 
@@ -249,7 +249,7 @@ async def get_my_goal_sheets(
 ):
     """Obtener goal sheets del usuario actual"""
     cursor = db.goal_sheets.find(
-        {"user_id": user["user_id"]}
+        {"user_id": user.user_id}
     ).sort("date", -1).skip(skip).limit(limit)
 
     sheets = await cursor.to_list(length=limit)
@@ -258,7 +258,7 @@ async def get_my_goal_sheets(
     for sheet in sheets:
         del sheet["_id"]
 
-    total = await db.goal_sheets.count_documents({"user_id": user["user_id"]})
+    total = await db.goal_sheets.count_documents({"user_id": user.user_id})
 
     return {
         "success": True,
@@ -277,7 +277,7 @@ async def get_weekly_stats(user = Depends(require_auth)):
     week_start_str = week_start.strftime("%Y-%m-%d")
 
     cursor = db.goal_sheets.find({
-        "user_id": user["user_id"],
+        "user_id": user.user_id,
         "date": {"$gte": week_start_str}
     })
 
@@ -308,7 +308,7 @@ async def get_goal_sheet_streak(user = Depends(require_auth)):
     while True:
         date_str = check_date.strftime("%Y-%m-%d")
         sheet = await db.goal_sheets.find_one({
-            "user_id": user["user_id"],
+            "user_id": user.user_id,
             "date": date_str
         })
 
@@ -376,7 +376,7 @@ async def get_weekly_summary(user = Depends(require_auth)):
 async def get_team_leaderboard(user = Depends(require_auth)):
     """Obtener leaderboard del equipo (ordenado por puntos esta semana)"""
     # Get user's team
-    user_data = await db.users.find_one({"user_id": user["user_id"]})
+    user_data = await db.users.find_one({"user_id": user.user_id})
     team_id = user_data.get("team_id")
 
     if not team_id:
@@ -447,7 +447,7 @@ async def update_goal_sheet(
             detail="Goal sheet not found"
         )
 
-    if sheet["user_id"] != user["user_id"]:
+    if sheet["user_id"] != user.user_id:
         raise HTTPException(
             status_code=403,
             detail="You can only update your own goal sheets"
@@ -497,7 +497,7 @@ async def delete_goal_sheet(
             detail="Goal sheet not found"
         )
 
-    if sheet["user_id"] != user["user_id"]:
+    if sheet["user_id"] != user.user_id:
         raise HTTPException(
             status_code=403,
             detail="You can only delete your own goal sheets"
