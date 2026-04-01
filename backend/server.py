@@ -1617,3 +1617,11 @@ try:
 except ImportError:
     print("Warning: branding_routes not available")
 
+# Goal Sheet Routes (MVP Phase 1)
+try:
+    from goal_sheet_routes import router as goal_sheet_router
+    app.include_router(goal_sheet_router)
+    print("Goal sheet routes loaded successfully")
+except ImportError:
+    print("Warning: goal_sheet_routes not available")
+
