@@ -9,6 +9,7 @@ import { useAuth } from '@/App';
 import { useOrganization } from '@/contexts/OrganizationContext';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { AIAssistantButton } from '@/components/ai/AIAssistantButton';
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
@@ -307,6 +308,9 @@ export const DashboardLayout = ({ children }) => {
           {children}
         </div>
       </main>
+
+      {/* AI Assistant Button */}
+      <AIAssistantButton />
     </div>
   );
 };

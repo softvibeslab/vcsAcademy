@@ -1633,3 +1633,11 @@ try:
 except ImportError:
     print("Warning: financial_routes not available")
 
+# Claude AI Assistant Routes
+try:
+    from claude_routes import router as claude_router
+    app.include_router(claude_router)
+    print("Claude AI Assistant routes loaded successfully")
+except ImportError:
+    print("Warning: claude_routes not available")
+
