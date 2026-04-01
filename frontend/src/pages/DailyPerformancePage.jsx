@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   Calendar, TrendingUp, Award, BarChart3, RefreshCw,
-  Flame, Target, Zap
+  Flame, Target, Zap, Trophy, Shield
 } from 'lucide-react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,9 @@ import { Badge } from '@/components/ui/badge';
 import { DailyMetricsCard } from '@/components/financial/DailyMetricsCard';
 import { DailySalesGrid } from '@/components/financial/DailySalesGrid';
 import { PersonalAttributesTracker } from '@/components/financial/PersonalAttributesTracker';
+import { DailyChallengesCard } from '@/components/financial/DailyChallengesCard';
+import { BadgesDisplay } from '@/components/financial/BadgesDisplay';
+import { Leaderboards } from '@/components/financial/Leaderboards';
 import { API } from '@/App';
 
 export default function DailyPerformancePage() {
@@ -117,7 +120,7 @@ export default function DailyPerformancePage() {
           transition={{ duration: 0.5, delay: 0.2 }}
         >
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="bg-white/5 border border-white/10 p-1">
+            <TabsList className="bg-white/5 border border-white/10 p-1 flex-wrap">
               <TabsTrigger value="overview" className="data-[state=active]:bg-[#D4AF37] data-[state=active]:text-black">
                 <BarChart3 className="w-4 h-4 mr-2" />
                 Overview
@@ -129,6 +132,18 @@ export default function DailyPerformancePage() {
               <TabsTrigger value="attributes" className="data-[state=active]:bg-[#D4AF37] data-[state=active]:text-black">
                 <Award className="w-4 h-4 mr-2" />
                 Attributes
+              </TabsTrigger>
+              <TabsTrigger value="challenges" className="data-[state=active]:bg-[#D4AF37] data-[state=active]:text-black">
+                <Zap className="w-4 h-4 mr-2" />
+                Challenges
+              </TabsTrigger>
+              <TabsTrigger value="badges" className="data-[state=active]:bg-[#D4AF37] data-[state=active]:text-black">
+                <Shield className="w-4 h-4 mr-2" />
+                Badges
+              </TabsTrigger>
+              <TabsTrigger value="leaderboards" className="data-[state=active]:bg-[#D4AF37] data-[state=active]:text-black">
+                <Trophy className="w-4 h-4 mr-2" />
+                Leaderboards
               </TabsTrigger>
             </TabsList>
 
@@ -191,6 +206,21 @@ export default function DailyPerformancePage() {
             {/* Attributes Tab */}
             <TabsContent value="attributes" className="mt-6">
               <PersonalAttributesTracker key={`attributes-${refreshKey}`} onUpdate={handleDataUpdate} />
+            </TabsContent>
+
+            {/* Challenges Tab */}
+            <TabsContent value="challenges" className="mt-6">
+              <DailyChallengesCard key={`challenges-${refreshKey}`} onUpdate={handleDataUpdate} />
+            </TabsContent>
+
+            {/* Badges Tab */}
+            <TabsContent value="badges" className="mt-6">
+              <BadgesDisplay key={`badges-${refreshKey}`} />
+            </TabsContent>
+
+            {/* Leaderboards Tab */}
+            <TabsContent value="leaderboards" className="mt-6">
+              <Leaderboards key={`leaderboards-${refreshKey}`} />
             </TabsContent>
           </Tabs>
         </motion.div>
