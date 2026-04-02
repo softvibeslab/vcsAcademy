@@ -41,6 +41,9 @@ sentry-sdk[fastapi]==2.25.1
 # AI Assistant (Anthropic Claude API)
 anthropic==0.40.0
 
+# PDF Processing
+PyPDF2==3.0.1
+
 # Development/Testing (optional)
 pytest==9.0.2
 black==26.1.0

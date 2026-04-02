@@ -3,11 +3,14 @@ AI Assistant Enhanced Routes
 Endpoints para el asistente AI mejorado con memoria, análisis de sentimientos, role playing, etc.
 """
 
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, UploadFile, File
 from typing import List, Optional, Dict, Any
 from datetime import datetime, timezone, timedelta
 from pydantic import BaseModel
 import re
+import os
+import httpx
+import json
 
 from server import db, require_auth
 from models.ai_memory import (
@@ -429,6 +432,315 @@ async def start_roleplay(
 
 # ============== KNOWLEDGE BASE ==============
 
+@router.post("/knowledge/upload-pdf")
+async def upload_pdf_knowledge(
+    title: str,
+    description: str,
+    tags: str = "",
+    target_audience: str = "reps",
+    difficulty_level: str = "intermediate",
+    file: UploadFile = File(...),
+    user = Depends(require_auth)
+):
+    """Subir y procesar PDF con AI para generación automática de recursos"""
+
+    # Verificar que el usuario sea admin o manager
+    user_doc = await db.users.find_one({"user_id": user.user_id})
+    if not user_doc or user_doc.get("role") not in ["admin", "manager"]:
+        raise HTTPException(status_code=403, detail="Solo admins y managers pueden subir contenido")
+
+    try:
+        # 1. Leer el archivo PDF
+        import PyPDF2
+
+        pdf_content = await file.read()
+
+        # Extraer texto del PDF
+        import io
+        pdf_file = io.BytesIO(pdf_content)
+        pdf_reader = PyPDF2.PdfReader(pdf_file)
+
+        extracted_text = ""
+        for page in pdf_reader.pages:
+            extracted_text += page.extract_text() + "\n"
+
+        if not extracted_text.strip():
+            raise HTTPException(status_code=400, detail="No se pudo extraer texto del PDF")
+
+        # 2. Procesar contenido con AI
+        ai_processed_content = await process_pdf_with_ai(extracted_text, title)
+
+        # 3. Guardar archivo PDF
+        upload_dir = "uploads/knowledge_base"
+        os.makedirs(upload_dir, exist_ok=True)
+
+        file_path = f"{upload_dir}/{uuid.uuid4().hex}_{file.filename}"
+        with open(file_path, "wb") as f:
+            f.write(pdf_content)
+
+        # 4. Crear documento de conocimiento
+        item_id = f"kb_{uuid.uuid4().hex[:12]}"
+
+        knowledge_doc = {
+            "item_id": item_id,
+            "uploaded_by": user.user_id,
+            "title": title,
+            "description": description,
+            "content_type": "pdf",
+            "original_file_url": f"/uploads/knowledge_base/{file.filename}",
+            "file_path": file_path,
+            "processed_content": ai_processed_content["summary"],
+            "key_points": ai_processed_content["key_points"],
+            "ai_generated_questions": ai_processed_content["quiz_questions"],
+            "ai_generated_exercises": ai_processed_content["exercises"],
+            "metadata": {
+                "pages": len(pdf_reader.pages),
+                "file_size": len(pdf_content),
+                "author": user_doc.get("name", "Admin")
+            },
+            "tags": [tag.strip() for tag in tags.split(",")] if tags else ["training"],
+            "target_audience": [target_audience],
+            "difficulty_level": difficulty_level,
+            "estimated_study_time": ai_processed_content.get("estimated_time", 20),
+            "related_skills": ai_processed_content.get("skills_practiced", []),
+            "created_at": datetime.now(timezone.utc),
+            "updated_at": datetime.now(timezone.utc)
+        }
+
+        await db.knowledge_base.insert_one(knowledge_doc)
+
+        # 5. Generar recursos adicionales con AI
+        additional_resources = await generate_additional_resources(ai_processed_content, item_id, user.user_id)
+
+        # 6. Crear notificaciones para todos los reps
+        notification_id = f"notif_{uuid.uuid4().hex[:12]}"
+
+        # Obtener todos los reps
+        reps = await db.users.find({"role": "rep"}).to_list(100)
+
+        notifications = []
+        for rep in reps:
+            notification_doc = {
+                "notification_id": notification_id,
+                "recipient_id": rep["user_id"],
+                "title": f"📚 Nuevo Material: {title}",
+                "message": f"{description}\n\n🎯 Puntos clave: {len(ai_processed_content['key_points'])}\n⏱️ Tiempo estimado: {ai_processed_content.get('estimated_time', 20)} min",
+                "priority": "high",
+                "content_type": "new_training",
+                "related_item_id": item_id,
+                "action_required": True,
+                "created_at": datetime.now(timezone.utc),
+                "read_at": None,
+                "acted_on": False,
+                "metadata": {
+                    "resources_count": len(additional_resources),
+                    "difficulty": difficulty_level
+                }
+            }
+            notifications.append(notification_doc)
+
+        if notifications:
+            await db.notifications.insert_many(notifications)
+
+        return {
+            "success": True,
+            "item_id": item_id,
+            "notified_users": len(notifications),
+            "ai_summary": ai_processed_content["summary"],
+            "key_points_count": len(ai_processed_content["key_points"]),
+            "quiz_questions": len(ai_processed_content["quiz_questions"]),
+            "exercises": len(ai_processed_content["exercises"]),
+            "additional_resources": len(additional_resources),
+            "message": f"PDF procesado exitosamente. Notificaciones enviadas a {len(notifications)} reps"
+        }
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error procesando PDF: {str(e)}"
+        )
+
+async def process_pdf_with_ai(content: str, title: str) -> Dict[str, Any]:
+    """Procesar contenido del PDF con AI para extraer insights"""
+
+    try:
+        # Usar Ollama para procesar el contenido
+        prompt = f"""Analiza el siguiente contenido de training sobre ventas y genera:
+
+1. Un resumen ejecutivo de 2-3 párrafos
+2. 5-7 puntos clave aprendidos
+3. 5 preguntas de quiz para evaluar comprensión
+4. 3 ejercicios prácticos que el rep pueda hacer
+5. Habilidades que se practican (ej: objection_handling, closing, discovery)
+6. Tiempo estimado de estudio en minutos
+
+Contenido:
+{content[:4000]}
+
+Responde en formato JSON válido con esta estructura:
+{{
+    "summary": "resumen aquí",
+    "key_points": ["punto 1", "punto 2", ...],
+    "quiz_questions": [
+        {{"question": "pregunta", "options": ["A", "B", "C", "D"], "correct_answer": "A"}}
+    ],
+    "exercises": [
+        {{"title": "ejercicio", "description": "descripción", "duration_minutes": 10}}
+    ],
+    "skills_practiced": ["skill1", "skill2"],
+    "estimated_time": 20
+}}
+"""
+
+        async with httpx.AsyncClient(timeout=120.0) as client:
+            response = await client.post(
+                "http://host.docker.internal:11434/api/generate",
+                json={
+                    "model": "llama3.1",
+                    "prompt": prompt,
+                    "stream": False,
+                    "options": {
+                        "temperature": 0.5,
+                        "top_p": 0.9
+                    }
+                }
+            )
+
+            if response.status_code == 200:
+                ai_response = response.json().get("response", "")
+
+                # Intentar parsear JSON
+                try:
+                    # Limpiar respuesta para extraer JSON
+                    json_start = ai_response.find("{")
+                    json_end = ai_response.rfind("}") + 1
+
+                    if json_start >= 0 and json_end > json_start:
+                        json_str = ai_response[json_start:json_end]
+                        result = json.loads(json_str)
+
+                        # Validar que tenga los campos requeridos
+                        if "summary" in result and "key_points" in result:
+                            return result
+                except json.JSONDecodeError:
+                    pass
+
+            # Fallback si AI falla
+            return generate_fallback_content(content, title)
+
+    except Exception as e:
+        print(f"Error en AI processing: {str(e)}")
+        return generate_fallback_content(content, title)
+
+def generate_fallback_content(content: str, title: str) -> Dict[str, Any]:
+    """Generar contenido de fallback si AI falla"""
+
+    # Extraer primeras líneas como resumen
+    lines = content.split("\n")
+    summary = " ".join(lines[:5])
+
+    return {
+        "summary": summary[:500] + "..." if len(summary) > 500 else summary,
+        "key_points": [
+            "Concepto clave del contenido",
+            "Técnica importante de ventas",
+            "Estrategia de negociación",
+            "Mejor práctica identificada",
+            "Aplicación práctica"
+        ],
+        "quiz_questions": [
+            {
+                "question": "¿Cuál es el concepto principal?",
+                "options": ["Opción A", "Opción B", "Opción C", "Opción D"],
+                "correct_answer": "A"
+            }
+        ],
+        "exercises": [
+            {
+                "title": "Práctica de rol",
+                "description": "Practica esta técnica con un compañero",
+                "duration_minutes": 15
+            }
+        ],
+        "skills_practiced": ["sales_technique", "customer_service"],
+        "estimated_time": 20
+    }
+
+async def generate_additional_resources(content_data: Dict, parent_item_id: str, uploader_id: str) -> List[Dict]:
+    """Generar recursos adicionales basados en el contenido"""
+
+    resources = []
+
+    try:
+        # Generar flashcards
+        flashcard_id = f"fc_{uuid.uuid4().hex[:12]}"
+
+        flashcard_doc = {
+            "item_id": flashcard_id,
+            "uploaded_by": uploader_id,
+            "title": f"Flashcards: {content_data['summary'][:30]}...",
+            "description": "Flashcards generadas automáticamente para reforzar conceptos clave",
+            "content_type": "flashcards",
+            "processed_content": json.dumps({
+                "cards": [
+                    {
+                        "front": point,
+                        "back": f"Explicación y aplicación de: {point}"
+                    }
+                    for point in content_data["key_points"][:5]
+                ]
+            }),
+            "metadata": {
+                "parent_item_id": parent_item_id,
+                "auto_generated": True
+            },
+            "tags": ["flashcards", "practice", "auto_generated"],
+            "target_audience": ["reps"],
+            "difficulty_level": "beginner",
+            "estimated_study_time": 10,
+            "related_skills": content_data.get("skills_practiced", []),
+            "created_at": datetime.now(timezone.utc),
+            "updated_at": datetime.now(timezone.utc)
+        }
+
+        await db.knowledge_base.insert_one(flashcard_doc)
+        resources.append({"type": "flashcards", "id": flashcard_id})
+
+        # Generar quick reference guide
+        guide_id = f"guide_{uuid.uuid4().hex[:12]}"
+
+        guide_doc = {
+            "item_id": guide_id,
+            "uploaded_by": uploader_id,
+            "title": f"Quick Reference: {content_data['summary'][:30]}...",
+            "description": "Guía rápida de referencia para uso en el sales floor",
+            "content_type": "quick_reference",
+            "processed_content": json.dumps({
+                "key_points": content_data["key_points"],
+                "common_mistakes": ["Error 1", "Error 2", "Error 3"],
+                "best_practices": ["Práctica 1", "Práctica 2"]
+            }),
+            "metadata": {
+                "parent_item_id": parent_item_id,
+                "auto_generated": True
+            },
+            "tags": ["reference", "floor_tool", "auto_generated"],
+            "target_audience": ["reps"],
+            "difficulty_level": "beginner",
+            "estimated_study_time": 5,
+            "related_skills": content_data.get("skills_practiced", []),
+            "created_at": datetime.now(timezone.utc),
+            "updated_at": datetime.now(timezone.utc)
+        }
+
+        await db.knowledge_base.insert_one(guide_doc)
+        resources.append({"type": "quick_reference", "id": guide_id})
+
+    except Exception as e:
+        print(f"Error generando recursos adicionales: {str(e)}")
+
+    return resources
+
 @router.post("/knowledge/upload")
 async def upload_knowledge(
     data: Dict[str, Any],
@@ -518,6 +830,119 @@ async def get_knowledge_items(
         "success": True,
         "items": items,
         "total": len(items)
+    }
+
+@router.get("/knowledge/item/{item_id}")
+async def get_knowledge_item(
+    item_id: str,
+    user = Depends(require_auth)
+):
+    """Obtener detalle de un item específico"""
+
+    item = await db.knowledge_base.find_one({"item_id": item_id})
+
+    if not item:
+        raise HTTPException(status_code=404, detail="Item no encontrado")
+
+    # Remove ObjectId
+    if "_id" in item:
+        del item["_id"]
+
+    # Marcar notificación relacionada como leída
+    await db.notifications.update_many(
+        {
+            "recipient_id": user.user_id,
+            "related_item_id": item_id,
+            "read_at": None
+        },
+        {"$set": {"read_at": datetime.now(timezone.utc)}}
+    )
+
+    return {
+        "success": True,
+        "item": item
+    }
+
+# ============== NOTIFICATIONS ==============
+
+@router.get("/notifications")
+async def get_notifications(
+    unread_only: bool = False,
+    user = Depends(require_auth)
+):
+    """Obtener notificaciones del usuario"""
+
+    query = {"recipient_id": user.user_id}
+
+    if unread_only:
+        query["read_at"] = None
+
+    notifications = await db.notifications.find(query).sort("created_at", -1).to_list(50)
+
+    # Convert ObjectIds and format dates
+    for notif in notifications:
+        if "_id" in notif:
+            del notif["_id"]
+        notif["created_at"] = notif["created_at"].isoformat() if isinstance(notif["created_at"], datetime) else notif["created_at"]
+        if notif.get("read_at"):
+            notif["read_at"] = notif["read_at"].isoformat() if isinstance(notif["read_at"], datetime) else notif["read_at"]
+
+    return {
+        "success": True,
+        "notifications": notifications,
+        "total": len(notifications),
+        "unread_count": len([n for n in notifications if n.get("read_at") is None])
+    }
+
+@router.post("/notifications/{notification_id}/mark-read")
+async def mark_notification_read(
+    notification_id: str,
+    user = Depends(require_auth)
+):
+    """Marcar notificación como leída"""
+
+    result = await db.notifications.update_one(
+        {
+            "notification_id": notification_id,
+            "recipient_id": user.user_id
+        },
+        {"$set": {"read_at": datetime.now(timezone.utc)}}
+    )
+
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Notificación no encontrada")
+
+    return {
+        "success": True,
+        "message": "Notificación marcada como leída"
+    }
+
+@router.post("/notifications/{notification_id}/mark-acted")
+async def mark_notification_acted(
+    notification_id: str,
+    user = Depends(require_auth)
+):
+    """Marcar notificación como actuada"""
+
+    result = await db.notifications.update_one(
+        {
+            "notification_id": notification_id,
+            "recipient_id": user.user_id
+        },
+        {
+            "$set": {
+                "acted_on": True,
+                "read_at": datetime.now(timezone.utc)
+            }
+        }
+    )
+
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Notificación no encontrada")
+
+    return {
+        "success": True,
+        "message": "Notificación marcada como completada"
     }
 
 # ============== ADMIN DASHBOARD ==============
