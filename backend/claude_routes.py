@@ -16,7 +16,8 @@ import uuid
 router = APIRouter(prefix="/api/assistant", tags=["assistant"])
 
 # Ollama Configuration
-OLLAMA_API_URL = os.getenv("OLLAMA_API_URL", "http://localhost:11434/api/generate")
+# Use host.docker.internal for Docker containers to access host services
+OLLAMA_API_URL = os.getenv("OLLAMA_API_URL", "http://host.docker.internal:11434/api/generate")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.1")  # Options: llama3, llama3.1, mistral, gemma3, etc.
 
 class Message(BaseModel):
@@ -66,6 +67,10 @@ async def chat_with_assistant(
 
         # Call Ollama API (Local LLM)
         try:
+            print(f"=== OLLAMA REQUEST ===")
+            print(f"URL: {OLLAMA_API_URL}")
+            print(f"Model: {OLLAMA_MODEL}")
+
             async with httpx.AsyncClient(timeout=60.0) as client:
                 # Build prompt for Ollama (combines system prompt and conversation)
                 full_prompt = system_prompt + "\n\n=== CONVERSATION HISTORY ===\n"
@@ -74,6 +79,8 @@ async def chat_with_assistant(
                     full_prompt += f"{msg.role.upper()}: {msg.content}\n"
 
                 full_prompt += f"\nUSER: {request.message}\n\nASSISTANT:"
+
+                print(f"Prompt length: {len(full_prompt)} characters")
 
                 # Ollama API request
                 ollama_response = await client.post(
@@ -90,6 +97,8 @@ async def chat_with_assistant(
                     }
                 )
 
+                print(f"Ollama response status: {ollama_response.status_code}")
+
                 if ollama_response.status_code != 200:
                     print(f"Ollama API error: {ollama_response.text}")
                     # Fallback to rule-based responses
@@ -102,11 +111,13 @@ async def chat_with_assistant(
                     if not response:
                         response = get_fallback_response(request.message, user_context)
 
-        except httpx.ConnectError:
-            print("Ollama not available - using fallback responses")
+        except httpx.ConnectError as e:
+            print(f"Ollama ConnectError: {str(e)} - using fallback responses")
             response = get_fallback_response(request.message, user_context)
         except Exception as e:
-            print(f"Error calling Ollama: {str(e)} - using fallback responses")
+            print(f"Error calling Ollama: {type(e).__name__}: {str(e)} - using fallback responses")
+            import traceback
+            traceback.print_exc()
             response = get_fallback_response(request.message, user_context)
 
         return {
