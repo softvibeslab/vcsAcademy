@@ -1641,3 +1641,11 @@ try:
 except ImportError:
     print("Warning: claude_routes not available")
 
+# Enhanced AI Assistant Routes (Fase 3)
+try:
+    from ai_assistant_enhanced import router as enhanced_ai_router
+    app.include_router(enhanced_ai_router)
+    print("Enhanced AI Assistant routes loaded successfully (Fase 3)")
+except ImportError:
+    print("Warning: ai_assistant_enhanced not available")
+
