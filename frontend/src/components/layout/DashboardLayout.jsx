@@ -2,7 +2,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, BookOpen, Users, Calendar,
   Download, Crown, User, Settings, LogOut,
-  Trophy, Menu, X, Shield, Target, Zap, TrendingUp, Award
+  Trophy, Menu, X, Shield, Target, Zap, TrendingUp, Award, BarChart3
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '@/App';
@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils';
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
   { icon: Target, label: 'Top Producer Path', path: '/path', highlight: true },
+  { icon: BarChart3, label: 'Goal Sheet', path: '/goalsheet', highlight: false },
   { icon: BookOpen, label: 'Training Library', path: '/courses' },
   { icon: Award, label: 'Masterclasses', path: '/masterclasses' },
   { icon: Users, label: 'Community', path: '/community' },
