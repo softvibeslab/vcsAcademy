@@ -1,0 +1,3 @@
+[submodule "apps/vcsavibes"]
+	path = apps/vcsavibes
+	url = https://github.com/softvibeslab/vcsAcademyVibes.git
