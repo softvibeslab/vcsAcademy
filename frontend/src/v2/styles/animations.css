@@ -1,0 +1,182 @@
+/**
+ * VCSA V2 - Animation System
+ * 300ms Ease-Out transitions for premium feel
+ */
+
+/* ==================== TRANSITIONS ==================== */
+
+/* Default Transition */
+.transition-default {
+  transition: all var(--md-sys-motion-duration-medium) var(--md-sys-motion-easing-ease-out);
+}
+
+/* Quick Transition */
+.transition-quick {
+  transition: all var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard);
+}
+
+/* Slow Transition */
+.transition-slow {
+  transition: all var(--md-sys-motion-duration-long) var(--md-sys-motion-easing-decelerated);
+}
+
+/* ==================== HOVER EFFECTS ==================== */
+
+/* Scale Hover */
+.hover-scale {
+  transition: transform var(--md-sys-motion-duration-medium) var(--md-sys-motion-easing-ease-out);
+}
+
+.hover-scale:hover {
+  transform: scale(1.02);
+}
+
+/* Scale Active */
+.hover-scale:active {
+  transform: scale(0.98);
+}
+
+/* Lift Effect */
+.hover-lift {
+  transition: transform var(--md-sys-motion-duration-medium) var(--md-sys-motion-easing-ease-out),
+              box-shadow var(--md-sys-motion-duration-medium) var(--md-sys-motion-easing-ease-out);
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--md-sys-elevation-level-3);
+}
+
+/* ==================== FADE ANIMATIONS ==================== */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Animation Classes */
+.animate-fade-in {
+  animation: fadeIn var(--md-sys-motion-duration-long) var(--md-sys-motion-easing-decelerated);
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp var(--md-sys-motion-duration-long) var(--md-sys-motion-easing-decelerated);
+}
+
+.animate-fade-in-down {
+  animation: fadeInDown var(--md-sys-motion-duration-long) var(--md-sys-motion-easing-decelerated);
+}
+
+.animate-scale-in {
+  animation: scaleIn var(--md-sys-motion-duration-medium) var(--md-sys-motion-easing-emphasized);
+}
+
+/* ==================== STAGGER ANIMATIONS ==================== */
+
+.stagger-1 { animation-delay: 100ms; }
+.stagger-2 { animation-delay: 200ms; }
+.stagger-3 { animation-delay: 300ms; }
+.stagger-4 { animation-delay: 400ms; }
+.stagger-5 { animation-delay: 500ms; }
+
+/* ==================== GLOW EFFECTS ==================== */
+
+/* Gold Glow Pulse */
+@keyframes goldGlowPulse {
+  0%, 100% {
+    box-shadow: 0 0 25px rgba(242, 202, 80, 0.12);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(242, 202, 80, 0.2);
+  }
+}
+
+.gold-glow-pulse {
+  animation: goldGlowPulse 2s ease-in-out infinite;
+}
+
+/* ==================== PROGRESS BAR ==================== */
+
+@keyframes progressFill {
+  from {
+    width: 0%;
+  }
+}
+
+.progress-animate {
+  animation: progressFill 1s var(--md-sys-motion-easing-decelerated);
+}
+
+/* ==================== SPINNER ==================== */
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* ==================== SHIMMER ==================== */
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite;
+}

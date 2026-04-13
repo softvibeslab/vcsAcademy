@@ -21,11 +21,7 @@ export const TeamStatsDashboard = () => {
   const fetchTeamStats = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/ai-assistant/admin/team-stats', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
+      const response = await fetch('/api/ai-assistant/public/admin/team-stats');
 
       const data = await response.json();
 

@@ -30,11 +30,21 @@ export default function CoursesPage() {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
+        // Try public endpoint first (no auth required)
         const params = category ? `?category=${category}` : '';
-        const response = await axios.get(`${API}/courses${params}`, { withCredentials: true });
-        setCourses(response.data);
+        let response;
+
+        try {
+          response = await axios.get(`${API}/public/courses${params}`);
+          setCourses(response.data.courses);
+        } catch (publicError) {
+          // Fallback to authenticated endpoint
+          response = await axios.get(`${API}/courses${params}`, { withCredentials: true });
+          setCourses(response.data);
+        }
       } catch (error) {
         console.error('Courses error:', error);
+        setCourses([]);
       } finally {
         setLoading(false);
       }
@@ -177,7 +187,7 @@ export default function CoursesPage() {
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-[#94A3B8] flex items-center gap-1">
                         <GraduationCap className="w-4 h-4" />
-                        {course.lessons?.length || 0} lessons
+                        {course.lessons_count || course.lessons?.length || 0} {course.lessons_count === 1 ? 'lesson' : 'lessons'}
                       </span>
                       <span className="text-[#D4AF37] flex items-center gap-1 group-hover:translate-x-1 transition-transform">
                         Start <ChevronRight className="w-4 h-4" />

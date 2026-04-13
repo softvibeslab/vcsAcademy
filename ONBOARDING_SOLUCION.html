@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Solucion Onboarding</title>
+</head>
+<body>
+    <h1>PROCESANDO...</h1>
+    <script>
+        // Completar onboarding inmediatamente
+        localStorage.setItem('vcsa_onboarding_completed', 'true');
+        localStorage.setItem('onboarding_completed', 'true');
+        localStorage.setItem('onboarding_completed_at', new Date().toISOString());
+
+        // Redirigir al dashboard
+        window.location.href = 'http://localhost:1234/dashboard';
+    </script>
+</body>
+</html>

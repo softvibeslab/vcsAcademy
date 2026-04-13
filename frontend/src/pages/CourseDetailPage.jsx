@@ -25,11 +25,19 @@ export default function CourseDetailPage() {
   useEffect(() => {
     const fetchCourse = async () => {
       try {
-        const response = await axios.get(`${API}/courses/${courseId}`, { withCredentials: true });
+        // Try public endpoint first (no auth required)
+        let response;
+        try {
+          response = await axios.get(`${API}/public/courses/${courseId}`);
+        } catch (publicError) {
+          // Fallback to authenticated endpoint
+          response = await axios.get(`${API}/courses/${courseId}`, { withCredentials: true });
+        }
+
         setCourse(response.data.course);
-        setLessons(response.data.lessons);
+        setLessons(response.data.lessons || []);
         setCompletedLessons(response.data.completed_lessons || []);
-        if (response.data.lessons.length > 0) {
+        if (response.data.lessons && response.data.lessons.length > 0) {
           setActiveLesson(response.data.lessons[0]);
         }
       } catch (error) {

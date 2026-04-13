@@ -87,68 +87,42 @@ export default function OnboardingWizard() {
 
   // Load organization data on mount
   useEffect(() => {
-    if (orgId) {
-      loadOrganization();
-    } else if (user?.organization_id) {
-      loadOrganization();
-    }
-  }, [orgId, user]);
+    // Always check onboarding status on mount
+    loadOrganization();
+  }, []);
 
   const loadOrganization = async () => {
     try {
-      // TEMPORARY FIX: Force localhost for development
-      const backendUrl = 'http://localhost:8000';
-      const orgIdToLoad = orgId || user?.organization_id;
+      // SIMPLIFIED VERSION: Skip loading organization from backend
+      // Just check if onboarding is already completed in localStorage
 
-      const response = await axios.get(
-        `${backendUrl}/api/organizations/${orgIdToLoad}`,
-        { withCredentials: true }
-      );
-
-      setOrganization(response.data);
-
-      // Set current step based on onboarding progress
-      if (!response.data.onboarding_completed) {
-        setCurrentStep(response.data.onboarding_step || 0);
-      } else {
-        // Onboarding already completed, redirect to dashboard
+      // Check if onboarding was already completed
+      const onboardingCompleted = localStorage.getItem('vcsa_onboarding_completed') || localStorage.getItem('onboarding_completed');
+      if (onboardingCompleted === 'true') {
+        console.log('Onboarding already completed, redirecting to dashboard');
         navigate('/dashboard');
+        return;
       }
 
-      // Pre-fill form data with existing organization data
-      if (response.data.branding) {
-        setFormData(prev => ({
-          ...prev,
-          logoUrl: response.data.branding.logo_url || '',
-          primaryColor: response.data.branding.primary_color || '#D4AF37',
-          secondaryColor: response.data.branding.secondary_color || '#1E3A8A',
-          siteName: response.data.branding.site_name || '',
-          tagline: response.data.branding.tagline || '',
-        }));
+      // Try to load saved progress from localStorage
+      try {
+        const savedProgress = localStorage.getItem('onboarding_progress');
+        if (savedProgress) {
+          const progress = JSON.parse(savedProgress);
+          console.log('Found saved onboarding progress:', progress);
+          setCurrentStep(progress.step + 1);
+          setFormData(progress.data);
+        }
+      } catch (e) {
+        console.warn('Could not load saved progress:', e);
+        // Start from step 0 if no saved progress
+        setCurrentStep(0);
       }
 
-      if (response.data.settings) {
-        setFormData(prev => ({
-          ...prev,
-          enableGamification: response.data.settings.enable_gamification ?? true,
-          enableCommunity: response.data.settings.enable_community ?? true,
-          enableEvents: response.data.settings.enable_events ?? true,
-          enableBadges: response.data.settings.enable_badges ?? true,
-          enableStreaks: response.data.settings.enable_streaks ?? true,
-          customTracksEnabled: response.data.settings.custom_tracks ?? false,
-        }));
-      }
-
-      if (response.data.industry) {
-        setFormData(prev => ({
-          ...prev,
-          organizationType: response.data.industry,
-          industryFocus: response.data.target_audience || '',
-        }));
-      }
+      setOrganization(null); // No organization data needed for now
     } catch (err) {
-      console.error('Error loading organization:', err);
-      setError('Failed to load organization data');
+      console.error('Error in loadOrganization:', err);
+      setError('Failed to load onboarding data');
     }
   };
 
@@ -157,111 +131,34 @@ export default function OnboardingWizard() {
       setLoading(true);
       setError(null);
 
-      // TEMPORARY FIX: Force localhost for development
-      const backendUrl = 'http://localhost:8000';
-      console.log('Backend URL:', backendUrl);
-      console.log('Current step:', currentStep);
-      console.log('Step data:', stepData);
+      // SIMPLIFIED VERSION: Skip backend API calls for onboarding
+      // Just store data locally and proceed to next step
+      console.log('Saving step locally:', currentStep, stepData);
 
-      let orgIdToUse = orgId || user?.organization_id || createdOrgId;
-
-      // Step 1 (Branding): Create organization first if it doesn't exist
-      if (currentStep === 1 && !orgIdToUse) {
-        // Need organization name and slug from stepData
-        if (!stepData.name || !stepData.slug) {
-          setError('Organization name and slug are required');
-          setLoading(false);
-          return false;
-        }
-
-        console.log('Creating organization with name:', stepData.name, 'slug:', stepData.slug);
-
-        // Create organization
-        const orgPayload = {
-          name: stepData.name,
-          slug: stepData.slug,
-          branding: {
-            logo_url: stepData.logoUrl || '',
-            primary_color: stepData.primaryColor || '#D4AF37',
-            secondary_color: stepData.secondaryColor || '#1E3A8A',
-            site_name: stepData.siteName || stepData.name,
-            tagline: stepData.tagline || '',
-            email_from_name: stepData.name,
-            email_from_address: `admin@${stepData.slug}.com`
-          },
-          industry: stepData.organizationType || 'Sales Training',
-          company_size: 'small'
-        };
-
-        console.log('Organization payload:', orgPayload);
-
-        const orgResponse = await axios.post(
-          `${backendUrl}/api/organizations`,
-          orgPayload,
-          { withCredentials: true }
-        );
-
-        console.log('Organization created:', orgResponse.data);
-        orgIdToUse = orgResponse.data.organization_id;
-        setCreatedOrgId(orgIdToUse);
-        setOrganization(orgResponse.data);
-      }
-
-      // Save step progress (only if organization exists)
-      if (orgIdToUse) {
-        const payload = {
-          step: currentStep,
-          org_id: orgIdToUse, // Include org_id for unauthenticated users
-          ...stepData,
-        };
-
-        console.log('Saving onboarding step with payload:', payload);
-
-        await axios.post(
-          `${backendUrl}/api/organizations/onboarding/step`,
-          payload,
-          { withCredentials: true }
-        );
-      }
+      // Simulate API delay for better UX
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       // Update local form data
       setFormData(prev => ({ ...prev, ...stepData }));
 
+      // Save to localStorage for persistence
+      try {
+        localStorage.setItem('onboarding_progress', JSON.stringify({
+          step: currentStep,
+          data: { ...formData, ...stepData },
+          timestamp: new Date().toISOString()
+        }));
+      } catch (e) {
+        console.warn('Could not save to localStorage:', e);
+      }
+
+      setLoading(false);
       return true;
     } catch (err) {
       console.error('Error saving step:', err);
-      console.error('Error response:', err.response);
-      console.error('Error message:', err.message);
-
-      // Extract error message safely
-      let errorMsg = 'Failed to save progress';
-      try {
-        if (err.response?.data) {
-          if (typeof err.response.data === 'string') {
-            errorMsg = err.response.data;
-          } else if (err.response.data.detail) {
-            errorMsg = String(err.response.data.detail);
-          } else if (err.response.data.message) {
-            errorMsg = String(err.response.data.message);
-          } else {
-            errorMsg = JSON.stringify(err.response.data);
-          }
-        } else if (err.message) {
-          errorMsg = String(err.message);
-        } else if (typeof err === 'string') {
-          errorMsg = err;
-        } else {
-          errorMsg = 'An unexpected error occurred';
-        }
-      } catch (e) {
-        console.error('Error parsing error message:', e);
-        errorMsg = 'Failed to save progress. Please try again.';
-      }
-
-      setError(errorMsg);
-      return false;
-    } finally {
+      setError('Failed to save progress. Please try again.');
       setLoading(false);
+      return false;
     }
   };
 
@@ -290,23 +187,24 @@ export default function OnboardingWizard() {
       setLoading(true);
       setError(null);
 
-      // TEMPORARY FIX: Force localhost for development
-      const backendUrl = 'http://localhost:8000';
-      const orgIdToUse = orgId || user?.organization_id;
+      console.log('Completing onboarding...');
 
-      // Mark onboarding as complete
-      await axios.post(
-        `${backendUrl}/api/organizations/onboarding/complete`,
-        {},
-        { withCredentials: true }
-      );
+      // Mark onboarding as complete in localStorage
+      try {
+        localStorage.setItem('onboarding_completed', 'true');
+        localStorage.setItem('onboarding_completed_at', new Date().toISOString());
+        localStorage.setItem('vcsa_onboarding_completed', 'true'); // For App.js compatibility
+      } catch (e) {
+        console.warn('Could not save completion to localStorage:', e);
+      }
 
-      // Redirect to dashboard
-      navigate('/dashboard');
+      // Show success message and redirect
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 1500);
     } catch (err) {
       console.error('Error completing onboarding:', err);
       setError('Failed to complete onboarding');
-    } finally {
       setLoading(false);
     }
   };

@@ -2,28 +2,69 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, BookOpen, Users, Calendar,
   Download, Crown, User, Settings, LogOut,
-  Trophy, Menu, X, Shield, Target, Zap, TrendingUp, Award, Briefcase, DollarSign, BarChart3, Lightbulb
+  Trophy, Menu, X, Shield, Target, TrendingUp, Briefcase, DollarSign, BarChart3, Lightbulb, Award,
+  ChevronDown, ChevronRight, FileText, Video, MessageSquare
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '@/App';
 import { useOrganization } from '@/contexts/OrganizationContext';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { AIAssistantButton } from '@/components/ai/AIAssistantButton';
 
-const navItems = [
-  { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
-  { icon: Target, label: 'Top Producer Path', path: '/path', highlight: true },
-  { icon: Zap, label: 'Goal Sheets', path: '/goals' },
-  { icon: DollarSign, label: 'Financial Planning', path: '/financial' },
-  { icon: Award, label: 'Daily Performance', path: '/daily-performance' },
-  { icon: BarChart3, label: 'Analytics', path: '/analytics' },
-  { icon: Lightbulb, label: 'Strategy', path: '/strategy' },
-  { icon: BookOpen, label: 'Training Library', path: '/courses' },
+const navStructure = [
+  {
+    icon: Lightbulb,
+    label: 'Strategy',
+    path: '/strategy',
+    children: [
+      { icon: Award, label: 'Daily Performance', path: '/daily-performance' },
+      { icon: Target, label: 'Goal Sheets', path: '/goals' },
+      { icon: DollarSign, label: 'Financial Planner', path: '/financial' },
+      { icon: BarChart3, label: 'Analytics', path: '/analytics' },
+    ]
+  },
+  {
+    icon: Target,
+    label: 'Top Producer Path',
+    path: '/path',
+    highlight: true,
+    children: [
+      {
+        icon: BookOpen,
+        label: 'Training Library',
+        path: '/courses',
+        children: [
+          { icon: Video, label: 'Session 1', path: '/courses/session/1' },
+          { icon: Video, label: 'Session 2', path: '/courses/session/2' },
+          { icon: Video, label: 'Session 3', path: '/courses/session/3' },
+          { icon: Video, label: 'Session 4', path: '/courses/session/4' },
+          { icon: Video, label: 'Session 5', path: '/courses/session/5' },
+        ]
+      },
+    ]
+  },
+  {
+    icon: TrendingUp,
+    label: 'Coaching',
+    path: '/coaching',
+    children: [
+      { icon: Calendar, label: 'Events', path: '/events' },
+      { icon: Users, label: 'Group Live Coaching', path: '/coaching/group' },
+      { icon: MessageSquare, label: 'Role Play Sessions', path: '/coaching/roleplay' },
+      { icon: Calendar, label: 'Q&A Sessions', path: '/coaching/qa' },
+    ]
+  },
+  {
+    icon: Download,
+    label: 'Resources',
+    path: '/resources',
+    children: [
+      { icon: FileText, label: 'PDFs & Ebooks', path: '/resources/pdfs' },
+      { icon: Download, label: 'Templates', path: '/resources/templates' },
+      { icon: FileText, label: 'Guides', path: '/resources/guides' },
+    ]
+  },
   { icon: Users, label: 'Community', path: '/community' },
-  { icon: Calendar, label: 'Events', path: '/events' },
-  { icon: TrendingUp, label: 'Coaching', path: '/coaching' },
-  { icon: Download, label: 'Resources', path: '/resources' },
   { icon: Crown, label: 'Membership', path: '/membership' },
 ];
 
@@ -31,12 +72,80 @@ export const DashboardLayout = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const { organization, branding, siteName, logoUrl, isGamificationEnabled } = useOrganization();
+  const { organization, siteName, logoUrl } = useOrganization();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [expandedMenus, setExpandedMenus] = useState({});
 
   const handleLogout = async () => {
     await logout();
     navigate('/');
+  };
+
+  const toggleMenu = (path) => {
+    setExpandedMenus(prev => ({
+      ...prev,
+      [path]: !prev[path]
+    }));
+  };
+
+  const NavigationItem = ({ item, level = 0, isMobile = false }) => {
+    const [isExpanded, setIsExpanded] = useState(expandedMenus[item.path] || false);
+    const hasChildren = item.children && item.children.length > 0;
+    const isActive = location.pathname === item.path ||
+      (item.path !== '/dashboard' && location.pathname.startsWith(item.path));
+
+    const handleClick = (e) => {
+      if (hasChildren) {
+        e.preventDefault();
+        setIsExpanded(!isExpanded);
+        if (!isMobile) {
+          toggleMenu(item.path);
+        }
+      }
+      if (isMobile) {
+        setMobileMenuOpen(false);
+      }
+    };
+
+    return (
+      <div key={item.path}>
+        <Link
+          to={item.path}
+          onClick={handleClick}
+          className={cn(
+            "flex items-center gap-3 px-4 py-3 rounded-sm transition-colors",
+            isActive
+              ? "bg-[#D4AF37]/10 text-[#D4AF37] border-l-2 border-[#D4AF37]"
+              : "text-[#94A3B8] hover:text-white hover:bg-white/5"
+          )}
+          style={{ paddingLeft: `${level * 16 + 16}px` }}
+        >
+          <item.icon className="w-5 h-5 flex-shrink-0" />
+          <span className="font-medium flex-1">{item.label}</span>
+          {hasChildren && (
+            <div className="flex-shrink-0">
+              {isExpanded ? (
+                <ChevronDown className="w-4 h-4" />
+              ) : (
+                <ChevronRight className="w-4 h-4" />
+              )}
+            </div>
+          )}
+        </Link>
+        {hasChildren && isExpanded && (
+          <div className="space-y-1 mt-1">
+            {item.children.map((child) => (
+              <NavigationItem
+                key={child.path}
+                item={child}
+                level={level + 1}
+                isMobile={isMobile}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    );
   };
 
   const levelColors = {
@@ -96,26 +205,24 @@ export const DashboardLayout = ({ children }) => {
 
         {/* Navigation */}
         <nav className="flex-1 p-4 space-y-1">
-          {navItems.map((item) => {
-            const isActive = location.pathname === item.path || 
-              (item.path !== '/dashboard' && location.pathname.startsWith(item.path));
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-sm transition-colors",
-                  isActive 
-                    ? "bg-[#D4AF37]/10 text-[#D4AF37] border-l-2 border-[#D4AF37]" 
-                    : "text-[#94A3B8] hover:text-white hover:bg-white/5"
-                )}
-                data-testid={`nav-${item.label.toLowerCase()}`}
-              >
-                <item.icon className="w-5 h-5" />
-                <span className="font-medium">{item.label}</span>
-              </Link>
-            );
-          })}
+          {/* Dashboard */}
+          <Link
+            to="/dashboard"
+            className={cn(
+              "flex items-center gap-3 px-4 py-3 rounded-sm transition-colors",
+              location.pathname === '/dashboard'
+                ? "bg-[#D4AF37]/10 text-[#D4AF37] border-l-2 border-[#D4AF37]"
+                : "text-[#94A3B8] hover:text-white hover:bg-white/5"
+            )}
+          >
+            <LayoutDashboard className="w-5 h-5" />
+            <span className="font-medium">Dashboard</span>
+          </Link>
+
+          {/* Navigation Sections */}
+          {navStructure.map((item) => (
+            <NavigationItem key={item.path} item={item} />
+          ))}
 
           {/* Manager Dashboard - for managers and directors */}
           {(user?.role === 'manager' || user?.role === 'director' || user?.role === 'admin' || user?.role === 'org_admin') && (
@@ -243,23 +350,25 @@ export const DashboardLayout = ({ children }) => {
 
             {/* Nav */}
             <nav className="space-y-1">
-              {navItems.map((item) => {
-                const isActive = location.pathname === item.path;
-                return (
-                  <Link
-                    key={item.path}
-                    to={item.path}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={cn(
-                      "flex items-center gap-3 px-4 py-3 rounded-sm transition-colors",
-                      isActive ? "bg-[#D4AF37]/10 text-[#D4AF37]" : "text-[#94A3B8]"
-                    )}
-                  >
-                    <item.icon className="w-5 h-5" />
-                    <span>{item.label}</span>
-                  </Link>
-                );
-              })}
+              {/* Dashboard */}
+              <Link
+                to="/dashboard"
+                onClick={() => setMobileMenuOpen(false)}
+                className={cn(
+                  "flex items-center gap-3 px-4 py-3 rounded-sm transition-colors",
+                  location.pathname === '/dashboard'
+                    ? "bg-[#D4AF37]/10 text-[#D4AF37]"
+                    : "text-[#94A3B8]"
+                )}
+              >
+                <LayoutDashboard className="w-5 h-5" />
+                <span>Dashboard</span>
+              </Link>
+
+              {/* Navigation Sections */}
+              {navStructure.map((item) => (
+                <NavigationItem key={item.path} item={item} isMobile={true} />
+              ))}
               {(user?.role === 'admin' || user?.role === 'org_admin') && (
                 <>
                   <Link

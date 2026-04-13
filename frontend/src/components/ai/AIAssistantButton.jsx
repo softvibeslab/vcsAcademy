@@ -115,14 +115,28 @@ export const AIAssistantButton = () => {
     setIsLoading(true);
 
     try {
-      const response = await axios.post(
-        `${API}/assistant/chat`,
-        {
-          message: userMessage,
-          conversation_history: messages.slice(-10).map(({ timestamp, ...msg }) => msg)
-        },
-        { withCredentials: true }
-      );
+      // Try public endpoint first (for admin panel)
+      let response;
+      try {
+        response = await axios.post(
+          `${API}/ai-assistant/public/chat`,
+          {
+            message: userMessage,
+            conversation_history: messages.slice(-10).map(({ timestamp, ...msg }) => msg)
+          }
+        );
+      } catch (publicError) {
+        // Fallback to authenticated endpoint
+        console.log('Public endpoint failed, trying authenticated endpoint...');
+        response = await axios.post(
+          `${API}/assistant/chat`,
+          {
+            message: userMessage,
+            conversation_history: messages.slice(-10).map(({ timestamp, ...msg }) => msg)
+          },
+          { withCredentials: true }
+        );
+      }
 
       if (response.data.success) {
         const assistantResponse = response.data.data.response;

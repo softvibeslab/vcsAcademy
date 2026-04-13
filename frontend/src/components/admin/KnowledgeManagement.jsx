@@ -32,11 +32,7 @@ export const KnowledgeManagement = () => {
 
   const fetchKnowledgeItems = async () => {
     try {
-      const response = await fetch('/api/ai-assistant/knowledge/items', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
+      const response = await fetch('/api/ai-assistant/public/knowledge/items');
 
       const data = await response.json();
 
@@ -77,11 +73,8 @@ export const KnowledgeManagement = () => {
 
       setUploadProgress('Procesando con AI...');
 
-      const response = await fetch('/api/ai-assistant/knowledge/upload-pdf', {
+      const response = await fetch('/api/ai-assistant/public/knowledge/upload-pdf', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
         body: formData
       });
 

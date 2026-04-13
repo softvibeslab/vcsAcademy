@@ -3,8 +3,9 @@
 ## ZIP File Information
 
 **File**: `netlify-deploy.zip`
-**Size**: 1.4 MB (uncompressed: 5.8 MB)
-**Location**: `/rogervibes/vcs/Vcsa-/netlify-deploy.zip`
+**Size**: 4.6 MB (uncompressed: ~8 MB)
+**Location**: `/Users/newproject/Documents/GitHub/vcsAcademy/netlify-deploy.zip`
+**Created**: 2026-04-11
 **Type**: Pre-built deployment (no build step required)
 
 ## Deployment Options
@@ -73,15 +74,15 @@ The ZIP contains pre-compiled production files:
 ```
 index.html                    # Main HTML file
 asset-manifest.json          # Asset manifest
-netlify.toml                 # Netlify configuration
+manifest.json                # PWA manifest
 static/
   ├── css/
-  │   ├── main.c985706a.css           # Optimized CSS
-  │   └── main.c985706a.css.map       # Source map
+  │   ├── main.9723d937.css           # Optimized CSS (132 KB)
+  │   └── main.9723d937.css.map       # Source map
   └── js/
-      ├── main.31182a83.js            # Optimized JavaScript
-      ├── main.31182a83.js.map        # Source map
-      └── main.31182a83.js.LICENSE.txt # Licenses
+      ├── main.a470eb3a.js            # Optimized JavaScript (2 MB)
+      ├── main.a470eb3a.js.map        # Source map (8 MB)
+      └── main.a470eb3a.js.LICENSE.txt # Licenses
 ```
 
 ### Build Warnings (Non-Critical)

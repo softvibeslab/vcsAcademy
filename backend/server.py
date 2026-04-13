@@ -437,7 +437,10 @@ async def register(data: UserCreate, response: Response):
         max_age=7 * 24 * 60 * 60
     )
     
-    del user_doc["password_hash"]
+    if "password" in user_doc:
+        del user_doc["password"]
+    if "password_hash" in user_doc:
+        del user_doc["password_hash"]
     user_doc["created_at"] = datetime.fromisoformat(user_doc["created_at"])
     return User(**user_doc)
 
@@ -448,7 +451,7 @@ async def login(data: UserLogin, response: Response):
     if not user_doc:
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
-    if not bcrypt.checkpw(data.password.encode(), user_doc.get("password_hash", "").encode()):
+    if not bcrypt.checkpw(data.password.encode(), user_doc.get("password", user_doc.get("password_hash", "")).encode()):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
     session_token = f"session_{uuid.uuid4().hex}"
@@ -470,7 +473,17 @@ async def login(data: UserLogin, response: Response):
         max_age=7 * 24 * 60 * 60
     )
     
-    del user_doc["password_hash"]
+    if "password" in user_doc:
+        del user_doc["password"]
+    if "password_hash" in user_doc:
+        del user_doc["password_hash"]
+
+    # Create name field from first_name and last_name
+    if "name" not in user_doc:
+        first_name = user_doc.get("first_name", "")
+        last_name = user_doc.get("last_name", "")
+        user_doc["name"] = f"{first_name} {last_name}".strip() or user_doc.get("email", "").split("@")[0]
+
     if isinstance(user_doc.get("created_at"), str):
         user_doc["created_at"] = datetime.fromisoformat(user_doc["created_at"])
     return User(**user_doc)
@@ -612,6 +625,55 @@ async def get_course(course_id: str, user: User = Depends(require_auth)):
         "course": Course(**course),
         "lessons": [Lesson(**l) for l in lessons],
         "completed_lessons": completed_lessons
+    }
+
+# ============== PUBLIC COURSES ROUTES (NO AUTH) ==============
+
+@api_router.get("/public/courses")
+async def get_public_courses(category: Optional[str] = None):
+    """Get all public courses (no authentication required)"""
+    query = {"is_public": True}
+    if category:
+        query["category"] = category
+
+    courses = await db.courses.find(query, {"_id": 0}).to_list(100)
+
+    # Add lesson count for each course
+    for course in courses:
+        lesson_count = await db.lessons.count_documents({"course_id": course["course_id"]})
+        course["lessons_count"] = lesson_count
+
+        # Format dates
+        if isinstance(course.get("created_at"), str):
+            course["created_at"] = datetime.fromisoformat(course["created_at"])
+
+    return {
+        "success": True,
+        "courses": courses,
+        "total": len(courses)
+    }
+
+@api_router.get("/public/courses/{course_id}")
+async def get_public_course(course_id: str):
+    """Get public course with lessons (no authentication required)"""
+    course = await db.courses.find_one({"course_id": course_id, "is_public": True}, {"_id": 0})
+    if not course:
+        raise HTTPException(status_code=404, detail="Public course not found")
+
+    lessons = await db.lessons.find({"course_id": course_id}, {"_id": 0}).sort("order", 1).to_list(50)
+
+    # Format dates
+    if isinstance(course.get("created_at"), str):
+        course["created_at"] = datetime.fromisoformat(course["created_at"])
+
+    for lesson in lessons:
+        if isinstance(lesson.get("created_at"), str):
+            lesson["created_at"] = datetime.fromisoformat(lesson["created_at"])
+
+    return {
+        "success": True,
+        "course": course,
+        "lessons": lessons
     }
 
 @api_router.post("/courses", response_model=Course)
@@ -1111,8 +1173,7 @@ async def cancel_rsvp_coaching_session(session_id: str, user: User = Depends(req
 # ============== PAYMENT ROUTES ==============
 
 # Payment integration using Stripe
-# To implement your own payment integration, uncomment and configure the following:
-# from stripe_integration import StripeCheckout, CheckoutSessionResponse, CheckoutStatusResponse, CheckoutSessionRequest
+from stripe_integration import StripeCheckout, CheckoutSessionResponse, CheckoutStatusResponse, CheckoutSessionRequest
 
 MEMBERSHIP_PACKAGES = {
     "vip_monthly": {"amount": 97.00, "name": "VIP Monthly", "period": "month"},
@@ -1590,10 +1651,13 @@ except ImportError:
 from middleware import inject_organization_context
 app.middleware("http")(inject_organization_context)
 
+# Configure CORS from environment variable
+cors_origins = os.environ.get("CORS_ORIGINS", "http://localhost:1234,http://localhost:1235").split(",")
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=["*"],
+    allow_origins=cors_origins,  # Must be specific list when credentials=True
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -1633,6 +1697,14 @@ try:
 except ImportError:
     print("Warning: financial_routes not available")
 
+# Dashboard Routes (MVP Lite)
+try:
+    from dashboard_routes import dashboard_router
+    app.include_router(dashboard_router, prefix="/api")
+    print("Dashboard routes loaded successfully")
+except ImportError:
+    print("Warning: dashboard_routes not available")
+
 # Claude AI Assistant Routes
 try:
     from claude_routes import router as claude_router
@@ -1643,9 +1715,18 @@ except ImportError:
 
 # Enhanced AI Assistant Routes (Fase 3)
 try:
-    from ai_assistant_enhanced import router as enhanced_ai_router
+    from ai_assistant_enhanced import router as enhanced_ai_router, public_router as enhanced_ai_public_router
     app.include_router(enhanced_ai_router)
+    app.include_router(enhanced_ai_public_router)  # Public endpoints without auth
     print("Enhanced AI Assistant routes loaded successfully (Fase 3)")
 except ImportError:
     print("Warning: ai_assistant_enhanced not available")
+
+# VCSA Pocket Mobile App Routes
+try:
+    from mobile_routes import mobile_router
+    app.include_router(mobile_router)
+    print("VCSA Pocket mobile routes loaded successfully")
+except ImportError:
+    print("Warning: mobile_routes not available")
 

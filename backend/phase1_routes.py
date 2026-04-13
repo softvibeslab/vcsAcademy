@@ -1263,18 +1263,49 @@ def get_content_by_id(content_id: str) -> Optional[Dict]:
             return item
     return None
 
-def get_track_modules(track_id: str) -> List[Dict]:
-    """Get all modules for a track with content details"""
-    track_content = [tc for tc in TRACK_CONTENT if tc["track_id"] == track_id]
+async def get_track_modules(track_id: str) -> List[Dict]:
+    """Get all modules for a track with content details - searches both static and DB content"""
     modules = []
-    for tc in sorted(track_content, key=lambda x: x["order_index"]):
+
+    # First, try static TRACK_CONTENT
+    track_content = [tc for tc in TRACK_CONTENT if tc["track_id"] == track_id]
+
+    # If not found in static, try MongoDB
+    if not track_content:
+        try:
+            db_track_content = await db.phase1_track_content.find({"track_id": track_id}).to_list(50)
+            if db_track_content:
+                track_content = db_track_content
+        except Exception as e:
+            print(f"Error loading DB track content: {e}")
+
+    # Build modules from track_content
+    for tc in sorted(track_content, key=lambda x: x.get("order_index", 0)):
+        # Try to get content from static lists first
         content = get_content_by_id(tc["content_id"])
+
+        # If not found in static, try MongoDB
+        if not content:
+            try:
+                db_content = await db.phase1_content.find_one({"content_id": tc["content_id"]})
+                if db_content:
+                    # Convert DB document to dict and format dates
+                    content = dict(db_content)
+                    # Remove MongoDB specific fields
+                    content.pop("_id", None)
+                    # Convert datetime to ISO format
+                    if isinstance(content.get("created_at"), datetime):
+                        content["created_at"] = content["created_at"].isoformat()
+            except Exception as e:
+                print(f"Error loading DB content: {e}")
+
         if content:
             modules.append({
                 **content,
-                "module_number": tc["module_number"],
-                "order": tc["order_index"]
+                "module_number": tc.get("module_number"),
+                "order": tc.get("order_index", 0)
             })
+
     return modules
 
 def calculate_readiness_score(progress: Dict) -> int:
@@ -1382,25 +1413,73 @@ async def get_stages():
 
 @phase1_router.get("/tracks")
 async def get_tracks():
-    """Get all tracks with module summaries"""
+    """Get all tracks with module summaries - combines static TRACKS with dynamic DB tracks"""
     tracks_with_modules = []
+
+    # First, add static TRACKS
     for track in TRACKS:
-        modules = get_track_modules(track["track_id"])
+        modules = await get_track_modules(track["track_id"])
         tracks_with_modules.append({
             **track,
             "modules": modules,
             "module_count": len(modules)
         })
+
+    # Then, add dynamic tracks from MongoDB (like Skool)
+    try:
+        db_tracks = await db.phase1_tracks.find().sort("track_number", 1).to_list(50)
+        for db_track in db_tracks:
+            # Skip if already in static TRACKS
+            if any(t["track_id"] == db_track["track_id"] for t in TRACKS):
+                continue
+
+            modules = await get_track_modules(db_track["track_id"])
+            tracks_with_modules.append({
+                "track_id": db_track["track_id"],
+                "track_number": db_track["track_number"],
+                "name": db_track["name"],
+                "purpose": db_track.get("purpose", "Track adicional"),
+                "outcome": db_track.get("outcome", ""),
+                "required_for_stages": [],
+                "total_duration": db_track.get("total_duration", 0),
+                "modules": modules,
+                "module_count": len(modules)
+            })
+    except Exception as e:
+        print(f"Error loading DB tracks: {e}")
+
+    # Sort by track_number
+    tracks_with_modules.sort(key=lambda x: x["track_number"])
+
     return tracks_with_modules
 
 @phase1_router.get("/tracks/{track_id}")
 async def get_track(track_id: str):
     """Get single track with all module details"""
+    # First try static TRACKS
     track = next((t for t in TRACKS if t["track_id"] == track_id), None)
+
+    # If not found, try MongoDB
+    if not track:
+        try:
+            db_track = await db.phase1_tracks.find_one({"track_id": track_id})
+            if db_track:
+                track = {
+                    "track_id": db_track["track_id"],
+                    "track_number": db_track["track_number"],
+                    "name": db_track["name"],
+                    "purpose": db_track.get("purpose", ""),
+                    "outcome": db_track.get("outcome", ""),
+                    "required_for_stages": [],
+                    "total_duration": db_track.get("total_duration", 0)
+                }
+        except Exception as e:
+            print(f"Error loading DB track: {e}")
+
     if not track:
         raise HTTPException(status_code=404, detail="Track not found")
-    
-    modules = get_track_modules(track_id)
+
+    modules = await get_track_modules(track_id)
     return {
         **track,
         "modules": modules,

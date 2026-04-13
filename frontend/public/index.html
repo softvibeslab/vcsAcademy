@@ -5,19 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes" />
         <meta name="theme-color" content="#D4AF37" />
         <meta name="description" content="VCSA - Vacation Club Sales Academy. Your premium sales training platform for vacation club professionals." />
-
-        <!-- PWA Manifest -->
-        <link rel="manifest" href="/manifest.json" />
-
-        <!-- iOS Meta Tags -->
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="VCSA" />
-
-        <!-- Favicon -->
-        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+        <link rel="icon" href="/favicon.svg" />
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -79,22 +67,26 @@
                 min-width: 44px;
             }
         </style>
+
+        <!-- Disable Sentry for testing -->
+        <script>
+            window.SENTRY_DISABLE = true;
+        </script>
     </head>
     <body>
         <noscript>You need to enable JavaScript to run this app.</noscript>
         <div id="root"></div>
 
-        <!-- Service Worker Registration -->
+        <!-- Service Worker DISABLED for testing -->
         <script>
             if ('serviceWorker' in navigator) {
                 window.addEventListener('load', () => {
-                    navigator.serviceWorker.register('/service-worker.js')
-                        .then((registration) => {
-                            console.log('SW registered: ', registration);
-                        })
-                        .catch((registrationError) => {
-                            console.log('SW registration failed: ', registrationError);
+                    // Unregister any existing service workers
+                    navigator.serviceWorker.getRegistrations().then((registrations) => {
+                        registrations.forEach((registration) => {
+                            registration.unregister();
                         });
+                    });
                 });
             }
         </script>

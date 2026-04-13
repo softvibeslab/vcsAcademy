@@ -1,0 +1,38 @@
+{
+  "cli": {
+    "version": ">= 5.2.0"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "production": {
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "apk": {
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "apk-legacy": {
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "NPM_FLAGS": "--legacy-peer-deps"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "expo": {
+    "name": "VCSA Mobile",
+    "slug": "vcsa-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#131317"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.vcsa.mobile"
+    },
+    "android": {
+      "package": "com.vcsa.mobile",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#131317"
+      },
+      "permissions": [
+        "INTERNET",
+        "ACCESS_NETWORK_STATE"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "vcsa-mobile-preview"
+      }
+    },
+    "updates": {
+      "url": "https://u.expo.dev/64c8f8a8-8b3f-4b3c-9f7d-1e2d3a4b5c6f"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    }
+  }
+}

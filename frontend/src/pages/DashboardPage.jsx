@@ -13,22 +13,18 @@ import axios from 'axios';
 
 export default function DashboardPage() {
   const { user } = useAuth();
-  const [dashboard, setDashboard] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const fetchDashboard = async () => {
-      try {
-        const response = await axios.get(`${API}/dashboard`, { withCredentials: true });
-        setDashboard(response.data);
-      } catch (error) {
-        console.error('Dashboard error:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchDashboard();
-  }, []);
+  // Mock data - no API dependency
+  const mockDashboard = {
+    progress: {
+      completed_lessons: 0,
+      total_lessons: 36
+    },
+    recent_courses: [],
+    upcoming_events: [],
+    recent_posts: []
+  };
 
   const levelProgress = user ? ((user.points % 100) / 100) * 100 : 0;
 
@@ -102,10 +98,10 @@ export default function DashboardPage() {
 
           {/* Completed */}
           <div className="glass p-6">
-            <p className="text-xs uppercase tracking-widest text-[#94A3B8] mb-2">Lessons Done</p>
-            <p className="font-mono text-3xl font-bold">{dashboard?.progress?.completed_lessons || 0}</p>
+            <p className="text-xs uppercase tracking-widest text-[#94A3B8] mb-2">Training Modules</p>
+            <p className="font-mono text-3xl font-bold">36</p>
             <p className="text-xs text-[#94A3B8] mt-2">
-              of {dashboard?.progress?.total_lessons || 0} total
+              modules available
             </p>
           </div>
 
@@ -146,17 +142,17 @@ export default function DashboardPage() {
               </Link>
             </div>
             
-            {dashboard?.recent_courses?.length > 0 ? (
+            {mockDashboard?.recent_courses?.length > 0 ? (
               <div className="grid sm:grid-cols-2 gap-4">
-                {dashboard.recent_courses.slice(0, 4).map((course, i) => (
-                  <Link 
-                    key={course.course_id} 
+                {mockDashboard.recent_courses.slice(0, 4).map((course, i) => (
+                  <Link
+                    key={course.course_id}
                     to={`/courses/${course.course_id}`}
                     className="glass group hover:border-[#D4AF37]/30 transition-all"
                   >
                     <div className="aspect-video relative overflow-hidden">
-                      <img 
-                        src={course.thumbnail || `https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=225`} 
+                      <img
+                        src={course.thumbnail || `https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=225`}
                         alt={course.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
@@ -175,8 +171,10 @@ export default function DashboardPage() {
             ) : (
               <div className="glass p-8 text-center">
                 <BookOpen className="w-12 h-12 text-[#94A3B8] mx-auto mb-4" />
-                <p className="text-[#94A3B8]">No courses available yet</p>
-                <p className="text-sm text-[#94A3B8]/70 mt-1">Check back soon for new content</p>
+                <p className="text-[#94A3B8]">Start your training journey</p>
+                <Link to="/path" className="text-sm text-[#D4AF37] mt-2 inline-block hover:underline">
+                  Begin Top Producer Path →
+                </Link>
               </div>
             )}
           </motion.div>
@@ -194,10 +192,10 @@ export default function DashboardPage() {
               </Link>
             </div>
             
-            {dashboard?.upcoming_events?.length > 0 ? (
+            {mockDashboard?.upcoming_events?.length > 0 ? (
               <div className="space-y-3">
-                {dashboard.upcoming_events.map((event) => (
-                  <Link 
+                {mockDashboard.upcoming_events.map((event) => (
+                  <Link
                     key={event.event_id}
                     to="/events"
                     className="glass p-4 block hover:border-[#D4AF37]/30 transition-colors"
@@ -223,6 +221,9 @@ export default function DashboardPage() {
               <div className="glass p-6 text-center">
                 <Calendar className="w-10 h-10 text-[#94A3B8] mx-auto mb-3" />
                 <p className="text-[#94A3B8] text-sm">No upcoming events</p>
+                <Link to="/coaching" className="text-xs text-[#D4AF37] mt-2 inline-block hover:underline">
+                  View coaching sessions
+                </Link>
               </div>
             )}
           </motion.div>
@@ -241,10 +242,10 @@ export default function DashboardPage() {
             </Link>
           </div>
           
-          {dashboard?.recent_posts?.length > 0 ? (
+          {mockDashboard?.recent_posts?.length > 0 ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {dashboard.recent_posts.slice(0, 3).map((post) => (
-                <Link 
+              {mockDashboard.recent_posts.slice(0, 3).map((post) => (
+                <Link
                   key={post.post_id}
                   to="/community"
                   className="glass p-4 hover:border-[#D4AF37]/30 transition-colors"
@@ -272,9 +273,9 @@ export default function DashboardPage() {
           ) : (
             <div className="glass p-8 text-center">
               <Users className="w-12 h-12 text-[#94A3B8] mx-auto mb-4" />
-              <p className="text-[#94A3B8]">No community posts yet</p>
+              <p className="text-[#94A3B8]">Join the community</p>
               <Link to="/community" className="text-sm text-[#D4AF37] mt-2 inline-block hover:underline">
-                Be the first to post
+                Connect with other sales professionals →
               </Link>
             </div>
           )}
