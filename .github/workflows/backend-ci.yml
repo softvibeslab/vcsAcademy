@@ -1,0 +1,254 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [ main, develop, PLANNING ]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-ci.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-ci.yml'
+
+jobs:
+  # ═══════════════════════════════════════════════════════════════
+  # LINT & CODE QUALITY
+  # ═══════════════════════════════════════════════════════════════
+  lint:
+    name: Code Quality & Linting
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.13'
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        cd backend
+        pip install -r requirements.txt
+        pip install flake8 black mypy pylint
+
+    - name: Run Flake8 (linting)
+      run: |
+        cd backend
+        flake8 server.py phase1_routes.py --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 server.py phase1_routes.py --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+    - name: Check code formatting (Black)
+      run: |
+        cd backend
+        black --check server.py phase1_routes.py
+
+    - name: Type checking (MyPy)
+      run: |
+        cd backend
+        mypy server.py phase1_routes.py --ignore-missing-imports
+
+  # ═══════════════════════════════════════════════════════════════
+  # SECURITY SCANS
+  # ═══════════════════════════════════════════════════════════════
+  security:
+    name: Security Scanning
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.13'
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        cd backend
+        pip install -r requirements.txt
+        pip install safety bandit
+
+    - name: Check for security vulnerabilities
+      run: |
+        cd backend
+        safety check --full-report
+
+    - name: Run Bandit security linter
+      run: |
+        cd backend
+        bandit -r server.py phase1_routes.py -f json -o bandit-report.json || true
+
+    - name: Upload security report
+      uses: actions/upload-artifact@v4
+      with:
+        name: security-report
+        path: backend/bandit-report.json
+
+  # ═══════════════════════════════════════════════════════════════
+  # UNIT TESTS
+  # ═══════════════════════════════════════════════════════════════
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongo:8
+        env:
+          MONGO_INITDB_ROOT_USERNAME: admin
+          MONGO_INITDB_ROOT_PASSWORD: test_password
+          MONGO_INITDB_DATABASE: vcsa_test
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand({ping: 1})'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.13'
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        cd backend
+        pip install -r requirements.txt
+        pip install pytest pytest-cov pytest-asyncio pytest-mock
+
+    - name: Run tests with coverage
+      env:
+        MONGO_URL: mongodb://admin:test_password@localhost:27017
+        DB_NAME: vcsa_test
+        STRIPE_API_KEY: sk_test_placeholder
+        JWT_SECRET: test_secret_for_ci_only
+      run: |
+        cd backend
+        pytest tests/ -v --cov=. --cov-report=xml --cov-report=html --cov-report=term
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        file: ./backend/coverage.xml
+        flags: backend
+        name: backend-coverage
+
+    - name: Archive coverage reports
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-reports
+        path: backend/htmlcov/
+
+  # ═══════════════════════════════════════════════════════════════
+  # BUILD & PUSH DOCKER IMAGE
+  # ═══════════════════════════════════════════════════════════════
+  build:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    needs: [lint, security, test]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: vcsacademy/backend
+        tags: |
+          type=ref,event=branch
+          type=semver,pattern={{version}}
+          type=semver,pattern={{major}}.{{minor}}
+          type=sha,prefix={{branch}}-
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./backend
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+  # ═══════════════════════════════════════════════════════════════
+  # DEPLOY TO STAGING
+  # ═══════════════════════════════════════════════════════════════
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment:
+      name: staging
+      url: https://staging.vcsa.com
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Deploy to staging server
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.STAGING_HOST }}
+        username: ${{ secrets.STAGING_USER }}
+        key: ${{ secrets.STAGING_SSH_KEY }}
+        script: |
+          cd /opt/vcsa
+          docker-compose pull backend
+          docker-compose up -d backend
+          docker-compose exec backend python -m pytest tests/ --maxfail=5
+
+    - name: Health check
+      run: |
+        sleep 10
+        curl -f https://staging.vcsa.com/api/health || exit 1
+
+    - name: Notify deployment status
+      if: always()
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        text: 'Backend deployment to staging: ${{ job.status }}'
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+
+  # ═══════════════════════════════════════════════════════════════
+  # NOTIFY ON FAILURE
+  # ═══════════════════════════════════════════════════════════════
+  notify-failure:
+    name: Notify on Failure
+    runs-on: ubuntu-latest
+    needs: [lint, security, test]
+    if: failure()
+
+    steps:
+    - name: Send Slack notification
+      uses: 8398a7/action-slack@v3
+      with:
+        status: 'failure'
+        text: 'Backend CI pipeline failed! Please check the logs.'
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}

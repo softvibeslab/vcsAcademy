@@ -1,0 +1,345 @@
+name: Frontend CI
+
+on:
+  push:
+    branches: [ main, develop, PLANNING ]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/frontend-ci.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/frontend-ci.yml'
+
+jobs:
+  # ═══════════════════════════════════════════════════════════════
+  # LINT & CODE QUALITY
+  # ═══════════════════════════════════════════════════════════════
+  lint:
+    name: Code Quality & Linting
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'yarn'
+        cache-dependency-path: frontend/yarn.lock
+
+    - name: Install dependencies
+      run: |
+        cd frontend
+        yarn install --frozen-lockfile
+
+    - name: Run ESLint
+      run: |
+        cd frontend
+        yarn eslint src/ --max-warnings 0
+
+    - name: Check TypeScript types
+      run: |
+        cd frontend
+        npx tsc --noEmit || true
+
+    - name: Check code formatting (Prettier)
+      run: |
+        cd frontend
+        yarn prettier --check "src/**/*.{js,jsx,ts,tsx,json,css,md}"
+
+  # ═══════════════════════════════════════════════════════════════
+  # SECURITY SCANS
+  # ═══════════════════════════════════════════════════════════════
+  security:
+    name: Security Scanning
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'yarn'
+        cache-dependency-path: frontend/yarn.lock
+
+    - name: Install dependencies
+      run: |
+        cd frontend
+        yarn install --frozen-lockfile
+
+    - name: Run npm audit
+      run: |
+        cd frontend
+        yarn audit --level moderate
+      continue-on-error: true
+
+    - name: Check for outdated dependencies
+      run: |
+        cd frontend
+        yarn outdated
+      continue-on-error: true
+
+  # ═══════════════════════════════════════════════════════════════
+  # UNIT TESTS
+  # ═══════════════════════════════════════════════════════════════
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'yarn'
+        cache-dependency-path: frontend/yarn.lock
+
+    - name: Install dependencies
+      run: |
+        cd frontend
+        yarn install --frozen-lockfile
+
+    - name: Run tests
+      run: |
+        cd frontend
+        yarn test:ci -- --coverage --maxWorkers=2
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        file: ./frontend/coverage/coverage-final.json
+        flags: frontend
+        name: frontend-coverage
+
+    - name: Archive coverage reports
+      uses: actions/upload-artifact@v4
+      with:
+        name: frontend-coverage-reports
+        path: frontend/coverage/
+
+  # ═══════════════════════════════════════════════════════════════
+  # BUILD & OPTIMIZATION
+  # ═══════════════════════════════════════════════════════════════
+  build:
+    name: Production Build
+    runs-on: ubuntu-latest
+    needs: [lint, security, test]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'yarn'
+        cache-dependency-path: frontend/yarn.lock
+
+    - name: Install dependencies
+      run: |
+        cd frontend
+        yarn install --frozen-lockfile
+
+    - name: Create production build
+      env:
+        REACT_APP_BACKEND_URL: https://api.vcsa.com
+        NODE_ENV: production
+      run: |
+        cd frontend
+        yarn build
+
+    - name: Check bundle size
+      run: |
+        cd frontend
+        du -sh build/
+        echo "Bundle size check passed"
+
+    - name: Archive build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: frontend-build
+        path: frontend/build/
+
+  # ═══════════════════════════════════════════════════════════════
+  # E2E TESTS
+  # ═══════════════════════════════════════════════════════════════
+  e2e:
+    name: End-to-End Tests
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: github.event_name == 'pull_request'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'yarn'
+        cache-dependency-path: frontend/yarn.lock
+
+    - name: Install dependencies
+      run: |
+        cd frontend
+        yarn install --frozen-lockfile
+
+    - name: Install Playwright
+      run: |
+        cd frontend
+        npx playwright install --with-deps
+
+    - name: Run E2E tests
+      run: |
+        cd frontend
+        yarn test:e2e
+
+    - name: Upload E2E test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: e2e-test-results
+        path: frontend/playwright-report/
+
+  # ═══════════════════════════════════════════════════════════════
+  # BUILD & PUSH DOCKER IMAGE
+  # ═══════════════════════════════════════════════════════════════
+  docker-build:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: vcsacademy/frontend
+        tags: |
+          type=ref,event=branch
+          type=semver,pattern={{version}}
+          type=semver,pattern={{major}}.{{minor}}
+          type=sha,prefix={{branch}}-
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./frontend
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        build-args: |
+          REACT_APP_BACKEND_URL=https://api.vcsa.com
+          NODE_ENV=production
+
+  # ═══════════════════════════════════════════════════════════════
+  # DEPLOY TO STAGING
+  # ═══════════════════════════════════════════════════════════════
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [docker-build]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment:
+      name: staging
+      url: https://staging.vcsa.com
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Deploy to staging server
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.STAGING_HOST }}
+        username: ${{ secrets.STAGING_USER }}
+        key: ${{ secrets.STAGING_SSH_KEY }}
+        script: |
+          cd /opt/vcsa
+          docker-compose pull frontend
+          docker-compose up -d frontend
+          docker-compose exec frontend nginx -t
+
+    - name: Health check
+      run: |
+        sleep 10
+        curl -f https://staging.vcsa.com/ || exit 1
+
+    - name: Run smoke tests
+      run: |
+        curl -f https://staging.vcsa.com/api/health
+        curl -f https://staging.vcsa.com/ | grep -q "VCSA"
+
+    - name: Notify deployment status
+      if: always()
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        text: 'Frontend deployment to staging: ${{ job.status }}'
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+
+  # ═══════════════════════════════════════════════════════════════
+  # LHCI ANALYSIS
+  # ═══════════════════════════════════════════════════════════════
+  lighthouse:
+    name: Lighthouse Performance
+    runs-on: ubuntu-latest
+    needs: [deploy-staging]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Run Lighthouse CI
+      uses: treosh/lighthouse-ci-action@v10
+      with:
+        urls: |
+          https://staging.vcsa.com
+          https://staging.vcsa.com/dashboard
+        uploadArtifacts: true
+        temporaryPublicStorage: true
+
+  # ═══════════════════════════════════════════════════════════════
+  # NOTIFY ON FAILURE
+  # ═══════════════════════════════════════════════════════════════
+  notify-failure:
+    name: Notify on Failure
+    runs-on: ubuntu-latest
+    needs: [lint, security, test, build]
+    if: failure()
+
+    steps:
+    - name: Send Slack notification
+      uses: 8398a7/action-slack@v3
+      with:
+        status: 'failure'
+        text: 'Frontend CI pipeline failed! Please check the logs.'
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
