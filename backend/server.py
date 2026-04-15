@@ -24,6 +24,7 @@ db = client[os.environ['DB_NAME']]
 
 # Stripe
 STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY', 'sk_test_your_stripe_key')
+STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET', 'whsec_your_webhook_secret')
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -53,8 +54,71 @@ except Exception as e:
     logger.error(f"Failed to initialize Sentry: {e}")
     sentry_enabled = False
 
-# Create the main app
-app = FastAPI()
+# Create the main app with enhanced OpenAPI documentation
+app = FastAPI(
+    title="VCSA API",
+    description="""
+    ## Vacation Club Sales Academy API
+
+    Complete API for the VCSA sales training platform.
+
+    ### Authentication
+    Most endpoints require session-based authentication. Include your session token in cookies.
+
+    ### Key Features
+    - **Phase 1 Development System**: Complete sales training curriculum
+    - **Community**: Social features for sales professionals
+    - **Events**: Masterclasses and training sessions
+    - **Resources**: Downloadable sales materials
+    - **Payments**: Stripe integration for subscriptions
+
+    ### Rate Limiting
+    - Auth endpoints: 5-10 requests/minute
+    - Development endpoints: 30 requests/minute
+    - Community endpoints: 10 requests/minute
+
+    ### Support
+    For API support, contact api@vcsa.com
+    """,
+    version="1.0.0",
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_tags=[
+        {
+            "name": "authentication",
+            "description": "User authentication and session management"
+        },
+        {
+            "name": "development",
+            "description": "Phase 1 Development System - Training content and progress"
+        },
+        {
+            "name": "community",
+            "description": "Community feed, posts, and social features"
+        },
+        {
+            "name": "events",
+            "description": "Masterclasses and training events"
+        },
+        {
+            "name": "resources",
+            "description": "Downloadable resources and materials"
+        },
+        {
+            "name": "payments",
+            "description": "Payment processing and webhooks"
+        },
+        {
+            "name": "admin",
+            "description": "Administrative functions"
+        },
+        {
+            "name": "health",
+            "description": "Health check and monitoring endpoints"
+        }
+    ]
+)
+
 api_router = APIRouter(prefix="/api")
 
 # ============== MODELS ==============
@@ -1536,4 +1600,25 @@ try:
     print("Branding routes loaded successfully")
 except ImportError:
     print("Warning: branding_routes not available")
+
+# ═══════════════════════════════════════════════════════════════
+# PAYMENTS WEBHOOK INTEGRATION
+# ═══════════════════════════════════════════════════════════════
+
+try:
+    import stripe
+    from payments_webhook import setup_payments_webhook
+
+    # Setup payments webhook
+    webhook_handler = setup_payments_webhook(
+        app=app,
+        db=db,
+        stripe_api_key=STRIPE_API_KEY,
+        webhook_secret=STRIPE_WEBHOOK_SECRET
+    )
+    logger.info("Payments webhook initialized successfully")
+
+except ImportError as e:
+    logger.warning(f"Stripe not installed: {e}")
+    logger.info("Payments webhook not available - install stripe with: pip install stripe")
 
