@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Trophy, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { Trophy, Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth, API } from '@/App';
@@ -17,18 +17,68 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
+
+  const validateEmail = (email) => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!validateEmail(email)) {
+      newErrors.email = 'Please enter a valid email address';
+    }
+
+    if (!password) {
+      newErrors.password = 'Password is required';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!validateForm()) {
+      return;
+    }
+
     setLoading(true);
 
     try {
       const response = await axios.post(`${API}/auth/login`, { email, password }, { withCredentials: true });
       login(response.data);
-      toast.success('Welcome back!');
+      toast.success('Welcome back!', {
+        description: 'You have successfully logged in'
+      });
       navigate('/dashboard');
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Invalid credentials');
+      // FIX: Better error handling
+      const errorMessage = error.response?.data?.detail || 'An error occurred during login';
+      const isAccountLocked = errorMessage.includes('locked') || errorMessage.includes('429');
+      const isAccountInactive = errorMessage.includes('deactivated') || errorMessage.includes('403');
+
+      if (isAccountLocked) {
+        toast.error('Account Temporarily Locked', {
+          description: 'Too many failed attempts. Please reset your password to continue.',
+          duration: 5000
+        });
+      } else if (isAccountInactive) {
+        toast.error('Account Deactivated', {
+          description: 'Please contact support for assistance.',
+          duration: 5000
+        });
+      } else {
+        toast.error('Login Failed', {
+          description: errorMessage,
+          duration: 4000
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -44,7 +94,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-[#020204] flex">
       {/* Left - Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           className="w-full max-w-md"
@@ -70,13 +120,22 @@ export default function LoginPage() {
                 <Input
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setErrors({ ...errors, email: '' });
+                  }}
                   placeholder="you@example.com"
-                  className="pl-12 h-12 bg-[#0A0A0B] border-white/10 focus:border-[#D4AF37]/50"
+                  className={`pl-12 h-12 bg-[#0A0A0B] ${errors.email ? 'border-red-500' : 'border-white/10'} focus:border-[#D4AF37]/50`}
                   required
                   data-testid="login-email-input"
                 />
               </div>
+              {errors.email && (
+                <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" />
+                  {errors.email}
+                </p>
+              )}
             </div>
 
             <div>
@@ -86,9 +145,12 @@ export default function LoginPage() {
                 <Input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setErrors({ ...errors, password: '' });
+                  }}
                   placeholder="Enter your password"
-                  className="pl-12 pr-12 h-12 bg-[#0A0A0B] border-white/10 focus:border-[#D4AF37]/50"
+                  className={`pl-12 pr-12 h-12 bg-[#0A0A0B] ${errors.password ? 'border-red-500' : 'border-white/10'} focus:border-[#D4AF37]/50`}
                   required
                   data-testid="login-password-input"
                 />
@@ -100,10 +162,22 @@ export default function LoginPage() {
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
+              {errors.password && (
+                <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" />
+                  {errors.password}
+                </p>
+              )}
             </div>
 
-            <Button 
-              type="submit" 
+            <div className="flex justify-between items-center text-sm">
+              <Link to="/forgot-password" className="text-[#D4AF37] hover:underline">
+                Forgot password?
+              </Link>
+            </div>
+
+            <Button
+              type="submit"
               className="w-full h-12 bg-[#D4AF37] text-black hover:bg-[#B4942D] font-bold uppercase tracking-wider"
               disabled={loading}
               data-testid="login-submit-btn"
@@ -121,7 +195,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <Button 
+          <Button
             variant="outline"
             className="w-full h-12 border-white/10 hover:border-[#D4AF37]/50 bg-transparent"
             onClick={handleGoogleLogin}

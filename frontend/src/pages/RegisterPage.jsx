@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Trophy, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
+import { Trophy, Mail, Lock, User, Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth, API } from '@/App';
@@ -18,9 +18,78 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [passwordStrength, setPasswordStrength] = useState({ score: 0, feedback: '' });
+
+  const validateEmail = (email) => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+  };
+
+  const validatePassword = (password) => {
+    const feedback = [];
+    let score = 0;
+
+    if (password.length >= 8) score += 1;
+    else feedback.push('At least 8 characters');
+
+    if (password.length >= 12) score += 1;
+    if (/[a-z]/.test(password)) score += 1;
+    else feedback.push('One lowercase letter');
+
+    if (/[A-Z]/.test(password)) score += 1;
+    else feedback.push('One uppercase letter');
+
+    if (/\d/.test(password)) score += 1;
+    else feedback.push('One number');
+
+    if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) score += 1;
+    else feedback.push('One special character');
+
+    setPasswordStrength({
+      score: Math.min(score, 5),
+      feedback: score < 5 ? feedback.join(', ') : 'Strong password'
+    });
+
+    return score >= 3; // Minimum requirement
+  };
+
+  const validateName = (name) => {
+    return name.trim().length >= 2 && /^[a-zA-Z\s\-\.]+$/.test(name);
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!name.trim()) {
+      newErrors.name = 'Name is required';
+    } else if (!validateName(name)) {
+      newErrors.name = 'Please enter a valid name (letters, spaces, hyphens, periods only)';
+    }
+
+    if (!email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!validateEmail(email)) {
+      newErrors.email = 'Please enter a valid email address';
+    }
+
+    if (!password) {
+      newErrors.password = 'Password is required';
+    } else if (!validatePassword(password)) {
+      newErrors.password = passwordStrength.feedback;
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!validateForm()) {
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -30,9 +99,9 @@ export default function RegisterPage() {
       // Store user data for onboarding
       sessionStorage.setItem('userData', JSON.stringify(response.data));
 
-      toast.success('¡Cuenta creada exitosamente! 🎉', {
-        description: 'Completa tu perfil para personalizar tu experiencia',
-        duration: 3000
+      toast.success('Account created successfully! 🎉', {
+        description: 'Welcome to VCSA! Let\'s personalize your experience.',
+        duration: 4000
       });
 
       // Redirect to student onboarding instead of dashboard
@@ -42,10 +111,40 @@ export default function RegisterPage() {
         }
       });
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Registration failed');
+      // FIX: Better error handling
+      const errorMessage = error.response?.data?.detail || 'Registration failed';
+
+      if (errorMessage.includes('already registered')) {
+        toast.error('Email Already Registered', {
+          description: 'Please login or reset your password',
+          duration: 4000
+        });
+      } else if (errorMessage.includes('Password')) {
+        toast.error('Password Requirements', {
+          description: errorMessage,
+          duration: 5000
+        });
+      } else if (errorMessage.includes('Name')) {
+        toast.error('Invalid Name', {
+          description: errorMessage,
+          duration: 4000
+        });
+      } else {
+        toast.error('Registration Failed', {
+          description: errorMessage,
+          duration: 4000
+        });
+      }
     } finally {
       setLoading(false);
     }
+  };
+
+  const getPasswordStrengthColor = () => {
+    if (passwordStrength.score <= 2) return 'bg-red-500';
+    if (passwordStrength.score <= 3) return 'bg-yellow-500';
+    if (passwordStrength.score <= 4) return 'bg-blue-500';
+    return 'bg-green-500';
   };
 
   const handleGoogleLogin = () => {
@@ -71,7 +170,7 @@ export default function RegisterPage() {
 
       {/* Right - Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           className="w-full max-w-md"
@@ -97,13 +196,22 @@ export default function RegisterPage() {
                 <Input
                   type="text"
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    setErrors({ ...errors, name: '' });
+                  }}
                   placeholder="John Smith"
-                  className="pl-12 h-12 bg-[#0A0A0B] border-white/10 focus:border-[#D4AF37]/50"
+                  className={`pl-12 h-12 bg-[#0A0A0B] ${errors.name ? 'border-red-500' : 'border-white/10'} focus:border-[#D4AF37]/50`}
                   required
                   data-testid="register-name-input"
                 />
               </div>
+              {errors.name && (
+                <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" />
+                  {errors.name}
+                </p>
+              )}
             </div>
 
             <div>
@@ -113,13 +221,22 @@ export default function RegisterPage() {
                 <Input
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setErrors({ ...errors, email: '' });
+                  }}
                   placeholder="you@example.com"
-                  className="pl-12 h-12 bg-[#0A0A0B] border-white/10 focus:border-[#D4AF37]/50"
+                  className={`pl-12 h-12 bg-[#0A0A0B] ${errors.email ? 'border-red-500' : 'border-white/10'} focus:border-[#D4AF37]/50`}
                   required
                   data-testid="register-email-input"
                 />
               </div>
+              {errors.email && (
+                <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" />
+                  {errors.email}
+                </p>
+              )}
             </div>
 
             <div>
@@ -129,11 +246,14 @@ export default function RegisterPage() {
                 <Input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    validatePassword(e.target.value);
+                    setErrors({ ...errors, password: '' });
+                  }}
                   placeholder="Create a strong password"
-                  className="pl-12 pr-12 h-12 bg-[#0A0A0B] border-white/10 focus:border-[#D4AF37]/50"
+                  className={`pl-12 pr-12 h-12 bg-[#0A0A0B] ${errors.password ? 'border-red-500' : 'border-white/10'} focus:border-[#D4AF37]/50`}
                   required
-                  minLength={6}
                   data-testid="register-password-input"
                 />
                 <button
@@ -144,12 +264,65 @@ export default function RegisterPage() {
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
+
+              {/* Password strength indicator */}
+              {password && (
+                <div className="mt-2">
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full ${getPasswordStrengthColor()} transition-all`}
+                        style={{ width: `${(passwordStrength.score / 5) * 100}%` }}
+                      />
+                    </div>
+                    <span className="text-xs text-[#94A3B8]">
+                      {passwordStrength.score <= 2 ? 'Weak' :
+                       passwordStrength.score <= 3 ? 'Fair' :
+                       passwordStrength.score <= 4 ? 'Good' : 'Strong'}
+                    </span>
+                  </div>
+                  {password && passwordStrength.score < 3 && (
+                    <p className="text-xs text-[#94A3B8] mt-1">
+                      {passwordStrength.feedback}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {errors.password && (
+                <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" />
+                  {errors.password}
+                </p>
+              )}
             </div>
 
-            <Button 
-              type="submit" 
+            <div className="text-xs text-[#94A3B8]">
+              <p className="mb-2">Password must contain:</p>
+              <ul className="space-y-1">
+                <li className={`flex items-center gap-2 ${password.length >= 8 ? 'text-green-500' : ''}`}>
+                  {password.length >= 8 ? <CheckCircle className="w-3 h-3" /> : <AlertCircle className="w-3 h-3" />}
+                  At least 8 characters
+                </li>
+                <li className={`flex items-center gap-2 ${/[a-z]/.test(password) ? 'text-green-500' : ''}`}>
+                  {/[a-z]/.test(password) ? <CheckCircle className="w-3 h-3" /> : <AlertCircle className="w-3 h-3" />}
+                  One lowercase letter
+                </li>
+                <li className={`flex items-center gap-2 ${/[A-Z]/.test(password) ? 'text-green-500' : ''}`}>
+                  {/[A-Z]/.test(password) ? <CheckCircle className="w-3 h-3" /> : <AlertCircle className="w-3 h-3" />}
+                  One uppercase letter
+                </li>
+                <li className={`flex items-center gap-2 ${/\d/.test(password) ? 'text-green-500' : ''}`}>
+                  {/\d/.test(password) ? <CheckCircle className="w-3 h-3" /> : <AlertCircle className="w-3 h-3" />}
+                  One number
+                </li>
+              </ul>
+            </div>
+
+            <Button
+              type="submit"
               className="w-full h-12 bg-[#D4AF37] text-black hover:bg-[#B4942D] font-bold uppercase tracking-wider"
-              disabled={loading}
+              disabled={loading || passwordStrength.score < 3}
               data-testid="register-submit-btn"
             >
               {loading ? 'Creating account...' : 'Create Account'}
@@ -165,7 +338,7 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          <Button 
+          <Button
             variant="outline"
             className="w-full h-12 border-white/10 hover:border-[#D4AF37]/50 bg-transparent"
             onClick={handleGoogleLogin}

@@ -14,6 +14,38 @@ from datetime import datetime, timezone, timedelta
 import httpx
 import bcrypt
 
+# ═══════════════════════════════════════════════════════════════
+# RATE LIMITING
+# ═══════════════════════════════════════════════════════════════
+RATE_LIMITING_ENABLED = os.environ.get('RATE_LIMITING_ENABLED', 'true').lower() == 'true'
+
+try:
+    from rate_limiter import RateLimiterMiddleware
+    RATE_LIMITING_AVAILABLE = True
+except ImportError:
+    logger.warning("rate_limiter.py not found - Rate limiting disabled")
+    RATE_LIMITING_AVAILABLE = False
+    RATE_LIMITING_ENABLED = False
+
+# ═══════════════════════════════════════════════════════════════
+# PERFORMANCE MONITORING
+# ═══════════════════════════════════════════════════════════════
+PERFORMANCE_MONITORING_ENABLED = os.environ.get('PERFORMANCE_MONITORING_ENABLED', 'true').lower() == 'true'
+
+try:
+    from performance_monitor import (
+        PerformanceMetrics,
+        ResponseTimeMiddleware,
+        ErrorTrackingMiddleware,
+        AlertSystem,
+        PerformanceAnalyzer
+    )
+    PERFORMANCE_MONITORING_AVAILABLE = True
+except ImportError:
+    logger.warning("performance_monitor.py not found - Performance monitoring disabled")
+    PERFORMANCE_MONITORING_AVAILABLE = False
+    PERFORMANCE_MONITORING_ENABLED = False
+
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
@@ -50,6 +82,24 @@ try:
 except ImportError:
     logger.warning("sentry-sdk not installed - Run: pip install sentry-sdk[fastapi]")
     sentry_enabled = False
+
+# ============== PERFORMANCE MONITORING ==============
+if PERFORMANCE_MONITORING_ENABLED and PERFORMANCE_MONITORING_AVAILABLE:
+    try:
+        # Create performance monitoring instances
+        performance_metrics = PerformanceMetrics(db)
+        performance_analyzer = PerformanceAnalyzer(performance_metrics)
+        alert_system = AlertSystem(performance_metrics)
+
+        logger.info("Performance monitoring initialized")
+    except Exception as e:
+        logger.error(f"Failed to initialize performance monitoring: {e}")
+        PERFORMANCE_MONITORING_ENABLED = False
+else:
+    logger.warning("Performance monitoring disabled")
+    performance_metrics = None
+    performance_analyzer = None
+    alert_system = None
 except Exception as e:
     logger.error(f"Failed to initialize Sentry: {e}")
     sentry_enabled = False
@@ -1582,9 +1632,45 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ═══════════════════════════════════════════════════════════════
+# RATE LIMITING MIDDLEWARE
+# ═══════════════════════════════════════════════════════════════
+if RATE_LIMITING_ENABLED and RATE_LIMITING_AVAILABLE:
+    redis_url = os.environ.get('REDIS_URL')
+    rate_limiter_middleware = RateLimiterMiddleware(app, redis_url=redis_url)
+    app.add_middleware(RateLimiterMiddleware, redis_url=redis_url)
+    logger.info("Rate limiting middleware enabled")
+else:
+    logger.warning("Rate limiting disabled")
+    rate_limiter_middleware = None
+
+# ═══════════════════════════════════════════════════════════════
+# PERFORMANCE MONITORING MIDDLEWARE
+# ═══════════════════════════════════════════════════════════════
+if PERFORMANCE_MONITORING_ENABLED and PERFORMANCE_MONITORING_AVAILABLE and performance_metrics:
+    app.add_middleware(ResponseTimeMiddleware, metrics=performance_metrics)
+    app.add_middleware(ErrorTrackingMiddleware, metrics=performance_metrics)
+    logger.info("Performance monitoring middleware enabled")
+else:
+    logger.warning("Performance monitoring middleware disabled")
+    rate_limiter_middleware = None
+
+@app.on_event("startup")
+async def startup_rate_limiter():
+    """Initialize rate limiter on startup"""
+    if RATE_LIMITING_ENABLED and rate_limiter_middleware:
+        await rate_limiter_middleware.startup()
+
 @app.on_event("shutdown")
-async def shutdown_db_client():
+async def shutdown_event():
+    """Cleanup on shutdown"""
+    # Close rate limiter
+    if rate_limiter_middleware:
+        await rate_limiter_middleware.shutdown()
+
+    # Close database client
     client.close()
+    logger.info("Shutdown complete")
 
 # Phase 1 Routes
 try:
@@ -1621,4 +1707,111 @@ try:
 except ImportError as e:
     logger.warning(f"Stripe not installed: {e}")
     logger.info("Payments webhook not available - install stripe with: pip install stripe")
+
+# ═══════════════════════════════════════════════════════════════
+# PERFORMANCE MONITORING API ENDPOINTS
+# ═══════════════════════════════════════════════════════════════
+
+@app.get("/api/health/detailed")
+async def health_detailed():
+    """Detailed health check with metrics"""
+    health_status = {
+        "status": "healthy",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "monitoring": "enabled" if PERFORMANCE_MONITORING_ENABLED else "disabled",
+    }
+
+    # Database health
+    try:
+        await db.command('ping')
+        health_status["checks"] = {"database": {"status": "healthy"}}
+    except Exception as e:
+        health_status["status"] = "unhealthy"
+        health_status["checks"] = {"database": {"status": "unhealthy", "error": str(e)}}
+
+    # Add performance metrics if available
+    if PERFORMANCE_MONITORING_ENABLED and performance_analyzer:
+        try:
+            summary = await performance_analyzer.get_performance_summary(hours=1)
+            health_status["metrics"] = {
+                "response_time_p95_ms": summary.get("response_times", {}).get("p95"),
+                "error_rate_percent": summary.get("error_rate", 0),
+                "request_count": summary.get("request_count", 0),
+            }
+        except Exception as e:
+            logger.warning(f"Failed to get performance metrics: {e}")
+
+    return health_status
+
+
+@app.get("/api/admin/metrics")
+async def get_metrics(
+    hours: int = 24,
+    current_user: dict = Depends(require_auth)
+):
+    """Get performance metrics (admin only)"""
+    if not PERFORMANCE_MONITORING_ENABLED or not performance_analyzer:
+        raise HTTPException(status_code=503, detail="Performance monitoring disabled")
+
+    # Check if user is admin
+    if current_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+
+    try:
+        summary = await performance_analyzer.get_performance_summary(hours=hours)
+        return summary
+    except Exception as e:
+        logger.error(f"Failed to get metrics: {e}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve metrics")
+
+
+@app.get("/api/admin/slowest-endpoints")
+async def get_slowest_endpoints(
+    hours: int = 24,
+    limit: int = 10,
+    current_user: dict = Depends(require_auth)
+):
+    """Get slowest endpoints (admin only)"""
+    if not PERFORMANCE_MONITORING_ENABLED or not performance_analyzer:
+        raise HTTPException(status_code=503, detail="Performance monitoring disabled")
+
+    # Check if user is admin
+    if current_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+
+    try:
+        slowest = await performance_analyzer.get_slowest_endpoints(hours=hours, limit=limit)
+        return {"slowest_endpoints": slowest}
+    except Exception as e:
+        logger.error(f"Failed to get slowest endpoints: {e}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve slowest endpoints")
+
+
+@app.post("/api/admin/alerts/test")
+async def test_alert(
+    severity: str,
+    message: str,
+    current_user: dict = Depends(require_auth)
+):
+    """Send test alert (admin only)"""
+    if not PERFORMANCE_MONITORING_ENABLED or not alert_system:
+        raise HTTPException(status_code=503, detail="Performance monitoring disabled")
+
+    # Check if user is admin
+    if current_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+
+    try:
+        from performance_monitor import AlertSeverity
+
+        await alert_system.send_alert(
+            AlertSeverity(severity),
+            f"TEST ALERT: {message}",
+            {"test": True, "user": current_user.get("email")}
+        )
+
+        return {"status": "alert_sent", "severity": severity, "message": message}
+    except Exception as e:
+        logger.error(f"Failed to send test alert: {e}")
+        raise HTTPException(status_code=500, detail="Failed to send alert")
 
