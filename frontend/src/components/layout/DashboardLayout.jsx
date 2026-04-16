@@ -2,7 +2,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, BookOpen, Users, Calendar,
   Download, Crown, User, Settings, LogOut,
-  Trophy, Menu, X, Shield, Target, TrendingUp, Briefcase, DollarSign, BarChart3, Lightbulb, Award,
+  Trophy, Menu, X, Shield, Target, TrendingUp, Briefcase, DollarSign, BarChart3, Lightbulb,
   ChevronDown, ChevronRight, FileText, Video, MessageSquare
 } from 'lucide-react';
 import { useState } from 'react';
@@ -17,7 +17,7 @@ const navStructure = [
     label: 'Strategy',
     path: '/strategy',
     children: [
-      { icon: Award, label: 'Daily Performance', path: '/daily-performance' },
+      { icon: Trophy, label: 'Daily Performance', path: '/daily-performance' },
       { icon: Target, label: 'Goal Sheets', path: '/goals' },
       { icon: DollarSign, label: 'Financial Planner', path: '/financial' },
       { icon: BarChart3, label: 'Analytics', path: '/analytics' },
