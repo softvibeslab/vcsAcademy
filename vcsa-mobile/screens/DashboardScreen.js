@@ -1,5 +1,5 @@
 /**
- * Dashboard Screen - VCSA Mobile
+ * Dashboard Screen - VCSA Mobile (Enhanced with Real API)
  */
 
 import React, { useState, useEffect } from 'react';
@@ -10,22 +10,22 @@ import {
   ScrollView,
   TouchableOpacity,
   Dimensions,
-  ActivityIndicator
+  ActivityIndicator,
+  RefreshControl
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import axios from 'axios';
+import apiService from '../services/api';
 
 const { width } = Dimensions.get('window');
-const API = 'http://10.0.2.2:8000/api';
 
-export default function DashboardScreen() {
+export default function DashboardScreen({ navigation }) {
   const [loading, setLoading] = useState(true);
-  const [readinessScore, setReadinessScore] = useState(72);
-  const [dailyGoals, setDailyGoals] = useState([
-    { id: 1, title: 'Tours', current: 2, target: 3, color: '#f2ca50' },
-    { id: 2, title: 'Sales', current: 1, target: 2, color: '#9db2ff' },
-    { id: 3, title: 'Volume', current: 8500, target: 15000, color: '#c3cee6', prefix: '$' },
-  ]);
+  const [refreshing, setRefreshing] = useState(false);
+  const [userData, setUserData] = useState(null);
+  const [readinessScore, setReadinessScore] = useState(0);
+  const [dailyGoals, setDailyGoals] = useState([]);
+  const [nextAssignment, setNextAssignment] = useState(null);
+  const [badges, setBadges] = useState([]);
 
   useEffect(() => {
     fetchData();
@@ -33,14 +33,99 @@ export default function DashboardScreen() {
 
   const fetchData = async () => {
     try {
-      const response = await axios.get(`${API}/dashboard/performance`, {
-        timeout: 5000
-      });
-      // Demo data for preview
+      // Obtener datos del progreso del usuario
+      const progressResult = await apiService.getProgress();
+
+      if (progressResult.success) {
+        const progress = progressResult.data.progress;
+
+        // Actualizar readiness score
+        setReadinessScore(progress.readiness_score || 0);
+
+        // Actualizar next assignment
+        if (progressResult.data.next_assignment) {
+          setNextAssignment(progressResult.data.next_assignment);
+        }
+
+        // Actualizar badges
+        setBadges(progress.badges_earned || []);
+
+        // Actualizar daily goals basado en el progreso real
+        updateDailyGoals(progress);
+      }
+
+      // Obtener datos del usuario
+      const user = apiService.getUser();
+      if (user) {
+        setUserData(user);
+      }
+
     } catch (error) {
-      console.log('Using demo data');
+      console.log('Using demo data due to error:', error);
+      // Usar datos demo si falla la API
+      setReadinessScore(72);
+      setDailyGoals([
+        { id: 1, title: 'Tours', current: 2, target: 5, color: '#f2ca50' },
+        { id: 2, title: 'Sales', current: 1, target: 2, color: '#9db2ff' },
+        { id: 3, title: 'Volume', current: 8500, target: 15000, color: '#c3cee6', prefix: '$' },
+      ]);
     } finally {
       setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  const updateDailyGoals = (progress) => {
+    const goals = [];
+
+    // Tours goal
+    const completedContent = progress.content_completed || [];
+    const toursCount = completedContent.filter(c => c.startsWith('mod_')).length;
+    goals.push({
+      id: 1,
+      title: 'Training Modules',
+      current: toursCount,
+      target: 36,
+      color: '#f2ca50'
+    });
+
+    // Quick wins
+    const quickWinsCount = completedContent.filter(c => c.startsWith('qw_')).length;
+    goals.push({
+      id: 2,
+      title: 'Quick Wins',
+      current: quickWinsCount,
+      target: 20,
+      color: '#9db2ff'
+    });
+
+    // Deal breakdowns
+    const breakdownsCount = completedContent.filter(c => c.startsWith('breakdown_')).length;
+    goals.push({
+      id: 3,
+      title: 'Deal Breakdowns',
+      current: breakdownsCount,
+      target: 15,
+      color: '#c3cee6'
+    });
+
+    setDailyGoals(goals);
+  };
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchData();
+  };
+
+  const handleMarkComplete = async (contentId) => {
+    try {
+      const result = await apiService.markContentComplete(contentId);
+      if (result.success) {
+        // Refrescar datos
+        fetchData();
+      }
+    } catch (error) {
+      console.error('Error marking complete:', error);
     }
   };
 
@@ -54,7 +139,17 @@ export default function DashboardScreen() {
   }
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <ScrollView
+      style={styles.container}
+      showsVerticalScrollIndicator={false}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor="#f2ca50"
+        />
+      }
+    >
       {/* Header */}
       <LinearGradient
         colors={['#f2ca50', '#d4af37']}
@@ -62,8 +157,15 @@ export default function DashboardScreen() {
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       >
-        <Text style={styles.headerTitle}>Good Morning!</Text>
-        <Text style={styles.headerSubtitle}>Welcome to The Vault</Text>
+        <Text style={styles.headerTitle}>
+          Good {new Date().getHours() < 12 ? 'Morning' : new Date().getHours() < 18 ? 'Afternoon' : 'Evening'}!
+        </Text>
+        <Text style={styles.headerSubtitle}>
+          {userData?.name || 'Welcome to The Vault'}
+        </Text>
+        {userData?.email && (
+          <Text style={styles.headerEmail}>{userData.email}</Text>
+        )}
       </LinearGradient>
 
       {/* Readiness Score */}
@@ -75,15 +177,39 @@ export default function DashboardScreen() {
             <Text style={styles.scoreLabel}>Score</Text>
           </View>
           <View style={styles.scoreInfo}>
-            <Text style={styles.scoreTrend}>↑ 5% this week</Text>
-            <Text style={styles.scoreDesc}>You're doing great!</Text>
+            <Text style={styles.scoreTrend}>
+              {readinessScore >= 70 ? '🔥 Top Performer' :
+               readinessScore >= 40 ? '⭐ Developing' :
+               '🌱 Getting Started'}
+            </Text>
+            <Text style={styles.scoreDesc}>
+              {badges.length} badges earned
+            </Text>
           </View>
         </View>
       </View>
 
+      {/* Next Assignment */}
+      {nextAssignment && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Next Assignment</Text>
+          <TouchableOpacity
+            style={styles.assignmentCard}
+            onPress={() => navigation.navigate('Training')}
+          >
+            <View style={styles.assignmentHeader}>
+              <Text style={styles.assignmentType}>{nextAssignment.type}</Text>
+              <Text style={styles.assignmentTrack}>{nextAssignment.track}</Text>
+            </View>
+            <Text style={styles.assignmentTitle}>{nextAssignment.content?.title || 'Continue Learning'}</Text>
+            <Text style={styles.assignmentDesc}>Tap to continue →</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
       {/* Daily Goals */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Daily Goals</Text>
+        <Text style={styles.sectionTitle}>Daily Progress</Text>
         {dailyGoals.map((goal) => (
           <View key={goal.id} style={styles.goalCard}>
             <View style={styles.goalHeader}>
@@ -96,7 +222,10 @@ export default function DashboardScreen() {
               <View
                 style={[
                   styles.progressFill,
-                  { width: `${(goal.current / goal.target) * 100}%`, backgroundColor: goal.color }
+                  {
+                    width: `${Math.min((goal.current / goal.target) * 100, 100)}%`,
+                    backgroundColor: goal.color
+                  }
                 ]}
               />
             </View>
@@ -104,25 +233,52 @@ export default function DashboardScreen() {
         ))}
       </View>
 
+      {/* Badges */}
+      {badges.length > 0 && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Recent Badges</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            {badges.slice(0, 5).map((badgeId, index) => (
+              <View key={index} style={styles.badgeCard}>
+                <Text style={styles.badgeIcon}>🏆</Text>
+                <Text style={styles.badgeText}>{badgeId}</Text>
+              </View>
+            ))}
+          </ScrollView>
+        </View>
+      )}
+
       {/* Quick Actions */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Quick Actions</Text>
         <View style={styles.actionsGrid}>
-          <TouchableOpacity style={styles.actionCard}>
-            <Text style={styles.actionIcon}>📝</Text>
-            <Text style={styles.actionTitle}>Log Tour</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.actionCard}>
-            <Text style={styles.actionIcon}>🎓</Text>
+          <TouchableOpacity
+            style={styles.actionCard}
+            onPress={() => navigation.navigate('Training')}
+          >
+            <Text style={styles.actionIcon}>📚</Text>
             <Text style={styles.actionTitle}>Training</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.actionCard}>
-            <Text style={styles.actionIcon}>📊</Text>
-            <Text style={styles.actionTitle}>Analytics</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.actionCard}>
+          <TouchableOpacity
+            style={styles.actionCard}
+            onPress={() => navigation.navigate('Coaching')}
+          >
             <Text style={styles.actionIcon}>👥</Text>
             <Text style={styles.actionTitle}>Coaching</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.actionCard}
+            onPress={() => navigation.navigate('Resources')}
+          >
+            <Text style={styles.actionIcon}>📁</Text>
+            <Text style={styles.actionTitle}>Resources</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.actionCard}
+            onPress={() => navigation.navigate('Profile')}
+          >
+            <Text style={styles.actionIcon}>👤</Text>
+            <Text style={styles.actionTitle}>Profile</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -152,13 +308,18 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 20,
   },
   headerTitle: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#3c2f00',
   },
   headerSubtitle: {
     fontSize: 16,
     color: '#554300',
+    marginTop: 5,
+  },
+  headerEmail: {
+    fontSize: 12,
+    color: '#664300',
     marginTop: 5,
   },
   section: {
@@ -209,6 +370,39 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#d0c5af',
   },
+  assignmentCard: {
+    backgroundColor: '#1b1b20',
+    borderRadius: 12,
+    padding: 15,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#f2ca50',
+  },
+  assignmentHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  assignmentType: {
+    fontSize: 12,
+    color: '#f2ca50',
+    fontWeight: '600',
+    textTransform: 'uppercase',
+  },
+  assignmentTrack: {
+    fontSize: 12,
+    color: '#9ca3af',
+  },
+  assignmentTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#e5e1e8',
+    marginBottom: 5,
+  },
+  assignmentDesc: {
+    fontSize: 14,
+    color: '#d0c5af',
+  },
   goalCard: {
     backgroundColor: '#1b1b20',
     borderRadius: 12,
@@ -239,6 +433,23 @@ const styles = StyleSheet.create({
   progressFill: {
     height: '100%',
     borderRadius: 3,
+  },
+  badgeCard: {
+    backgroundColor: '#1b1b20',
+    borderRadius: 12,
+    padding: 15,
+    marginRight: 10,
+    alignItems: 'center',
+    minWidth: 80,
+  },
+  badgeIcon: {
+    fontSize: 24,
+    marginBottom: 5,
+  },
+  badgeText: {
+    fontSize: 10,
+    color: '#d0c5af',
+    textAlign: 'center',
   },
   actionsGrid: {
     flexDirection: 'row',

@@ -1,6 +1,6 @@
 /**
  * VCSA Mobile - React Native Expo App
- * Preview APK for Android
+ * Enhanced with Authentication and Real API Integration
  */
 
 import React, { useState, useEffect } from 'react';
@@ -12,22 +12,42 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useFonts } from 'expo-font';
 import * as Font from 'expo-font';
 import { AppLoading } from 'expo-app-loading';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Screens
+import LoginScreen from './screens/LoginScreen';
 import DashboardScreen from './screens/DashboardScreen';
 import TrainingScreen from './screens/TrainingScreen';
 import CoachingScreen from './screens/CoachingScreen';
 import ResourcesScreen from './screens/ResourcesScreen';
 import ProfileScreen from './screens/ProfileScreen';
 
-// API
-const API = 'http://10.0.2.2:8000/api'; // Para Android emulator
+// Services
+import apiService from './services/api';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
+// Check if user is authenticated
+const isUserAuthenticated = async () => {
+  try {
+    const token = await AsyncStorage.getItem('auth_token');
+    return !!token;
+  } catch (error) {
+    return false;
+  }
+};
+
 // Tab Navigator
-function MainTabs() {
+function MainTabs({ route }) {
+  // Get user params from route if needed
+  const userData = route?.params?.userData;
+
+  const handleRefresh = () => {
+    // Force refresh of all screens
+    navigationRef.current?.getRootState();
+  };
+
   return (
     <Tab.Navigator
       screenOptions={{
@@ -119,7 +139,7 @@ function TabIcon({ name, color, size }) {
 }
 
 // Stack Navigator
-function AppNavigator() {
+function AppNavigator({ authenticated, setAuthenticated, userData }) {
   return (
     <Stack.Navigator
       screenOptions={{
@@ -132,14 +152,41 @@ function AppNavigator() {
         },
       }}
     >
-      <Stack.Screen
-        name="Main"
-        component={MainTabs}
-        options={{ headerShown: false }}
-      />
+      {!authenticated ? (
+        <Stack.Screen
+          name="Login"
+          options={{ headerShown: false }}
+        >
+          {props => (
+            <LoginScreen
+              {...props}
+              onLoginSuccess={(user) => {
+                setAuthenticated(true);
+                // Navigate to Main after login
+                navigationRef.current?.reset({
+                  index: 0,
+                  routes: [{ name: 'Main', params: { userData: user } }],
+                });
+              }}
+            />
+          )}
+        />
+      )}
+      </Stack.Screen>
+      ) : (
+        <Stack.Screen
+          name="Main"
+          options={{ headerShown: false }}
+        >
+          {props => <MainTabs {...props} />}
+        </Stack.Screen>
+      )}
     </Stack.Navigator>
   );
 }
+
+// Create navigation ref
+export const navigationRef = React.createRef();
 
 // Custom Text Component
 const Text = ({ children, style, ...props }) => {
@@ -150,32 +197,70 @@ const Text = ({ children, style, ...props }) => {
   );
 };
 
-import { Text as RNText, View, ScrollView, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { Text as RNText, View } from 'react-native';
 
 // Main App Component
 export default function App() {
   const [fontsLoaded, setFontsLoaded] = useState(false);
+  const [authenticated, setAuthenticated] = useState(false);
+  const [userData, setUserData] = useState(null);
+  const [checkingAuth, setCheckingAuth] = useState(true);
 
   useEffect(() => {
     loadFonts();
+    checkAuthentication();
   }, []);
 
   const loadFonts = async () => {
-    await Font.loadAsync({
-      'PlusJakartaSans-Bold': require('./assets/fonts/PlusJakartaSans-Bold.ttf'),
-      'DMSans-Regular': require('./assets/fonts/DMSans-Regular.ttf'),
-    });
-    setFontsLoaded(true);
+    try {
+      await Font.loadAsync({
+        'PlusJakartaSans-Bold': require('./assets/fonts/PlusJakartaSans-Bold.ttf'),
+        'DMSans-Regular': require('./assets/fonts/DMSans-Regular.ttf'),
+      });
+      setFontsLoaded(true);
+    } catch (error) {
+      console.log('Error loading fonts:', error);
+      setFontsLoaded(true); // Continue even if fonts fail
+    }
   };
 
-  if (!fontsLoaded) {
-    return null;
+  const checkAuthentication = async () => {
+    try {
+      const isAuth = await isUserAuthenticated();
+      setAuthenticated(isAuth);
+
+      if (isAuth) {
+        // Load user data
+        const userStr = await AsyncStorage.getItem('user_data');
+        if (userStr) {
+          const user = JSON.parse(userStr);
+          setUserData(user);
+        }
+      }
+    } catch (error) {
+      console.log('Error checking authentication:', error);
+    } finally {
+      setCheckingAuth(false);
+    }
+  };
+
+  if (!fontsLoaded || checkingAuth) {
+    return (
+      <View style={{ flex: 1, backgroundColor: '#131317', justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#f2ca50" />
+        <Text style={{ color: '#d0c5af', marginTop: 10 }}>Loading VCSA...</Text>
+      </View>
+    );
   }
 
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
       <StatusBar style="dark" />
-      <AppNavigator />
+      <AppNavigator
+        authenticated={authenticated}
+        setAuthenticated={setAuthenticated}
+        userData={userData}
+      />
     </NavigationContainer>
   );
 }

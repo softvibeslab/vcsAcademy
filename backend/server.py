@@ -1,31 +1,32 @@
 from fastapi import FastAPI, APIRouter, HTTPException, Request, Depends, Response
-from fastapi.responses import JSONResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
 from pathlib import Path
-from pydantic import BaseModel, Field, ConfigDict
-from typing import List, Optional, Dict, Any
+from pydantic import BaseModel, ConfigDict
+from typing import List, Optional, Dict
 import uuid
 from datetime import datetime, timezone, timedelta
 import httpx
 import bcrypt
 
 ROOT_DIR = Path(__file__).parent
-load_dotenv(ROOT_DIR / '.env')
+load_dotenv(ROOT_DIR / ".env")
 
 # MongoDB connection
-mongo_url = os.environ['MONGO_URL']
+mongo_url = os.environ["MONGO_URL"]
 client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+db = client[os.environ["DB_NAME"]]
 
 # Stripe
-STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY', 'sk_test_your_stripe_key')
+STRIPE_API_KEY = os.environ.get("STRIPE_API_KEY", "sk_test_your_stripe_key")
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger(__name__)
 
 # ============== SENTRY MONITORING ==============
@@ -33,11 +34,13 @@ try:
     from sentry_config import init_sentry, capture_exception, set_user, add_breadcrumb
 
     sentry_enabled = init_sentry(
-        dsn=os.environ.get('SENTRY_DSN'),
-        environment=os.environ.get('SENTRY_ENVIRONMENT', 'development'),
-        traces_sample_rate=float(os.environ.get('SENTRY_TRACES_SAMPLE_RATE', '0.1')),
-        profiles_sample_rate=float(os.environ.get('SENTRY_PROFILES_SAMPLE_RATE', '0.1')),
-        debug=os.environ.get('SENTRY_ENVIRONMENT', 'development') == 'development',
+        dsn=os.environ.get("SENTRY_DSN"),
+        environment=os.environ.get("SENTRY_ENVIRONMENT", "development"),
+        traces_sample_rate=float(os.environ.get("SENTRY_TRACES_SAMPLE_RATE", "0.1")),
+        profiles_sample_rate=float(
+            os.environ.get("SENTRY_PROFILES_SAMPLE_RATE", "0.1")
+        ),
+        debug=os.environ.get("SENTRY_ENVIRONMENT", "development") == "development",
     )
 
     if sentry_enabled:
@@ -60,33 +63,39 @@ api_router = APIRouter(prefix="/api")
 
 # Role levels for permission hierarchy (higher = more permissions)
 ROLE_HIERARCHY = {
-    "rep": 1,           # Sales Representative - basic access
-    "manager": 2,       # Team Manager - team management, progress tracking
-    "director": 3,      # Director - organization management, all teams
-    "org_admin": 4,     # Organization Admin - white-label admin
-    "admin": 5,         # System Admin - full platform access
+    "rep": 1,  # Sales Representative - basic access
+    "manager": 2,  # Team Manager - team management, progress tracking
+    "director": 3,  # Director - organization management, all teams
+    "org_admin": 4,  # Organization Admin - white-label admin
+    "admin": 5,  # System Admin - full platform access
 }
 
 VALID_ROLES = list(ROLE_HIERARCHY.keys())
+
 
 def get_role_level(role: str) -> int:
     """Get the permission level for a role"""
     return ROLE_HIERARCHY.get(role, 0)
 
+
 def has_role_permission(user_role: str, required_role: str) -> bool:
     """Check if user has at least the required role level"""
     return get_role_level(user_role) >= get_role_level(required_role)
 
+
 # ============== MODELS ==============
+
 
 class UserCreate(BaseModel):
     email: str
     password: str
     name: str
 
+
 class UserLogin(BaseModel):
     email: str
     password: str
+
 
 class User(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -102,6 +111,7 @@ class User(BaseModel):
     manager_id: Optional[str] = None  # Direct manager for reps
     created_at: datetime
 
+
 class UserPublic(BaseModel):
     user_id: str
     name: str
@@ -111,8 +121,10 @@ class UserPublic(BaseModel):
     role: str = "rep"
     team_id: Optional[str] = None
 
+
 class Team(BaseModel):
     """Team model for grouping sales reps under a manager"""
+
     model_config = ConfigDict(extra="ignore")
     team_id: str
     name: str
@@ -123,16 +135,19 @@ class Team(BaseModel):
     created_at: datetime
     updated_at: Optional[datetime] = None
 
+
 class TeamCreate(BaseModel):
     name: str
     manager_id: str
     description: Optional[str] = None
+
 
 class TeamUpdate(BaseModel):
     name: Optional[str] = None
     manager_id: Optional[str] = None
     description: Optional[str] = None
     members: Optional[List[str]] = None
+
 
 class Course(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -147,6 +162,7 @@ class Course(BaseModel):
     created_at: datetime
     created_by: str
 
+
 class CourseCreate(BaseModel):
     title: str
     description: str
@@ -154,6 +170,7 @@ class CourseCreate(BaseModel):
     category: str
     min_level: int = 1
     vip_only: bool = False
+
 
 class Lesson(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -166,6 +183,7 @@ class Lesson(BaseModel):
     order: int
     created_at: datetime
 
+
 class LessonCreate(BaseModel):
     course_id: str
     title: str
@@ -173,6 +191,7 @@ class LessonCreate(BaseModel):
     video_url: str
     duration: int
     order: int
+
 
 class Event(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -188,6 +207,7 @@ class Event(BaseModel):
     vip_only: bool = False
     created_at: datetime
 
+
 class EventCreate(BaseModel):
     title: str
     description: str
@@ -197,6 +217,7 @@ class EventCreate(BaseModel):
     start_time: datetime
     join_link: Optional[str] = None
     vip_only: bool = False
+
 
 class Post(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -210,8 +231,10 @@ class Post(BaseModel):
     pinned: bool = False
     created_at: datetime
 
+
 class PostCreate(BaseModel):
     content: str
+
 
 class Comment(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -223,9 +246,11 @@ class Comment(BaseModel):
     content: str
     created_at: datetime
 
+
 class CommentCreate(BaseModel):
     post_id: str
     content: str
+
 
 class Resource(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -244,6 +269,7 @@ class Resource(BaseModel):
     created_by: Optional[str] = None  # User ID (admin)
     created_at: datetime
 
+
 class ResourceCreate(BaseModel):
     title: str
     description: str
@@ -257,6 +283,7 @@ class ResourceCreate(BaseModel):
     difficulty: str = "beginner"
     vip_only: bool = False
 
+
 class UserProgress(BaseModel):
     model_config = ConfigDict(extra="ignore")
     progress_id: str
@@ -266,12 +293,15 @@ class UserProgress(BaseModel):
     completed: bool = False
     completed_at: Optional[datetime] = None
 
+
 # ============== COACHING MODELS ==============
+
 
 class CoachingHost(BaseModel):
     name: str
     bio: str
     avatar_url: Optional[str] = None
+
 
 class CoachingSession(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -293,6 +323,7 @@ class CoachingSession(BaseModel):
     created_at: datetime
     updated_at: Optional[datetime] = None
 
+
 class CoachingSessionCreate(BaseModel):
     title: str
     description: str
@@ -306,6 +337,7 @@ class CoachingSessionCreate(BaseModel):
     slides_url: Optional[str] = None
     topics: List[str] = []
 
+
 class PaymentTransaction(BaseModel):
     model_config = ConfigDict(extra="ignore")
     transaction_id: str
@@ -318,7 +350,9 @@ class PaymentTransaction(BaseModel):
     created_at: datetime
     updated_at: datetime
 
+
 # ============== AUTH HELPERS ==============
+
 
 async def get_current_user(request: Request) -> Optional[User]:
     """Get current user from session token cookie or Authorization header"""
@@ -327,14 +361,16 @@ async def get_current_user(request: Request) -> Optional[User]:
         auth_header = request.headers.get("Authorization")
         if auth_header and auth_header.startswith("Bearer "):
             session_token = auth_header.split(" ")[1]
-    
+
     if not session_token:
         return None
-    
-    session_doc = await db.user_sessions.find_one({"session_token": session_token}, {"_id": 0})
+
+    session_doc = await db.user_sessions.find_one(
+        {"session_token": session_token}, {"_id": 0}
+    )
     if not session_doc:
         return None
-    
+
     expires_at = session_doc.get("expires_at")
     if isinstance(expires_at, str):
         expires_at = datetime.fromisoformat(expires_at)
@@ -342,15 +378,16 @@ async def get_current_user(request: Request) -> Optional[User]:
         expires_at = expires_at.replace(tzinfo=timezone.utc)
     if expires_at < datetime.now(timezone.utc):
         return None
-    
+
     user_doc = await db.users.find_one({"user_id": session_doc["user_id"]}, {"_id": 0})
     if not user_doc:
         return None
-    
+
     if isinstance(user_doc.get("created_at"), str):
         user_doc["created_at"] = datetime.fromisoformat(user_doc["created_at"])
-    
+
     return User(**user_doc)
+
 
 async def require_auth(request: Request) -> User:
     """Require authentication"""
@@ -359,6 +396,7 @@ async def require_auth(request: Request) -> User:
         raise HTTPException(status_code=401, detail="Not authenticated")
     return user
 
+
 async def require_admin(request: Request) -> User:
     """Require admin role (system admin only)"""
     user = await require_auth(request)
@@ -366,17 +404,20 @@ async def require_admin(request: Request) -> User:
         raise HTTPException(status_code=403, detail="Admin access required")
     return user
 
+
 async def require_role(required_role: str):
     """Factory for role-based access control"""
+
     async def role_checker(request: Request) -> User:
         user = await require_auth(request)
         if not has_role_permission(user.role, required_role):
             raise HTTPException(
-                status_code=403, 
-                detail=f"{required_role.title()} access required"
+                status_code=403, detail=f"{required_role.title()} access required"
             )
         return user
+
     return role_checker
+
 
 async def require_manager(request: Request) -> User:
     """Require manager role or higher"""
@@ -385,6 +426,7 @@ async def require_manager(request: Request) -> User:
         raise HTTPException(status_code=403, detail="Manager access required")
     return user
 
+
 async def require_director(request: Request) -> User:
     """Require director role or higher"""
     user = await require_auth(request)
@@ -392,7 +434,9 @@ async def require_director(request: Request) -> User:
         raise HTTPException(status_code=403, detail="Director access required")
     return user
 
+
 # ============== AUTH ROUTES ==============
+
 
 @api_router.post("/auth/register")
 async def register(data: UserCreate, response: Response):
@@ -400,10 +444,10 @@ async def register(data: UserCreate, response: Response):
     existing = await db.users.find_one({"email": data.email}, {"_id": 0})
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
-    
+
     user_id = f"user_{uuid.uuid4().hex[:12]}"
     hashed_password = bcrypt.hashpw(data.password.encode(), bcrypt.gensalt()).decode()
-    
+
     user_doc = {
         "user_id": user_id,
         "email": data.email,
@@ -414,19 +458,19 @@ async def register(data: UserCreate, response: Response):
         "points": 0,
         "membership": "free",
         "role": "rep",
-        "created_at": datetime.now(timezone.utc).isoformat()
+        "created_at": datetime.now(timezone.utc).isoformat(),
     }
     await db.users.insert_one(user_doc)
-    
+
     session_token = f"session_{uuid.uuid4().hex}"
     session_doc = {
         "user_id": user_id,
         "session_token": session_token,
         "expires_at": (datetime.now(timezone.utc) + timedelta(days=7)).isoformat(),
-        "created_at": datetime.now(timezone.utc).isoformat()
+        "created_at": datetime.now(timezone.utc).isoformat(),
     }
     await db.user_sessions.insert_one(session_doc)
-    
+
     response.set_cookie(
         key="session_token",
         value=session_token,
@@ -434,9 +478,9 @@ async def register(data: UserCreate, response: Response):
         secure=False,  # Changed for HTTP local development
         samesite="lax",  # Changed for HTTP local development
         path="/",
-        max_age=7 * 24 * 60 * 60
+        max_age=7 * 24 * 60 * 60,
     )
-    
+
     if "password" in user_doc:
         del user_doc["password"]
     if "password_hash" in user_doc:
@@ -444,25 +488,29 @@ async def register(data: UserCreate, response: Response):
     user_doc["created_at"] = datetime.fromisoformat(user_doc["created_at"])
     return User(**user_doc)
 
+
 @api_router.post("/auth/login")
 async def login(data: UserLogin, response: Response):
     """Login with email/password"""
     user_doc = await db.users.find_one({"email": data.email}, {"_id": 0})
     if not user_doc:
         raise HTTPException(status_code=401, detail="Invalid credentials")
-    
-    if not bcrypt.checkpw(data.password.encode(), user_doc.get("password", user_doc.get("password_hash", "")).encode()):
+
+    if not bcrypt.checkpw(
+        data.password.encode(),
+        user_doc.get("password", user_doc.get("password_hash", "")).encode(),
+    ):
         raise HTTPException(status_code=401, detail="Invalid credentials")
-    
+
     session_token = f"session_{uuid.uuid4().hex}"
     session_doc = {
         "user_id": user_doc["user_id"],
         "session_token": session_token,
         "expires_at": (datetime.now(timezone.utc) + timedelta(days=7)).isoformat(),
-        "created_at": datetime.now(timezone.utc).isoformat()
+        "created_at": datetime.now(timezone.utc).isoformat(),
     }
     await db.user_sessions.insert_one(session_doc)
-    
+
     response.set_cookie(
         key="session_token",
         value=session_token,
@@ -470,9 +518,9 @@ async def login(data: UserLogin, response: Response):
         secure=False,  # Changed for HTTP local development
         samesite="lax",  # Changed for HTTP local development
         path="/",
-        max_age=7 * 24 * 60 * 60
+        max_age=7 * 24 * 60 * 60,
     )
-    
+
     if "password" in user_doc:
         del user_doc["password"]
     if "password_hash" in user_doc:
@@ -482,38 +530,47 @@ async def login(data: UserLogin, response: Response):
     if "name" not in user_doc:
         first_name = user_doc.get("first_name", "")
         last_name = user_doc.get("last_name", "")
-        user_doc["name"] = f"{first_name} {last_name}".strip() or user_doc.get("email", "").split("@")[0]
+        user_doc["name"] = (
+            f"{first_name} {last_name}".strip()
+            or user_doc.get("email", "").split("@")[0]
+        )
 
     if isinstance(user_doc.get("created_at"), str):
         user_doc["created_at"] = datetime.fromisoformat(user_doc["created_at"])
     return User(**user_doc)
+
 
 @api_router.post("/auth/session")
 async def process_google_session(request: Request, response: Response):
     """Process Google OAuth session"""
     body = await request.json()
     session_id = body.get("session_id")
-    
+
     if not session_id:
         raise HTTPException(status_code=400, detail="session_id required")
-    
+
     async with httpx.AsyncClient() as client:
         # OAuth session data endpoint - To be configured with your OAuth provider
         resp = await client.get(
             f"{os.environ.get('OAUTH_BACKEND_URL', 'http://localhost:8000')}/auth/v1/env/oauth/session-data",
-            headers={"X-Session-ID": session_id}
+            headers={"X-Session-ID": session_id},
         )
         if resp.status_code != 200:
             raise HTTPException(status_code=401, detail="Invalid session")
-        
+
         google_data = resp.json()
-    
+
     user_doc = await db.users.find_one({"email": google_data["email"]}, {"_id": 0})
-    
+
     if user_doc:
         await db.users.update_one(
             {"email": google_data["email"]},
-            {"$set": {"name": google_data["name"], "picture": google_data.get("picture")}}
+            {
+                "$set": {
+                    "name": google_data["name"],
+                    "picture": google_data.get("picture"),
+                }
+            },
         )
         user_id = user_doc["user_id"]
     else:
@@ -527,19 +584,19 @@ async def process_google_session(request: Request, response: Response):
             "points": 0,
             "membership": "free",
             "role": "rep",
-            "created_at": datetime.now(timezone.utc).isoformat()
+            "created_at": datetime.now(timezone.utc).isoformat(),
         }
         await db.users.insert_one(user_doc)
-    
+
     session_token = f"session_{uuid.uuid4().hex}"
     session_doc = {
         "user_id": user_id,
         "session_token": session_token,
         "expires_at": (datetime.now(timezone.utc) + timedelta(days=7)).isoformat(),
-        "created_at": datetime.now(timezone.utc).isoformat()
+        "created_at": datetime.now(timezone.utc).isoformat(),
     }
     await db.user_sessions.insert_one(session_doc)
-    
+
     response.set_cookie(
         key="session_token",
         value=session_token,
@@ -547,18 +604,20 @@ async def process_google_session(request: Request, response: Response):
         secure=False,  # Changed for HTTP local development
         samesite="lax",  # Changed for HTTP local development
         path="/",
-        max_age=7 * 24 * 60 * 60
+        max_age=7 * 24 * 60 * 60,
     )
-    
+
     user_doc = await db.users.find_one({"user_id": user_id}, {"_id": 0})
     if isinstance(user_doc.get("created_at"), str):
         user_doc["created_at"] = datetime.fromisoformat(user_doc["created_at"])
     return User(**user_doc)
 
+
 @api_router.get("/auth/me")
 async def get_me(user: User = Depends(require_auth)):
     """Get current user"""
     return user
+
 
 @api_router.post("/auth/logout")
 async def logout(request: Request, response: Response):
@@ -566,21 +625,25 @@ async def logout(request: Request, response: Response):
     session_token = request.cookies.get("session_token")
     if session_token:
         await db.user_sessions.delete_one({"session_token": session_token})
-    
+
     response.delete_cookie(key="session_token", path="/")
     return {"message": "Logged out"}
 
+
 # ============== COURSES ROUTES ==============
 
+
 @api_router.get("/courses", response_model=List[Course])
-async def get_courses(category: Optional[str] = None, user: User = Depends(require_auth)):
+async def get_courses(
+    category: Optional[str] = None, user: User = Depends(require_auth)
+):
     """Get all courses user has access to"""
     query = {}
     if category:
         query["category"] = category
-    
+
     courses = await db.courses.find(query, {"_id": 0}).to_list(100)
-    
+
     # Filter by access level
     accessible = []
     for course in courses:
@@ -591,8 +654,9 @@ async def get_courses(category: Optional[str] = None, user: User = Depends(requi
         if course.get("min_level", 1) > user.level:
             continue
         accessible.append(Course(**course))
-    
+
     return accessible
+
 
 @api_router.get("/courses/{course_id}")
 async def get_course(course_id: str, user: User = Depends(require_auth)):
@@ -600,34 +664,41 @@ async def get_course(course_id: str, user: User = Depends(require_auth)):
     course = await db.courses.find_one({"course_id": course_id}, {"_id": 0})
     if not course:
         raise HTTPException(status_code=404, detail="Course not found")
-    
+
     if course.get("vip_only") and user.membership != "vip":
         raise HTTPException(status_code=403, detail="VIP membership required")
     if course.get("min_level", 1) > user.level:
-        raise HTTPException(status_code=403, detail=f"Level {course['min_level']} required")
-    
-    lessons = await db.lessons.find({"course_id": course_id}, {"_id": 0}).sort("order", 1).to_list(50)
+        raise HTTPException(
+            status_code=403, detail=f"Level {course['min_level']} required"
+        )
+
+    lessons = (
+        await db.lessons.find({"course_id": course_id}, {"_id": 0})
+        .sort("order", 1)
+        .to_list(50)
+    )
     for lesson in lessons:
         if isinstance(lesson.get("created_at"), str):
             lesson["created_at"] = datetime.fromisoformat(lesson["created_at"])
-    
+
     if isinstance(course.get("created_at"), str):
         course["created_at"] = datetime.fromisoformat(course["created_at"])
-    
+
     # Get user progress
     progress = await db.user_progress.find(
-        {"user_id": user.user_id, "course_id": course_id},
-        {"_id": 0}
+        {"user_id": user.user_id, "course_id": course_id}, {"_id": 0}
     ).to_list(100)
     completed_lessons = [p["lesson_id"] for p in progress if p.get("completed")]
-    
+
     return {
         "course": Course(**course),
-        "lessons": [Lesson(**l) for l in lessons],
-        "completed_lessons": completed_lessons
+        "lessons": [Lesson(**lesson) for lesson in lessons],
+        "completed_lessons": completed_lessons,
     }
 
+
 # ============== PUBLIC COURSES ROUTES (NO AUTH) ==============
+
 
 @api_router.get("/public/courses")
 async def get_public_courses(category: Optional[str] = None):
@@ -640,27 +711,32 @@ async def get_public_courses(category: Optional[str] = None):
 
     # Add lesson count for each course
     for course in courses:
-        lesson_count = await db.lessons.count_documents({"course_id": course["course_id"]})
+        lesson_count = await db.lessons.count_documents(
+            {"course_id": course["course_id"]}
+        )
         course["lessons_count"] = lesson_count
 
         # Format dates
         if isinstance(course.get("created_at"), str):
             course["created_at"] = datetime.fromisoformat(course["created_at"])
 
-    return {
-        "success": True,
-        "courses": courses,
-        "total": len(courses)
-    }
+    return {"success": True, "courses": courses, "total": len(courses)}
+
 
 @api_router.get("/public/courses/{course_id}")
 async def get_public_course(course_id: str):
     """Get public course with lessons (no authentication required)"""
-    course = await db.courses.find_one({"course_id": course_id, "is_public": True}, {"_id": 0})
+    course = await db.courses.find_one(
+        {"course_id": course_id, "is_public": True}, {"_id": 0}
+    )
     if not course:
         raise HTTPException(status_code=404, detail="Public course not found")
 
-    lessons = await db.lessons.find({"course_id": course_id}, {"_id": 0}).sort("order", 1).to_list(50)
+    lessons = (
+        await db.lessons.find({"course_id": course_id}, {"_id": 0})
+        .sort("order", 1)
+        .to_list(50)
+    )
 
     # Format dates
     if isinstance(course.get("created_at"), str):
@@ -670,11 +746,8 @@ async def get_public_course(course_id: str):
         if isinstance(lesson.get("created_at"), str):
             lesson["created_at"] = datetime.fromisoformat(lesson["created_at"])
 
-    return {
-        "success": True,
-        "course": course,
-        "lessons": lessons
-    }
+    return {"success": True, "course": course, "lessons": lessons}
+
 
 @api_router.post("/courses", response_model=Course)
 async def create_course(data: CourseCreate, user: User = Depends(require_admin)):
@@ -685,11 +758,12 @@ async def create_course(data: CourseCreate, user: User = Depends(require_admin))
         **data.model_dump(),
         "lessons": [],
         "created_at": datetime.now(timezone.utc).isoformat(),
-        "created_by": user.user_id
+        "created_by": user.user_id,
     }
     await db.courses.insert_one(course_doc)
     course_doc["created_at"] = datetime.fromisoformat(course_doc["created_at"])
     return Course(**course_doc)
+
 
 @api_router.post("/lessons", response_model=Lesson)
 async def create_lesson(data: LessonCreate, user: User = Depends(require_admin)):
@@ -698,17 +772,17 @@ async def create_lesson(data: LessonCreate, user: User = Depends(require_admin))
     lesson_doc = {
         "lesson_id": lesson_id,
         **data.model_dump(),
-        "created_at": datetime.now(timezone.utc).isoformat()
+        "created_at": datetime.now(timezone.utc).isoformat(),
     }
     await db.lessons.insert_one(lesson_doc)
-    
+
     await db.courses.update_one(
-        {"course_id": data.course_id},
-        {"$push": {"lessons": lesson_id}}
+        {"course_id": data.course_id}, {"$push": {"lessons": lesson_id}}
     )
-    
+
     lesson_doc["created_at"] = datetime.fromisoformat(lesson_doc["created_at"])
     return Lesson(**lesson_doc)
+
 
 @api_router.post("/lessons/{lesson_id}/complete")
 async def complete_lesson(lesson_id: str, user: User = Depends(require_auth)):
@@ -716,12 +790,11 @@ async def complete_lesson(lesson_id: str, user: User = Depends(require_auth)):
     lesson = await db.lessons.find_one({"lesson_id": lesson_id}, {"_id": 0})
     if not lesson:
         raise HTTPException(status_code=404, detail="Lesson not found")
-    
+
     existing = await db.user_progress.find_one(
-        {"user_id": user.user_id, "lesson_id": lesson_id},
-        {"_id": 0}
+        {"user_id": user.user_id, "lesson_id": lesson_id}, {"_id": 0}
     )
-    
+
     if not existing:
         progress_doc = {
             "progress_id": f"progress_{uuid.uuid4().hex[:12]}",
@@ -729,34 +802,32 @@ async def complete_lesson(lesson_id: str, user: User = Depends(require_auth)):
             "lesson_id": lesson_id,
             "course_id": lesson["course_id"],
             "completed": True,
-            "completed_at": datetime.now(timezone.utc).isoformat()
+            "completed_at": datetime.now(timezone.utc).isoformat(),
         }
         await db.user_progress.insert_one(progress_doc)
-        
+
         # Award points
-        await db.users.update_one(
-            {"user_id": user.user_id},
-            {"$inc": {"points": 10}}
-        )
-        
+        await db.users.update_one({"user_id": user.user_id}, {"$inc": {"points": 10}})
+
         # Check for level up
         updated_user = await db.users.find_one({"user_id": user.user_id}, {"_id": 0})
         new_level = 1 + (updated_user.get("points", 0) // 100)
         if new_level > updated_user.get("level", 1):
             await db.users.update_one(
-                {"user_id": user.user_id},
-                {"$set": {"level": min(new_level, 5)}}
+                {"user_id": user.user_id}, {"$set": {"level": min(new_level, 5)}}
             )
-    
+
     return {"message": "Lesson completed", "points_earned": 10}
 
+
 # ============== EVENTS ROUTES ==============
+
 
 @api_router.get("/events", response_model=List[Event])
 async def get_events(user: User = Depends(require_auth)):
     """Get upcoming events"""
     events = await db.events.find({}, {"_id": 0}).sort("start_time", 1).to_list(50)
-    
+
     accessible = []
     for event in events:
         if isinstance(event.get("start_time"), str):
@@ -766,8 +837,9 @@ async def get_events(user: User = Depends(require_auth)):
         if event.get("vip_only") and user.membership != "vip":
             event["join_link"] = None  # Hide link for non-VIP
         accessible.append(Event(**event))
-    
+
     return accessible
+
 
 @api_router.get("/events/{event_id}")
 async def get_event(event_id: str, user: User = Depends(require_auth)):
@@ -775,16 +847,17 @@ async def get_event(event_id: str, user: User = Depends(require_auth)):
     event = await db.events.find_one({"event_id": event_id}, {"_id": 0})
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
-    
+
     if isinstance(event.get("start_time"), str):
         event["start_time"] = datetime.fromisoformat(event["start_time"])
     if isinstance(event.get("created_at"), str):
         event["created_at"] = datetime.fromisoformat(event["created_at"])
-    
+
     if event.get("vip_only") and user.membership != "vip":
         event["join_link"] = None
-    
+
     return Event(**event)
+
 
 @api_router.post("/events", response_model=Event)
 async def create_event(data: EventCreate, user: User = Depends(require_admin)):
@@ -795,27 +868,30 @@ async def create_event(data: EventCreate, user: User = Depends(require_admin)):
         **data.model_dump(),
         "start_time": data.start_time.isoformat(),
         "recording_url": None,
-        "created_at": datetime.now(timezone.utc).isoformat()
+        "created_at": datetime.now(timezone.utc).isoformat(),
     }
     await db.events.insert_one(event_doc)
     event_doc["start_time"] = datetime.fromisoformat(event_doc["start_time"])
     event_doc["created_at"] = datetime.fromisoformat(event_doc["created_at"])
     return Event(**event_doc)
 
+
 # ============== COMMUNITY ROUTES ==============
+
 
 @api_router.get("/posts", response_model=List[Post])
 async def get_posts(user: User = Depends(require_auth)):
     """Get community posts"""
     posts = await db.posts.find({}, {"_id": 0}).sort("created_at", -1).to_list(50)
-    
+
     result = []
     for post in posts:
         if isinstance(post.get("created_at"), str):
             post["created_at"] = datetime.fromisoformat(post["created_at"])
         result.append(Post(**post))
-    
+
     return result
+
 
 @api_router.post("/posts", response_model=Post)
 async def create_post(data: PostCreate, user: User = Depends(require_auth)):
@@ -830,18 +906,16 @@ async def create_post(data: PostCreate, user: User = Depends(require_auth)):
         "likes": [],
         "comments_count": 0,
         "pinned": False,
-        "created_at": datetime.now(timezone.utc).isoformat()
+        "created_at": datetime.now(timezone.utc).isoformat(),
     }
     await db.posts.insert_one(post_doc)
-    
+
     # Award points for posting
-    await db.users.update_one(
-        {"user_id": user.user_id},
-        {"$inc": {"points": 5}}
-    )
-    
+    await db.users.update_one({"user_id": user.user_id}, {"$inc": {"points": 5}})
+
     post_doc["created_at"] = datetime.fromisoformat(post_doc["created_at"])
     return Post(**post_doc)
+
 
 @api_router.post("/posts/{post_id}/like")
 async def toggle_like(post_id: str, user: User = Depends(require_auth)):
@@ -849,7 +923,7 @@ async def toggle_like(post_id: str, user: User = Depends(require_auth)):
     post = await db.posts.find_one({"post_id": post_id}, {"_id": 0})
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
-    
+
     likes = post.get("likes", [])
     if user.user_id in likes:
         likes.remove(user.user_id)
@@ -857,22 +931,28 @@ async def toggle_like(post_id: str, user: User = Depends(require_auth)):
     else:
         likes.append(user.user_id)
         liked = True
-    
+
     await db.posts.update_one({"post_id": post_id}, {"$set": {"likes": likes}})
     return {"liked": liked, "likes_count": len(likes)}
+
 
 @api_router.get("/posts/{post_id}/comments", response_model=List[Comment])
 async def get_comments(post_id: str, user: User = Depends(require_auth)):
     """Get comments for post"""
-    comments = await db.comments.find({"post_id": post_id}, {"_id": 0}).sort("created_at", 1).to_list(100)
-    
+    comments = (
+        await db.comments.find({"post_id": post_id}, {"_id": 0})
+        .sort("created_at", 1)
+        .to_list(100)
+    )
+
     result = []
     for comment in comments:
         if isinstance(comment.get("created_at"), str):
             comment["created_at"] = datetime.fromisoformat(comment["created_at"])
         result.append(Comment(**comment))
-    
+
     return result
+
 
 @api_router.post("/comments", response_model=Comment)
 async def create_comment(data: CommentCreate, user: User = Depends(require_auth)):
@@ -885,25 +965,23 @@ async def create_comment(data: CommentCreate, user: User = Depends(require_auth)
         "user_name": user.name,
         "user_picture": user.picture,
         "content": data.content,
-        "created_at": datetime.now(timezone.utc).isoformat()
+        "created_at": datetime.now(timezone.utc).isoformat(),
     }
     await db.comments.insert_one(comment_doc)
-    
+
     await db.posts.update_one(
-        {"post_id": data.post_id},
-        {"$inc": {"comments_count": 1}}
+        {"post_id": data.post_id}, {"$inc": {"comments_count": 1}}
     )
-    
+
     # Award points
-    await db.users.update_one(
-        {"user_id": user.user_id},
-        {"$inc": {"points": 3}}
-    )
-    
+    await db.users.update_one({"user_id": user.user_id}, {"$inc": {"points": 3}})
+
     comment_doc["created_at"] = datetime.fromisoformat(comment_doc["created_at"])
     return Comment(**comment_doc)
 
+
 # ============== RESOURCES ROUTES ==============
+
 
 @api_router.get("/resources", response_model=List[Resource])
 async def get_resources(
@@ -911,7 +989,7 @@ async def get_resources(
     category: Optional[str] = None,
     search: Optional[str] = None,
     sort: Optional[str] = "newest",
-    user: User = Depends(require_auth)
+    user: User = Depends(require_auth),
 ):
     """
     Get resources with enhanced filtering and search
@@ -932,7 +1010,7 @@ async def get_resources(
         query["$or"] = [
             {"title": {"$regex": search, "$options": "i"}},
             {"description": {"$regex": search, "$options": "i"}},
-            {"tags": {"$in": [search]}}
+            {"tags": {"$in": [search]}},
         ]
 
     # Determine sort order
@@ -945,7 +1023,11 @@ async def get_resources(
         sort_field = "title"
         sort_direction = 1
 
-    resources = await db.resources.find(query, {"_id": 0}).sort(sort_field, sort_direction).to_list(100)
+    resources = (
+        await db.resources.find(query, {"_id": 0})
+        .sort(sort_field, sort_direction)
+        .to_list(100)
+    )
 
     accessible = []
     for resource in resources:
@@ -954,6 +1036,7 @@ async def get_resources(
         accessible.append(Resource(**resource))
 
     return accessible
+
 
 @api_router.get("/resources/{resource_id}", response_model=Resource)
 async def get_resource(resource_id: str, user: User = Depends(require_auth)):
@@ -967,11 +1050,11 @@ async def get_resource(resource_id: str, user: User = Depends(require_auth)):
 
     # Increment usage count
     await db.resources.update_one(
-        {"resource_id": resource_id},
-        {"$inc": {"usage_count": 1}}
+        {"resource_id": resource_id}, {"$inc": {"usage_count": 1}}
     )
 
     return Resource(**resource)
+
 
 @api_router.get("/resources/{resource_id}/related", response_model=List[Resource])
 async def get_related_resources(resource_id: str, user: User = Depends(require_auth)):
@@ -985,8 +1068,8 @@ async def get_related_resources(resource_id: str, user: User = Depends(require_a
         "resource_id": {"$ne": resource_id},
         "$or": [
             {"category": resource.get("category")},
-            {"tags": {"$in": resource.get("tags", [])}}
-        ]
+            {"tags": {"$in": resource.get("tags", [])}},
+        ],
     }
 
     related = await db.resources.find(query, {"_id": 0}).limit(6).to_list(6)
@@ -998,6 +1081,7 @@ async def get_related_resources(resource_id: str, user: User = Depends(require_a
         result.append(Resource(**r))
 
     return result
+
 
 @api_router.post("/resources/{resource_id}/download")
 async def download_resource(resource_id: str, user: User = Depends(require_auth)):
@@ -1014,6 +1098,7 @@ async def download_resource(resource_id: str, user: User = Depends(require_auth)
     else:
         raise HTTPException(status_code=404, detail="No downloadable content")
 
+
 @api_router.post("/resources", response_model=Resource)
 async def create_resource(data: ResourceCreate, user: User = Depends(require_admin)):
     """Create resource (admin only)"""
@@ -1023,19 +1108,21 @@ async def create_resource(data: ResourceCreate, user: User = Depends(require_adm
         **data.model_dump(exclude_unset=True),
         "usage_count": 0,
         "created_by": user.user_id,
-        "created_at": datetime.now(timezone.utc).isoformat()
+        "created_at": datetime.now(timezone.utc).isoformat(),
     }
     await db.resources.insert_one(resource_doc)
     resource_doc["created_at"] = datetime.fromisoformat(resource_doc["created_at"])
     return Resource(**resource_doc)
 
+
 # ============== COACHING SESSIONS ROUTES ==============
+
 
 @api_router.get("/coaching/sessions", response_model=List[CoachingSession])
 async def get_coaching_sessions(
     status: Optional[str] = None,
     session_type: Optional[str] = None,
-    user: User = Depends(require_auth)
+    user: User = Depends(require_auth),
 ):
     """Get all coaching sessions, optionally filtered by status or type"""
     query = {}
@@ -1044,11 +1131,17 @@ async def get_coaching_sessions(
     if session_type:
         query["session_type"] = session_type
 
-    sessions = await db.coaching_sessions.find(query, {"_id": 0}).sort("scheduled_date", 1).to_list(50)
+    sessions = (
+        await db.coaching_sessions.find(query, {"_id": 0})
+        .sort("scheduled_date", 1)
+        .to_list(50)
+    )
 
     for session in sessions:
         if isinstance(session.get("scheduled_date"), str):
-            session["scheduled_date"] = datetime.fromisoformat(session["scheduled_date"])
+            session["scheduled_date"] = datetime.fromisoformat(
+                session["scheduled_date"]
+            )
         if isinstance(session.get("created_at"), str):
             session["created_at"] = datetime.fromisoformat(session["created_at"])
         if isinstance(session.get("updated_at"), str):
@@ -1056,10 +1149,13 @@ async def get_coaching_sessions(
 
     return [CoachingSession(**session) for session in sessions]
 
+
 @api_router.get("/coaching/sessions/{session_id}", response_model=CoachingSession)
 async def get_coaching_session(session_id: str, user: User = Depends(require_auth)):
     """Get a specific coaching session"""
-    session = await db.coaching_sessions.find_one({"session_id": session_id}, {"_id": 0})
+    session = await db.coaching_sessions.find_one(
+        {"session_id": session_id}, {"_id": 0}
+    )
     if not session:
         raise HTTPException(status_code=404, detail="Coaching session not found")
 
@@ -1072,8 +1168,11 @@ async def get_coaching_session(session_id: str, user: User = Depends(require_aut
 
     return CoachingSession(**session)
 
+
 @api_router.post("/coaching/sessions", response_model=CoachingSession)
-async def create_coaching_session(data: CoachingSessionCreate, user: User = Depends(require_admin)):
+async def create_coaching_session(
+    data: CoachingSessionCreate, user: User = Depends(require_admin)
+):
     """Create a coaching session (admin only)"""
     session_id = f"coaching_{uuid.uuid4().hex[:12]}"
     now = datetime.now(timezone.utc)
@@ -1084,7 +1183,7 @@ async def create_coaching_session(data: CoachingSessionCreate, user: User = Depe
         "recording_url": None,
         "status": "scheduled",
         "created_at": now.isoformat(),
-        "updated_at": now.isoformat()
+        "updated_at": now.isoformat(),
     }
     await db.coaching_sessions.insert_one(session_doc)
     session_doc["created_at"] = now
@@ -1092,11 +1191,10 @@ async def create_coaching_session(data: CoachingSessionCreate, user: User = Depe
     session_doc["scheduled_date"] = data.scheduled_date
     return CoachingSession(**session_doc)
 
+
 @api_router.put("/coaching/sessions/{session_id}", response_model=CoachingSession)
 async def update_coaching_session(
-    session_id: str,
-    data: CoachingSessionCreate,
-    user: User = Depends(require_admin)
+    session_id: str, data: CoachingSessionCreate, user: User = Depends(require_admin)
 ):
     """Update a coaching session (admin only)"""
     existing = await db.coaching_sessions.find_one({"session_id": session_id})
@@ -1107,11 +1205,12 @@ async def update_coaching_session(
     update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
 
     await db.coaching_sessions.update_one(
-        {"session_id": session_id},
-        {"$set": update_data}
+        {"session_id": session_id}, {"$set": update_data}
     )
 
-    updated = await db.coaching_sessions.find_one({"session_id": session_id}, {"_id": 0})
+    updated = await db.coaching_sessions.find_one(
+        {"session_id": session_id}, {"_id": 0}
+    )
 
     if isinstance(updated.get("scheduled_date"), str):
         updated["scheduled_date"] = datetime.fromisoformat(updated["scheduled_date"])
@@ -1121,6 +1220,7 @@ async def update_coaching_session(
         updated["updated_at"] = datetime.fromisoformat(updated["updated_at"])
 
     return CoachingSession(**updated)
+
 
 @api_router.post("/coaching/sessions/{session_id}/rsvp")
 async def rsvp_coaching_session(session_id: str, user: User = Depends(require_auth)):
@@ -1144,14 +1244,17 @@ async def rsvp_coaching_session(session_id: str, user: User = Depends(require_au
         {"session_id": session_id},
         {
             "$addToSet": {"attendees": user.user_id},
-            "$set": {"updated_at": datetime.now(timezone.utc).isoformat()}
-        }
+            "$set": {"updated_at": datetime.now(timezone.utc).isoformat()},
+        },
     )
 
     return {"message": "RSVP successful"}
 
+
 @api_router.delete("/coaching/sessions/{session_id}/rsvp")
-async def cancel_rsvp_coaching_session(session_id: str, user: User = Depends(require_auth)):
+async def cancel_rsvp_coaching_session(
+    session_id: str, user: User = Depends(require_auth)
+):
     """Cancel RSVP to a coaching session"""
     session = await db.coaching_sessions.find_one({"session_id": session_id})
     if not session:
@@ -1164,21 +1267,28 @@ async def cancel_rsvp_coaching_session(session_id: str, user: User = Depends(req
         {"session_id": session_id},
         {
             "$pull": {"attendees": user.user_id},
-            "$set": {"updated_at": datetime.now(timezone.utc).isoformat()}
-        }
+            "$set": {"updated_at": datetime.now(timezone.utc).isoformat()},
+        },
     )
 
     return {"message": "RSVP cancelled"}
 
+
 # ============== PAYMENT ROUTES ==============
 
 # Payment integration using Stripe
-from stripe_integration import StripeCheckout, CheckoutSessionResponse, CheckoutStatusResponse, CheckoutSessionRequest
+from stripe_integration import (
+    StripeCheckout,
+    CheckoutSessionResponse,
+    CheckoutStatusResponse,
+    CheckoutSessionRequest,
+)
 
 MEMBERSHIP_PACKAGES = {
     "vip_monthly": {"amount": 97.00, "name": "VIP Monthly", "period": "month"},
-    "vip_annual": {"amount": 970.00, "name": "VIP Annual", "period": "year"}
+    "vip_annual": {"amount": 970.00, "name": "VIP Annual", "period": "year"},
 }
+
 
 @api_router.post("/payments/checkout")
 async def create_checkout(request: Request, user: User = Depends(require_auth)):
@@ -1186,20 +1296,20 @@ async def create_checkout(request: Request, user: User = Depends(require_auth)):
     body = await request.json()
     package_id = body.get("package_id")
     origin_url = body.get("origin_url")
-    
+
     if package_id not in MEMBERSHIP_PACKAGES:
         raise HTTPException(status_code=400, detail="Invalid package")
-    
+
     package = MEMBERSHIP_PACKAGES[package_id]
-    
-    host_url = str(request.base_url).rstrip('/')
+
+    host_url = str(request.base_url).rstrip("/")
     webhook_url = f"{host_url}/api/webhook/stripe"
-    
+
     stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
-    
+
     success_url = f"{origin_url}/payment/success?session_id={{CHECKOUT_SESSION_ID}}"
     cancel_url = f"{origin_url}/membership"
-    
+
     checkout_request = CheckoutSessionRequest(
         amount=package["amount"],
         currency="usd",
@@ -1208,12 +1318,12 @@ async def create_checkout(request: Request, user: User = Depends(require_auth)):
         metadata={
             "user_id": user.user_id,
             "package_id": package_id,
-            "package_name": package["name"]
-        }
+            "package_name": package["name"],
+        },
     )
-    
+
     session = await stripe_checkout.create_checkout_session(checkout_request)
-    
+
     # Create payment transaction record
     transaction_doc = {
         "transaction_id": f"txn_{uuid.uuid4().hex[:12]}",
@@ -1224,123 +1334,160 @@ async def create_checkout(request: Request, user: User = Depends(require_auth)):
         "package_type": package_id,
         "payment_status": "pending",
         "created_at": datetime.now(timezone.utc).isoformat(),
-        "updated_at": datetime.now(timezone.utc).isoformat()
+        "updated_at": datetime.now(timezone.utc).isoformat(),
     }
     await db.payment_transactions.insert_one(transaction_doc)
-    
+
     return {"url": session.url, "session_id": session.session_id}
 
+
 @api_router.get("/payments/status/{session_id}")
-async def get_payment_status(session_id: str, request: Request, user: User = Depends(require_auth)):
+async def get_payment_status(
+    session_id: str, request: Request, user: User = Depends(require_auth)
+):
     """Get payment status and update membership if paid"""
-    host_url = str(request.base_url).rstrip('/')
+    host_url = str(request.base_url).rstrip("/")
     webhook_url = f"{host_url}/api/webhook/stripe"
-    
+
     stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
-    
+
     status = await stripe_checkout.get_checkout_status(session_id)
-    
+
     # Update transaction
-    transaction = await db.payment_transactions.find_one({"session_id": session_id}, {"_id": 0})
-    
-    if transaction and transaction.get("payment_status") != "paid" and status.payment_status == "paid":
+    transaction = await db.payment_transactions.find_one(
+        {"session_id": session_id}, {"_id": 0}
+    )
+
+    if (
+        transaction
+        and transaction.get("payment_status") != "paid"
+        and status.payment_status == "paid"
+    ):
         await db.payment_transactions.update_one(
             {"session_id": session_id},
-            {"$set": {"payment_status": "paid", "updated_at": datetime.now(timezone.utc).isoformat()}}
+            {
+                "$set": {
+                    "payment_status": "paid",
+                    "updated_at": datetime.now(timezone.utc).isoformat(),
+                }
+            },
         )
-        
+
         # Upgrade user membership
         await db.users.update_one(
-            {"user_id": transaction["user_id"]},
-            {"$set": {"membership": "vip"}}
+            {"user_id": transaction["user_id"]}, {"$set": {"membership": "vip"}}
         )
-    
+
     return {
         "status": status.status,
         "payment_status": status.payment_status,
         "amount": status.amount_total / 100,
-        "currency": status.currency
+        "currency": status.currency,
     }
+
 
 @api_router.post("/webhook/stripe")
 async def stripe_webhook(request: Request):
     """Handle Stripe webhooks"""
     body = await request.body()
     signature = request.headers.get("Stripe-Signature")
-    
-    host_url = str(request.base_url).rstrip('/')
+
+    host_url = str(request.base_url).rstrip("/")
     webhook_url = f"{host_url}/api/webhook/stripe"
-    
+
     stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
-    
+
     try:
         webhook_response = await stripe_checkout.handle_webhook(body, signature)
-        
+
         if webhook_response.payment_status == "paid":
             user_id = webhook_response.metadata.get("user_id")
             if user_id:
                 await db.users.update_one(
-                    {"user_id": user_id},
-                    {"$set": {"membership": "vip"}}
+                    {"user_id": user_id}, {"$set": {"membership": "vip"}}
                 )
-                
+
                 await db.payment_transactions.update_one(
                     {"session_id": webhook_response.session_id},
-                    {"$set": {"payment_status": "paid", "updated_at": datetime.now(timezone.utc).isoformat()}}
+                    {
+                        "$set": {
+                            "payment_status": "paid",
+                            "updated_at": datetime.now(timezone.utc).isoformat(),
+                        }
+                    },
                 )
-        
+
         return {"received": True}
     except Exception as e:
         logger.error(f"Webhook error: {e}")
         return {"received": True}
 
+
 # ============== DASHBOARD / STATS ==============
+
 
 @api_router.get("/dashboard")
 async def get_dashboard(user: User = Depends(require_auth)):
     """Get dashboard data"""
     # Get recent courses
-    courses = await db.courses.find({}, {"_id": 0}).sort("created_at", -1).limit(4).to_list(4)
+    courses = (
+        await db.courses.find({}, {"_id": 0}).sort("created_at", -1).limit(4).to_list(4)
+    )
     for course in courses:
         if isinstance(course.get("created_at"), str):
             course["created_at"] = datetime.fromisoformat(course["created_at"])
-    
+
     # Get upcoming events
     now = datetime.now(timezone.utc).isoformat()
-    events = await db.events.find({"start_time": {"$gte": now}}, {"_id": 0}).sort("start_time", 1).limit(3).to_list(3)
+    events = (
+        await db.events.find({"start_time": {"$gte": now}}, {"_id": 0})
+        .sort("start_time", 1)
+        .limit(3)
+        .to_list(3)
+    )
     for event in events:
         if isinstance(event.get("start_time"), str):
             event["start_time"] = datetime.fromisoformat(event["start_time"])
         if isinstance(event.get("created_at"), str):
             event["created_at"] = datetime.fromisoformat(event["created_at"])
-    
+
     # Get recent posts
-    posts = await db.posts.find({}, {"_id": 0}).sort("created_at", -1).limit(5).to_list(5)
+    posts = (
+        await db.posts.find({}, {"_id": 0}).sort("created_at", -1).limit(5).to_list(5)
+    )
     for post in posts:
         if isinstance(post.get("created_at"), str):
             post["created_at"] = datetime.fromisoformat(post["created_at"])
-    
+
     # Get user progress
-    completed_count = await db.user_progress.count_documents({"user_id": user.user_id, "completed": True})
+    completed_count = await db.user_progress.count_documents(
+        {"user_id": user.user_id, "completed": True}
+    )
     total_lessons = await db.lessons.count_documents({})
-    
+
     # Points to next level
     current_level = user.level
     points_for_next = (current_level * 100) - user.points
-    
+
     return {
         "user": user,
-        "recent_courses": [Course(**c) for c in courses if not c.get("vip_only") or user.membership == "vip"],
+        "recent_courses": [
+            Course(**c)
+            for c in courses
+            if not c.get("vip_only") or user.membership == "vip"
+        ],
         "upcoming_events": [Event(**e) for e in events],
         "recent_posts": [Post(**p) for p in posts],
         "progress": {
             "completed_lessons": completed_count,
             "total_lessons": total_lessons,
-            "points_to_next_level": max(0, points_for_next)
-        }
+            "points_to_next_level": max(0, points_for_next),
+        },
     }
 
+
 # ============== ADMIN ROUTES ==============
+
 
 @api_router.get("/admin/stats")
 async def get_admin_stats(user: User = Depends(require_admin)):
@@ -1351,9 +1498,14 @@ async def get_admin_stats(user: User = Depends(require_admin)):
     total_events = await db.events.count_documents({})
     total_posts = await db.posts.count_documents({})
     total_resources = await db.resources.count_documents({})
-    
-    recent_users = await db.users.find({}, {"_id": 0, "password_hash": 0}).sort("created_at", -1).limit(10).to_list(10)
-    
+
+    recent_users = (
+        await db.users.find({}, {"_id": 0, "password_hash": 0})
+        .sort("created_at", -1)
+        .limit(10)
+        .to_list(10)
+    )
+
     return {
         "stats": {
             "total_users": total_users,
@@ -1361,10 +1513,11 @@ async def get_admin_stats(user: User = Depends(require_admin)):
             "total_courses": total_courses,
             "total_events": total_events,
             "total_posts": total_posts,
-            "total_resources": total_resources
+            "total_resources": total_resources,
         },
-        "recent_users": recent_users
+        "recent_users": recent_users,
     }
+
 
 @api_router.get("/admin/users")
 async def get_all_users(user: User = Depends(require_admin)):
@@ -1375,19 +1528,24 @@ async def get_all_users(user: User = Depends(require_admin)):
             u["created_at"] = datetime.fromisoformat(u["created_at"])
     return users
 
+
 @api_router.put("/admin/users/{user_id}/role")
-async def update_user_role(user_id: str, request: Request, user: User = Depends(require_admin)):
+async def update_user_role(
+    user_id: str, request: Request, user: User = Depends(require_admin)
+):
     """Update user role (admin only)"""
     body = await request.json()
     new_role = body.get("role")
     team_id = body.get("team_id")  # Optional team assignment
     manager_id = body.get("manager_id")  # Optional manager assignment
-    
+
     if new_role not in VALID_ROLES:
-        raise HTTPException(status_code=400, detail=f"Invalid role. Valid roles: {VALID_ROLES}")
-    
+        raise HTTPException(
+            status_code=400, detail=f"Invalid role. Valid roles: {VALID_ROLES}"
+        )
+
     update_data = {"role": new_role}
-    
+
     # Handle team assignment for reps
     if new_role == "rep":
         if team_id:
@@ -1400,37 +1558,45 @@ async def update_user_role(user_id: str, request: Request, user: User = Depends(
             # Verify manager exists and has appropriate role
             manager = await db.users.find_one({"user_id": manager_id})
             if not manager or manager.get("role") not in ["manager", "director"]:
-                raise HTTPException(status_code=400, detail="Manager not found or invalid role")
+                raise HTTPException(
+                    status_code=400, detail="Manager not found or invalid role"
+                )
             update_data["manager_id"] = manager_id
-    
+
     # Handle manager role - can be assigned to manage a team
     elif new_role == "manager":
         # Remove any previous team membership
         update_data["team_id"] = None
         update_data["manager_id"] = None
-    
+
     # Handle director role - oversees all teams
     elif new_role == "director":
         update_data["team_id"] = None
         update_data["manager_id"] = None
-    
+
     await db.users.update_one({"user_id": user_id}, {"$set": update_data})
     return {"message": "Role updated", "role": new_role}
 
+
 @api_router.put("/admin/users/{user_id}/membership")
-async def update_user_membership(user_id: str, request: Request, user: User = Depends(require_admin)):
+async def update_user_membership(
+    user_id: str, request: Request, user: User = Depends(require_admin)
+):
     """Update user membership (admin only)"""
     body = await request.json()
     new_membership = body.get("membership")
-    
+
     if new_membership not in ["free", "vip"]:
         raise HTTPException(status_code=400, detail="Invalid membership")
-    
-    await db.users.update_one({"user_id": user_id}, {"$set": {"membership": new_membership}})
+
+    await db.users.update_one(
+        {"user_id": user_id}, {"$set": {"membership": new_membership}}
+    )
     return {"message": "Membership updated"}
 
 
 # ============== TEAM MANAGEMENT ROUTES ==============
+
 
 @api_router.get("/teams")
 async def get_teams(user: User = Depends(require_auth)):
@@ -1440,15 +1606,20 @@ async def get_teams(user: User = Depends(require_auth)):
         teams = await db.teams.find({}, {"_id": 0}).to_list(100)
     elif user.role == "manager":
         # Managers see only their teams
-        teams = await db.teams.find({"manager_id": user.user_id}, {"_id": 0}).to_list(100)
+        teams = await db.teams.find({"manager_id": user.user_id}, {"_id": 0}).to_list(
+            100
+        )
     else:
         # Reps see only their assigned team
         if user.team_id:
-            teams = await db.teams.find({"team_id": user.team_id}, {"_id": 0}).to_list(100)
+            teams = await db.teams.find({"team_id": user.team_id}, {"_id": 0}).to_list(
+                100
+            )
         else:
             teams = []
-    
+
     return teams
+
 
 @api_router.post("/teams")
 async def create_team(data: TeamCreate, user: User = Depends(require_director)):
@@ -1459,20 +1630,23 @@ async def create_team(data: TeamCreate, user: User = Depends(require_director)):
         raise HTTPException(status_code=404, detail="Manager not found")
     if manager.get("role") not in ["manager", "director"]:
         raise HTTPException(status_code=400, detail="User must have manager role")
-    
+
     team_id = f"team_{uuid.uuid4().hex[:12]}"
     team_doc = {
         "team_id": team_id,
         "name": data.name,
-        "organization_id": user.organization_id if hasattr(user, 'organization_id') else "default",
+        "organization_id": (
+            user.organization_id if hasattr(user, "organization_id") else "default"
+        ),
         "manager_id": data.manager_id,
         "description": data.description,
         "members": [],
-        "created_at": datetime.now(timezone.utc).isoformat()
+        "created_at": datetime.now(timezone.utc).isoformat(),
     }
-    
+
     await db.teams.insert_one(team_doc)
     return {"message": "Team created", "team_id": team_id}
+
 
 @api_router.get("/teams/{team_id}")
 async def get_team(team_id: str, user: User = Depends(require_auth)):
@@ -1480,94 +1654,99 @@ async def get_team(team_id: str, user: User = Depends(require_auth)):
     team = await db.teams.find_one({"team_id": team_id}, {"_id": 0})
     if not team:
         raise HTTPException(status_code=404, detail="Team not found")
-    
+
     # Check access - only team members, managers, and directors can view
     if not has_role_permission(user.role, "director"):
         if user.role == "manager" and team["manager_id"] != user.user_id:
             raise HTTPException(status_code=403, detail="Access denied")
         elif user.role == "rep" and user.team_id != team_id:
             raise HTTPException(status_code=403, detail="Access denied")
-    
+
     return team
 
+
 @api_router.put("/teams/{team_id}")
-async def update_team(team_id: str, data: TeamUpdate, user: User = Depends(require_manager)):
+async def update_team(
+    team_id: str, data: TeamUpdate, user: User = Depends(require_manager)
+):
     """Update team (manager can update their teams, director can update any)"""
     team = await db.teams.find_one({"team_id": team_id})
     if not team:
         raise HTTPException(status_code=404, detail="Team not found")
-    
+
     # Check access
     if user.role == "manager" and team["manager_id"] != user.user_id:
         raise HTTPException(status_code=403, detail="Access denied")
-    
+
     update_data = {k: v for k, v in data.model_dump().items() if v is not None}
     if update_data:
         update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
         await db.teams.update_one({"team_id": team_id}, {"$set": update_data})
-    
+
     return {"message": "Team updated"}
 
+
 @api_router.post("/teams/{team_id}/members")
-async def add_team_member(team_id: str, request: Request, user: User = Depends(require_manager)):
+async def add_team_member(
+    team_id: str, request: Request, user: User = Depends(require_manager)
+):
     """Add member to team"""
     body = await request.json()
     member_id = body.get("user_id")
-    
+
     if not member_id:
         raise HTTPException(status_code=400, detail="user_id required")
-    
+
     team = await db.teams.find_one({"team_id": team_id})
     if not team:
         raise HTTPException(status_code=404, detail="Team not found")
-    
+
     # Check access
     if user.role == "manager" and team["manager_id"] != user.user_id:
         raise HTTPException(status_code=403, detail="Access denied")
-    
+
     # Verify user exists and is a rep
     member = await db.users.find_one({"user_id": member_id})
     if not member:
         raise HTTPException(status_code=404, detail="User not found")
-    
+
     # Add to team
     await db.teams.update_one(
-        {"team_id": team_id},
-        {"$addToSet": {"members": member_id}}
+        {"team_id": team_id}, {"$addToSet": {"members": member_id}}
     )
-    
+
     # Update user's team_id and manager_id
     await db.users.update_one(
         {"user_id": member_id},
-        {"$set": {"team_id": team_id, "manager_id": team["manager_id"]}}
+        {"$set": {"team_id": team_id, "manager_id": team["manager_id"]}},
     )
-    
+
     return {"message": "Member added to team"}
 
+
 @api_router.delete("/teams/{team_id}/members/{member_id}")
-async def remove_team_member(team_id: str, member_id: str, user: User = Depends(require_manager)):
+async def remove_team_member(
+    team_id: str, member_id: str, user: User = Depends(require_manager)
+):
     """Remove member from team"""
     team = await db.teams.find_one({"team_id": team_id})
     if not team:
         raise HTTPException(status_code=404, detail="Team not found")
-    
+
     # Check access
     if user.role == "manager" and team["manager_id"] != user.user_id:
         raise HTTPException(status_code=403, detail="Access denied")
-    
+
     # Remove from team
-    await db.teams.update_one(
-        {"team_id": team_id},
-        {"$pull": {"members": member_id}}
-    )
-    
+    await db.teams.update_one({"team_id": team_id}, {"$pull": {"members": member_id}})
+
     # Update user's team_id and manager_id
     await db.users.update_one(
-        {"user_id": member_id},
-        {"$set": {"team_id": None, "manager_id": None}}
+        {"user_id": member_id}, {"$set": {"team_id": None, "manager_id": None}}
     )
-    
+
     return {"message": "Member removed from team"}
+
 
 @api_router.get("/teams/{team_id}/progress")
 async def get_team_progress(team_id: str, user: User = Depends(require_manager)):
@@ -1575,36 +1754,42 @@ async def get_team_progress(team_id: str, user: User = Depends(require_manager))
     team = await db.teams.find_one({"team_id": team_id})
     if not team:
         raise HTTPException(status_code=404, detail="Team not found")
-    
+
     # Check access
     if user.role == "manager" and team["manager_id"] != user.user_id:
         raise HTTPException(status_code=403, detail="Access denied")
-    
+
     # Get progress for all team members
     member_progress = []
     for member_id in team.get("members", []):
-        user_doc = await db.users.find_one({"user_id": member_id}, {"_id": 0, "password_hash": 0})
+        user_doc = await db.users.find_one(
+            {"user_id": member_id}, {"_id": 0, "password_hash": 0}
+        )
         progress = await db.user_progress.find_one({"user_id": member_id})
-        
+
         if user_doc:
-            member_progress.append({
-                "user_id": member_id,
-                "name": user_doc.get("name"),
-                "email": user_doc.get("email"),
-                "role": user_doc.get("role"),
-                "level": user_doc.get("level", 1),
-                "points": user_doc.get("points", 0),
-                "progress": progress or {}
-            })
-    
+            member_progress.append(
+                {
+                    "user_id": member_id,
+                    "name": user_doc.get("name"),
+                    "email": user_doc.get("email"),
+                    "role": user_doc.get("role"),
+                    "level": user_doc.get("level", 1),
+                    "points": user_doc.get("points", 0),
+                    "progress": progress or {},
+                }
+            )
+
     return {
         "team_id": team_id,
         "team_name": team.get("name"),
         "manager_id": team.get("manager_id"),
-        "members": member_progress
+        "members": member_progress,
     }
 
+
 # ============== ROOT ==============
+
 
 @api_router.get("/health")
 async def health_check():
@@ -1621,15 +1806,14 @@ async def health_check():
         "status": "healthy" if mongo_status == "healthy" else "unhealthy",
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "version": "1.0.0",
-        "services": {
-            "mongodb": mongo_status,
-            "api": "healthy"
-        }
+        "services": {"mongodb": mongo_status, "api": "healthy"},
     }
+
 
 @api_router.get("/")
 async def root():
     return {"message": "VCSA API", "version": "1.0.0"}
+
 
 # Include router
 app.include_router(api_router)
@@ -1638,21 +1822,27 @@ app.include_router(api_router)
 
 # Include Organization routes (White-Label Platform)
 from organization_routes import router as organization_router
+
 app.include_router(organization_router)
 
 # Include School creation routes
 try:
     from school_routes import router as school_router
+
     app.include_router(school_router)
 except ImportError:
     print("Warning: school_routes not available")
 
 # Add multi-tenancy middleware
 from middleware import inject_organization_context
+
 app.middleware("http")(inject_organization_context)
 
 # Configure CORS from environment variable
-cors_origins = os.environ.get("CORS_ORIGINS", "http://localhost:1234,http://localhost:1235").split(",")
+cors_origins = os.environ.get(
+    "CORS_ORIGINS",
+    "http://localhost:1234,http://localhost:1235,http://localhost:4173,http://127.0.0.1:4173,http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000,http://127.0.0.1:3000",
+).split(",")
 
 app.add_middleware(
     CORSMiddleware,
@@ -1662,13 +1852,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
 
+
 # Phase 1 Routes
 try:
     from phase1_routes import phase1_router
+
     app.include_router(phase1_router)
 except ImportError:
     print("Warning: phase1_routes not available")
@@ -1676,6 +1869,7 @@ except ImportError:
 # Branding Configuration Routes
 try:
     from branding_routes import branding_router
+
     app.include_router(branding_router)
     print("Branding routes loaded successfully")
 except ImportError:
@@ -1684,6 +1878,7 @@ except ImportError:
 # Goal Sheet Routes (MVP Phase 1)
 try:
     from goal_sheet_routes import router as goal_sheet_router
+
     app.include_router(goal_sheet_router)
     print("Goal sheet routes loaded successfully")
 except ImportError:
@@ -1692,6 +1887,7 @@ except ImportError:
 # Financial Goals Routes (Phase 1.5)
 try:
     from financial_routes import router as financial_router
+
     app.include_router(financial_router)
     print("Financial goals routes loaded successfully")
 except ImportError:
@@ -1700,6 +1896,7 @@ except ImportError:
 # Dashboard Routes (MVP Lite)
 try:
     from dashboard_routes import dashboard_router
+
     app.include_router(dashboard_router, prefix="/api")
     print("Dashboard routes loaded successfully")
 except ImportError:
@@ -1708,6 +1905,7 @@ except ImportError:
 # Claude AI Assistant Routes
 try:
     from claude_routes import router as claude_router
+
     app.include_router(claude_router)
     print("Claude AI Assistant routes loaded successfully")
 except ImportError:
@@ -1715,7 +1913,11 @@ except ImportError:
 
 # Enhanced AI Assistant Routes (Fase 3)
 try:
-    from ai_assistant_enhanced import router as enhanced_ai_router, public_router as enhanced_ai_public_router
+    from ai_assistant_enhanced import (
+        router as enhanced_ai_router,
+        public_router as enhanced_ai_public_router,
+    )
+
     app.include_router(enhanced_ai_router)
     app.include_router(enhanced_ai_public_router)  # Public endpoints without auth
     print("Enhanced AI Assistant routes loaded successfully (Fase 3)")
@@ -1725,8 +1927,17 @@ except ImportError:
 # VCSA Pocket Mobile App Routes
 try:
     from mobile_routes import mobile_router
+
     app.include_router(mobile_router)
     print("VCSA Pocket mobile routes loaded successfully")
 except ImportError:
     print("Warning: mobile_routes not available")
 
+# Alternate Academy Module Routes
+try:
+    from academy_modules_routes import academy_router
+
+    app.include_router(academy_router)
+    print("Alternate academy module routes loaded successfully")
+except ImportError:
+    print("Warning: academy_modules_routes not available")

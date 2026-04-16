@@ -5,7 +5,8 @@ Create Admin User - Script para crear usuario admin en la base de datos
 import asyncio
 import sys
 import os
-from datetime import datetime
+from datetime import datetime, timezone
+import uuid
 
 # Add parent directory to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -42,14 +43,16 @@ async def create_admin_user():
         # Create admin user
         print("\n📝 Creando usuario admin...")
         admin_user = {
+            "user_id": f"user_{uuid.uuid4().hex[:12]}",
             "email": "admin@vcsa.com",
-            "password": hashed.decode('utf-8'),
+            "password_hash": hashed.decode('utf-8'),
             "name": "Admin User",
+            "picture": None,
             "role": "admin",
-            "membership": "premium",
+            "membership": "vip",
             "level": 10,
             "points": 9999,
-            "created_at": datetime.now(),
+            "created_at": datetime.now(timezone.utc).isoformat(),
             "is_active": True,
             "email_verified": True
         }
@@ -72,7 +75,8 @@ async def create_admin_user():
 
             # Test password verification
             print("\n🔐 Verificando password...")
-            if bcrypt.checkpw(password.encode('utf-8'), admin_check['password'].encode('utf-8')):
+            password_field = admin_check.get('password_hash', admin_check.get('password', ''))
+            if bcrypt.checkpw(password.encode('utf-8'), password_field.encode('utf-8')):
                 print("✅ Password verificado correctamente!")
             else:
                 print("❌ Error en verificación de password")

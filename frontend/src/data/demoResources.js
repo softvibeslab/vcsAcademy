@@ -124,7 +124,7 @@ Start filling out paperwork while saying "I just need your information here..."
   {
     resource_id: 4,
     title: 'Price Objection Handling Script',
-    description: 'Word-for-word scripts for handling the 10 most common price objections. Turn "it's too expensive" into "where do I sign."',
+    description: "Word-for-word scripts for handling the 10 most common price objections. Turn \"it's too expensive\" into \"where do I sign.\"",
     resource_type: 'script',
     category: 'objections',
     difficulty: 'Intermediate',
