@@ -60,7 +60,10 @@
   },
   "scripts": {
     "start": "craco start",
+    "start:optimized": "REACT_APP_OPTIMIZED=true craco start",
     "build": "craco build",
+    "build:optimized": "craco --config craco.config.optimized.js build",
+    "build:analyze": "ANALYZE=true craco --config craco.config.optimized.js build",
     "test": "craco test",
     "test:ci": "craco test --watchAll=false --coverage",
     "test:watch": "craco test --watch",
@@ -70,7 +73,10 @@
     "test:verbose": "craco test --verbose",
     "test:unit": "craco test --testPathPattern=__tests__/(components|utils)",
     "test:integration": "craco test --testPathPattern=__tests__/integration",
-    "test:e2e": "craco test --testPathPattern=__tests__/e2e"
+    "test:e2e": "craco test --testPathPattern=__tests__/e2e",
+    "perf:audit": "lighthouse http://localhost:3000 --output html --output-path ./lighthouse-report.html",
+    "perf:bundle": "ANALYZE=true yarn build",
+    "perf:size": "yarn build && du -sh build/static/js/*.js | sort -h"
   },
   "browserslist": {
     "production": [
