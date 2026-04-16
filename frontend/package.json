@@ -63,7 +63,14 @@
     "build": "craco build",
     "test": "craco test",
     "test:ci": "craco test --watchAll=false --coverage",
-    "test:watch": "craco test --watch"
+    "test:watch": "craco test --watch",
+    "test:debug": "craco test --debug",
+    "test:update": "craco test --updateSnapshot",
+    "test:coverage": "craco test --watchAll=false --coverage --coverageReporters=text,text-summary,html,lcov,json",
+    "test:verbose": "craco test --verbose",
+    "test:unit": "craco test --testPathPattern=__tests__/(components|utils)",
+    "test:integration": "craco test --testPathPattern=__tests__/integration",
+    "test:e2e": "craco test --testPathPattern=__tests__/e2e"
   },
   "browserslist": {
     "production": [
