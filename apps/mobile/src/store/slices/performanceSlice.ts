@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { ReadinessScore, DailyGoal, TourResult } from '../../types';
+import { apiFetch } from '../../services/fetch';
 
 interface PerformanceState {
   readinessScore: ReadinessScore | null;
@@ -23,31 +24,24 @@ const initialState: PerformanceState = {
 export const fetchReadinessScore = createAsyncThunk(
   'performance/fetchReadinessScore',
   async () => {
-    const response = await fetch('http://localhost:8001/api/mobile/performance/readiness');
-    const data = await response.json();
-    return data;
+    return apiFetch<ReadinessScore>('/mobile/performance/readiness');
   }
 );
 
 export const fetchDailyGoal = createAsyncThunk(
   'performance/fetchDailyGoal',
   async () => {
-    const response = await fetch('http://localhost:8001/api/mobile/performance/daily-goal');
-    const data = await response.json();
-    return data;
+    return apiFetch<DailyGoal>('/mobile/performance/daily-goal');
   }
 );
 
 export const recordTourResult = createAsyncThunk(
   'performance/recordTour',
   async (result: TourResult) => {
-    const response = await fetch('http://localhost:8001/api/mobile/performance/tour', {
+    return apiFetch<TourResult>('/mobile/performance/tour', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(result),
     });
-    const data = await response.json();
-    return data;
   }
 );
 

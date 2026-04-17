@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { QuickWin, ContentItem } from '../../types';
+import { apiFetch } from '../../services/fetch';
 
 interface ContentState {
   quickWins: QuickWin[];
@@ -31,31 +32,24 @@ export const fetchQuickWins = createAsyncThunk(
     if (filters?.category) params.append('category', filters.category);
     if (filters?.limit) params.append('limit', filters.limit.toString());
 
-    const response = await fetch(
-      `http://localhost:8001/api/mobile/quick-wins?${params.toString()}`
-    );
-    const data = await response.json();
-    return data;
+    const query = params.toString();
+    return apiFetch<QuickWin[]>(`/mobile/quick-wins${query ? `?${query}` : ''}`);
   }
 );
 
 export const toggleFavorite = createAsyncThunk(
   'content/toggleFavorite',
   async (quickWinId: string) => {
-    const response = await fetch(`http://localhost:8001/api/mobile/quick-wins/${quickWinId}/favorite`, {
+    return apiFetch<QuickWin>(`/mobile/quick-wins/${quickWinId}/favorite`, {
       method: 'POST',
     });
-    const data = await response.json();
-    return data;
   }
 );
 
 export const syncOfflineContent = createAsyncThunk(
   'content/syncOffline',
   async () => {
-    const response = await fetch('http://localhost:8001/api/mobile/sync/content');
-    const data = await response.json();
-    return data;
+    return apiFetch<ContentItem[]>('/mobile/sync/content');
   }
 );
 

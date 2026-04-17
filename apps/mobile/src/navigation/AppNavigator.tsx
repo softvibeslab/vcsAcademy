@@ -1,13 +1,13 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
-import { Text } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
 import { RootStackParamList } from '../types';
-import { useAppSelector } from '../store/hooks';
+import { useAppDispatch, useAppSelector } from '../store/hooks';
+import { restoreSession } from '../store/slices/authSlice';
 
-// Screens (will create next)
 import DashboardScreen from '../screens/Dashboard';
 import PreTourModeScreen from '../screens/PreTourMode';
 import AICoachChatScreen from '../screens/AICoachChat';
@@ -15,6 +15,7 @@ import QuickWinsLibraryScreen from '../screens/QuickWinsLibrary';
 import PostTourDebriefScreen from '../screens/PostTourDebrief';
 import GoalSheetScreen from '../screens/GoalSheetScreen';
 import PlayRoleScreen from '../screens/PlayRoleScreen';
+import LoginScreen from '../screens/Login';
 
 const Stack = createStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator();
@@ -107,11 +108,26 @@ function MainTabs() {
 }
 
 export function AppNavigator() {
-  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+  const dispatch = useAppDispatch();
+  const { hasRestoredSession, isAuthenticated, isLoading } = useAppSelector(
+    (state) => state.auth
+  );
 
-  if (!isAuthenticated) {
-    // TODO: Show Login screen
-    return null;
+  useEffect(() => {
+    if (!hasRestoredSession) {
+      dispatch(restoreSession());
+    }
+  }, [dispatch, hasRestoredSession]);
+
+  if (!hasRestoredSession) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#D4AF37" />
+        <Text style={styles.loadingText}>
+          {isLoading ? 'Restoring session...' : 'Preparing app...'}
+        </Text>
+      </View>
+    );
   }
 
   return (
@@ -126,11 +142,33 @@ export function AppNavigator() {
         },
       }}
     >
-      <Stack.Screen
-        name="MainTabs"
-        component={MainTabs}
-        options={{ headerShown: false }}
-      />
+      {!isAuthenticated ? (
+        <Stack.Screen
+          name="Login"
+          component={LoginScreen}
+          options={{ headerShown: false }}
+        />
+      ) : (
+        <Stack.Screen
+          name="MainTabs"
+          component={MainTabs}
+          options={{ headerShown: false }}
+        />
+      )}
     </Stack.Navigator>
   );
 }
+
+const styles = StyleSheet.create({
+  loadingContainer: {
+    alignItems: 'center',
+    backgroundColor: '#020204',
+    flex: 1,
+    gap: 12,
+    justifyContent: 'center',
+  },
+  loadingText: {
+    color: '#94A3B8',
+    fontSize: 15,
+  },
+});

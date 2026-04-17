@@ -7,7 +7,7 @@ export interface User {
   level: number;
   points: number;
   membership: 'free' | 'vip';
-  role: 'member' | 'admin';
+  role: 'rep' | 'manager' | 'director' | 'org_admin' | 'admin' | 'member';
   team_id: string | null;
   manager_id: string | null;
   created_at: string;

@@ -14,9 +14,9 @@ export default function PreTourModeScreen() {
   }, []);
 
   const loadRandomQuickWin = async () => {
-    const result = await dispatch(fetchQuickWins({ limit: 1 }));
-    if (result.payload && result.payload.length > 0) {
-      setQuickWin(result.payload[0]);
+    const quickWins = await dispatch(fetchQuickWins({ limit: 1 })).unwrap();
+    if (quickWins.length > 0) {
+      setQuickWin(quickWins[0]);
     }
   };
 

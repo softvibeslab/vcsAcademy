@@ -141,12 +141,14 @@ Create a `.env` file in the `apps/mobile` directory:
 
 ```env
 # API Configuration
-REACT_APP_API_URL=http://localhost:8001/api
+EXPO_PUBLIC_API_URL=http://localhost:8001/api
 
 # Feature Flags
 REACT_APP_ENABLE_VOICE=true
 REACT_APP_ENABLE_OFFLINE=true
 ```
+
+For go-live planning, `apps/mobile` should be treated as the canonical mobile app. `vcsa-mobile` is useful as legacy/reference work, but not as the primary shipping base.
 
 ---
 

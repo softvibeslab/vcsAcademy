@@ -13,6 +13,7 @@ echo "✅ Configuración:"
 echo "   - Proyecto: VCSA Pocket"
 echo "   - Plataforma: Android"
 echo "   - Tipo: APK"
+echo "   - API: https://api.salesmastersminds.com/api"
 echo ""
 
 # Verificar sesión de Expo
@@ -31,7 +32,7 @@ echo "   Este proceso tomará 10-15 minutos"
 echo ""
 
 # Iniciar el build
-eas build --platform android --profile apk
+EXPO_PUBLIC_API_URL="https://api.salesmastersminds.com/api" eas build --platform android --profile apk --non-interactive
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

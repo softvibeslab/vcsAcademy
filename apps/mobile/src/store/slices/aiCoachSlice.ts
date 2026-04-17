@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { CoachingInput, CoachingResponse, ChatMessage } from '../../types';
+import { apiFetch } from '../../services/fetch';
 
 interface AICoachState {
   messages: ChatMessage[];
@@ -27,28 +28,12 @@ const initialState: AICoachState = {
 export const generateCoachingResponse = createAsyncThunk(
   'aiCoach/generateResponse',
   async (input: CoachingInput) => {
-    const response = await fetch('http://localhost:8001/api/mobile/ai/coach', {
+    return apiFetch<CoachingResponse>('/mobile/ai/coach', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${getAuthToken()}`, // Implement token management
-      },
       body: JSON.stringify(input),
     });
-
-    if (!response.ok) {
-      throw new Error('Failed to generate coaching response');
-    }
-
-    const data = await response.json();
-    return data;
   }
 );
-
-function getAuthToken(): string {
-  // TODO: Implement proper token management
-  return 'mock_token';
-}
 
 const aiCoachSlice = createSlice({
   name: 'aiCoach',

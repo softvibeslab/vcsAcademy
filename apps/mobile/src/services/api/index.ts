@@ -1,10 +1,9 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { store } from '../../store';
+import { API_ENDPOINTS } from '../../config/api';
 
 // API Configuration
-const API_BASE_URL = 'http://localhost:8001/mobile'; // For local development
-// const API_BASE_URL = 'https://api.vcsa.com/mobile'; // For production
+const API_BASE_URL = API_ENDPOINTS.mobile;
 
 class ApiClient {
   private client: AxiosInstance;
@@ -42,9 +41,8 @@ class ApiClient {
       (response) => response,
       async (error) => {
         if (error.response?.status === 401) {
-          // Unauthorized - clear token and redirect to login
+          // Unauthorized - clear the local token.
           await AsyncStorage.removeItem('auth_token');
-          store.dispatch({ type: 'auth/logout' });
         }
         return Promise.reject(error);
       }
