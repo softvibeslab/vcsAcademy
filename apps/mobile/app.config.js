@@ -25,7 +25,7 @@ const appJson = {
     },
     "extra": {
       "eas": {
-        "projectId": "2392fc2b-d5c2-43b1-8116-a9d33116090d"
+        "projectId": "b620dee4-5ca7-4939-9b9a-9fc22482a70c"
       }
     }
   }
