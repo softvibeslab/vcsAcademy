@@ -24,9 +24,7 @@ services:
 
   # Backend API
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+    image: vcsa-production-backend:latest
     container_name: vcsa-production-backend
     restart: unless-stopped
     environment:
@@ -50,11 +48,7 @@ services:
 
   # Frontend
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-      args:
-        REACT_APP_BACKEND_URL: ${REACT_APP_BACKEND_URL:-http://localhost:8000}
+    image: vcsa-production-frontend:latest
     container_name: vcsa-production-frontend
     restart: unless-stopped
     depends_on:

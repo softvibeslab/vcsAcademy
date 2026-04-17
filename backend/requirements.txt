@@ -38,7 +38,6 @@ redis==5.2.1
 hiredis==3.1.0
 
 # Performance Monitoring
-aiohttp==3.11.11  # For async HTTP requests (Slack alerts)
 sendgrid==6.11.0  # For email alerts (optional)
 
 # Optional: Stripe (payments)
