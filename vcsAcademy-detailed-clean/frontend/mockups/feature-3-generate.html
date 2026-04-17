@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feature 3: Generación Automática - VCSA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(to bottom right, #020204, #1e1b4b, #172554);
+            min-height: 100vh;
+        }
+
+        .glass {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(51, 65, 85, 0.5);
+        }
+
+        .gradient-purple {
+            background: linear-gradient(135deg, #8B5CF6, #3B82F6);
+        }
+
+        .gradient-orange {
+            background: linear-gradient(135deg, #F97316, #DC2626);
+        }
+
+        .gradient-emerald {
+            background: linear-gradient(135deg, #10B981, #059669);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #fff, #c4b5fd, #93c5fd);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .strategy-card {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(51, 65, 85, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .strategy-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(139, 92, 246, 0.2);
+        }
+
+        .strategy-card.selected {
+            border-color: rgba(139, 92, 246, 0.5);
+            ring: 2px solid rgba(139, 92, 246, 0.3);
+        }
+
+        .highlight-item {
+            background: rgba(30, 41, 59, 0.4);
+            border-left: 2px solid;
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, #8B5CF6, #3B82F6);
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .spin {
+            animation: spin 2s linear infinite;
+        }
+    </style>
+</head>
+<body class="text-white">
+    <!-- Animated Background -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute top-20 left-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-20 right-10 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-3xl"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="relative z-10 flex items-center justify-between px-8 py-4 border-b border-slate-800/50">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                </svg>
+            </div>
+            <div>
+                <p class="font-bold text-lg">Generando tu academia</p>
+                <p class="text-sm text-slate-400">Mi Academia</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Loading State (shown first) -->
+    <div id="loading-state" class="relative z-10 px-8 py-12">
+        <div class="max-w-2xl mx-auto text-center space-y-8">
+            <!-- Animated Icon -->
+            <div class="w-24 h-24 mx-auto rounded-2xl gradient-purple flex items-center justify-center" style="animation: spin 3s linear infinite;">
+                <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-9.714 9.714L10 21.714 17 17H4"></path>
+                </svg>
+            </div>
+
+            <!-- Stage Text -->
+            <div class="space-y-2">
+                <h2 class="text-2xl font-bold">Optimizando contenido...</h2>
+                <p class="text-slate-400">Personalizando todo para alto valor</p>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="space-y-3">
+                <div class="h-3 bg-slate-800/50 rounded-full overflow-hidden">
+                    <div class="h-full progress-bar rounded-full transition-all duration-1000" style="width: 100%"></div>
+                </div>
+                <div class="flex justify-center gap-3 text-sm text-slate-500">
+                    <span>Etapa 3 de 3</span>
+                    <span>100%</span>
+                </div>
+            </div>
+
+            <!-- Stage Indicators -->
+            <div class="flex justify-center gap-3">
+                <div class="w-3 h-3 rounded-full bg-purple-500"></div>
+                <div class="w-3 h-3 rounded-full bg-purple-500"></div>
+                <div class="w-3 h-3 rounded-full bg-purple-500"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Strategy Selection (shown after loading) -->
+    <div id="strategy-state" class="relative z-10 px-8 py-8 hidden">
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/10 border border-green-500/20 text-green-400 text-sm mb-4">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4 6 6"></path>
+                </svg>
+                <span>Generación completada</span>
+            </div>
+
+            <h2 class="text-4xl font-bold gradient-text mb-3">Elige tu estrategia</h2>
+            <p class="text-slate-400 max-w-2xl mx-auto">Basado en tu academia de alto valor, he generado 3 opciones. Selecciona la que mejor se adapte a tu visión.</p>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+            <!-- Strategy 1: Aggressive -->
+            <div class="strategy-card rounded-2xl overflow-hidden">
+                <div class="p-6">
+                    <!-- Header -->
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="w-14 h-14 rounded-xl gradient-orange flex items-center justify-center">
+                            <span class="text-3xl">⚡</span>
+                        </div>
+                        <span class="px-3 py-1 rounded-full bg-orange-500/20 text-orange-300 text-xs border border-orange-500/30">Premium</span>
+                    </div>
+
+                    <!-- Title -->
+                    <h3 class="text-xl font-bold text-white mb-2">Estrategia Agresiva</h3>
+                    <p class="text-sm text-slate-400 mb-4">Máxima conversión, estructura intensiva</p>
+
+                    <!-- Highlights -->
+                    <div class="space-y-2 mb-4">
+                        <div class="flex items-center gap-2 text-sm text-slate-300">
+                            <svg class="w-4 h-4 text-orange-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4 6 6"></path>
+                            </svg>
+                            <span>12+ módulos profundos</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-sm text-slate-300">
+                            <svg class="w-4 h-4 text-orange-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4 6 6"></path>
+                            </svg>
+                            <span>Comunidad premium incluida</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-sm text-slate-300">
+                            <svg class="w-4 h-4 text-orange-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4 6 6"></path>
+                            </svg>
+                            <span>Gamificación avanzada</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-sm text-slate-300">
+                            <svg class="w-4 h-4 text-orange-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4 6 6"></path>
+                            </svg>
+                            <span>Certificaciones múltiples</span>
+                        </div>
+                    </div>
+
+                    <!-- Structure Preview -->
+                    <div class="p-4 rounded-xl bg-slate-800/30 border border-slate-700/50">
+                        <div class="space-y-2">
+                            <div class="highlight-item border-l-orange-500/50 pl-3">
+                                <div class="flex items-center justify-between text-sm">
+                                    <span class="text-slate-400">Módulos</span>
+                                    <span class="text-white font-medium">15</span>
+                                </div>
+                            </div>
+                            <div class="highlight-item border-l-orange-500/50 pl-3">
+                                <div class="flex items-center justify-between text-sm">
+                                    <span class="text-slate-400">Comunidad</span>
+                                    <span class="text-white font-medium">Premium</span>
+                                </div>
+                            </div>
+                            <div class="highlight-item border-l-orange-500/50 pl-3">
+                                <div class="flex items-center justify-between text-sm">
+                                    <span class="text-slate-400">Duración</span>
+                                    <span class="text-white font-medium">12-16 semanas</span>
+                                </div>
+                            </div>
+                            <div class="highlight-item border-l-orange-500/50 pl-3">
+                                <div class="flex items-center justify-between text-sm">
+                                    <span class="text-slate-400">Precio</span>
+                                    <span class="text-white font-medium">$2,000 - $15,000+</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Button -->
+                <div class="p-6 pt-0">
+                    <button class="w-full py-4 rounded-xl text-base font-semibold gradient-orange shadow-lg shadow-orange-500/25 hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
+                        Elegir Agresiva
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Strategy 2: Balanced (RECOMMENDED) -->
+            <div class="strategy-card selected rounded-2xl overflow-hidden">
+                <div class="p-6">
+                    <!-- Header -->
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="w-14 h-14 rounded-xl gradient-purple flex items-center justify-center">
+                            <span class="text-3xl">🎯</span>
+                        </div>
+                        <span class="px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 text-xs border border-purple-500/30">Recomendado</span>
+                    </div>
+
+                    <!-- Title -->
+                    <h3 class="text-xl font-bold text-white mb-2">Estrategia Equilibrada</h3>
+                    <p class="text-sm text-slate-400 mb-4">Balance perfecto entre engagement y resultados</p>
+
+                    <!-- Highlights -->
+                    <div class="space-y-2 mb-4">
+                        <div class="flex items-center gap-2 text-sm text-slate-300">
+                            <svg class="w-4 h-4 text-purple-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4 6 6"></path>
+                            </svg>
+                            <span>8 módulos clave</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-sm text-slate-300">
+                            <svg class="w-4 h-4 text-purple-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4 6 6"></path>
+                            </svg>
+                            <span>Comunidad privada</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-sm text-slate-300">
+                            <svg class="w-4 h-4 text-purple-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4 6 6"></path>
+                            </svg>
+                            <span>Gamificación estándar</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-sm text-slate-300">
+                            <svg class="w-4 h-4 text-purple-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4 6 6"></path>
+                            </svg>
+                            <span>Certificación principal</span>
+                        </div>
+                    </div>
+
+                    <!-- Structure Preview -->
+                    <div class="p-4 rounded-xl bg-slate-800/30 border border-slate-700/50">
+                        <div class="space-y-2">
+                            <div class="highlight-item border-l-purple-500/50 pl-3">
+                                <div class="flex items-center justify-between text-sm">
+                                    <span class="text-slate-400">Módulos</span>
+                                    <span class="text-white font-medium">10</span>
+                                </div>
+                            </div>
+                            <div class="highlight-item border-l-purple-500/50 pl-3">
+                                <div class="flex items-center justify-between text-sm">
+                                    <span class="text-slate-400">Comunidad</span>
+                                    <span class="text-white font-medium">Privada</span>
+                                </div>
+                            </div>
+                            <div class="highlight-item border-l-purple-500/50 pl-3">
+                                <div class="flex items-center justify-between text-sm">
+                                    <span class="text-slate-400">Duración</span>
+                                    <span class="text-white font-medium">6-10 semanas</span>
+                                </div>
+                            </div>
+                            <div class="highlight-item border-l-purple-500/50 pl-3">
+                                <div class="flex items-center justify-between text-sm">
+                                    <span class="text-slate-400">Precio</span>
+                                    <span class="text-white font-medium">$500 - $5,000</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Button -->
+                <div class="p-6 pt-0">
+                    <button class="w-full py-4 rounded-xl text-base font-semibold gradient-purple shadow-lg shadow-purple-500/25 hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
+                        Elegir Equilibrada
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Strategy 3: Conservative -->
+            <div class="strategy-card rounded-2xl overflow-hidden">
+                <div class="p-6">
+                    <!-- Header -->
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="w-14 h-14 rounded-xl gradient-emerald flex items-center justify-center">
+                            <span class="text-3xl">🛡️</span>
+                        </div>
+                    </div>
+
+                    <!-- Title -->
+                    <h3 class="text-xl font-bold text-white mb-2">Estrategia Conservadora</h3>
+                    <p class="text-sm text-slate-400 mb-4">Enfoque minimalista, resultados rápidos</p>
+
+                    <!-- Highlights -->
+                    <div class="space-y-2 mb-4">
+                        <div class="flex items-center gap-2 text-sm text-slate-300">
+                            <svg class="w-4 h-4 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4 6 6"></path>
+                            </svg>
+                            <span>5 módulos esenciales</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-sm text-slate-300">
+                            <svg class="w-4 h-4 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4 6 6"></path>
+                            </svg>
+                            <span>Sin comunidad (o básica)</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-sm text-slate-300">
+                            <svg class="w-4 h-4 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4 6 6"></path>
+                            </svg>
+                            <span>Sin gamificación</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-sm text-slate-300">
+                            <svg class="w-4 h-4 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4 6 6"></path>
+                            </svg>
+                            <span>Lanzamiento rápido</span>
+                        </div>
+                    </div>
+
+                    <!-- Structure Preview -->
+                    <div class="p-4 rounded-xl bg-slate-800/30 border border-slate-700/50">
+                        <div class="space-y-2">
+                            <div class="highlight-item border-l-emerald-500/50 pl-3">
+                                <div class="flex items-center justify-between text-sm">
+                                    <span class="text-slate-400">Módulos</span>
+                                    <span class="text-white font-medium">5</span>
+                                </div>
+                            </div>
+                            <div class="highlight-item border-l-emerald-500/50 pl-3">
+                                <div class="flex items-center justify-between text-sm">
+                                    <span class="text-slate-400">Comunidad</span>
+                                    <span class="text-white font-medium">Ninguna</span>
+                                </div>
+                            </div>
+                            <div class="highlight-item border-l-emerald-500/50 pl-3">
+                                <div class="flex items-center justify-between text-sm">
+                                    <span class="text-slate-400">Duración</span>
+                                    <span class="text-white font-medium">2-4 semanas</span>
+                                </div>
+                            </div>
+                            <div class="highlight-item border-l-emerald-500/50 pl-3">
+                                <div class="flex items-center justify-between text-sm">
+                                    <span class="text-slate-400">Precio</span>
+                                    <span class="text-white font-medium">$100 - $1,000</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Button -->
+                <div class="p-6 pt-0">
+                    <button class="w-full py-4 rounded-xl text-base font-semibold gradient-emerald shadow-lg shadow-emerald-500/25 hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
+                        Elegir Conservadora
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex justify-center gap-4 mt-8 max-w-2xl mx-auto">
+            <button class="px-6 py-3 rounded-xl border border-slate-700 bg-slate-800/50 hover:bg-slate-700/50 text-white transition-colors">
+                <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 6m0 0H6m0 0v5a8 8 0 0015.357 2m15.357 2H15"></path>
+                </svg>
+                Volver a la entrevista
+            </button>
+        </div>
+    </div>
+
+    <!-- Feature Label -->
+    <div class="fixed bottom-4 right-4 px-4 py-2 rounded-full bg-slate-900/80 backdrop-blur text-xs text-slate-400 border border-slate-700">
+        Feature 3: Generación Automática
+    </div>
+
+    <script>
+        // Simulate loading then show strategies
+        setTimeout(() => {
+            document.getElementById('loading-state').classList.add('hidden');
+            document.getElementById('strategy-state').classList.remove('hidden');
+        }, 3000);
+    </script>
+
+</body>
+</html>

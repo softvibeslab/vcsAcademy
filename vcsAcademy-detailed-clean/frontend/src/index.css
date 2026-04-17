@@ -1,0 +1,183 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+    --background: 220 10% 1%;
+    --foreground: 210 40% 98%;
+    --card: 220 10% 4%;
+    --card-foreground: 210 40% 98%;
+    --card-hover: 220 10% 7%;
+    --popover: 220 10% 4%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 43 74% 52%;
+    --primary-foreground: 220 10% 4%;
+    --secondary: 217 71% 33%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 220 10% 14%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 38 92% 50%;
+    --accent-foreground: 220 10% 4%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 0 0% 100% / 0.08;
+    --input: 0 0% 100% / 0.08;
+    --ring: 43 74% 52%;
+    --radius: 0.25rem;
+    --gold: #D4AF37;
+    --gold-hover: #B4942D;
+    --navy: #1E3A8A;
+    --void: #020204;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: #020204;
+    color: #F8FAFC;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Playfair Display', serif;
+    letter-spacing: -0.02em;
+}
+
+code, .mono {
+    font-family: 'JetBrains Mono', monospace;
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+}
+
+@layer utilities {
+    .text-gold {
+        color: var(--gold);
+    }
+    
+    .bg-gold {
+        background-color: var(--gold);
+    }
+    
+    .border-gold {
+        border-color: var(--gold);
+    }
+    
+    .glow-gold {
+        box-shadow: 0 0 20px -5px rgba(212, 175, 55, 0.4);
+    }
+    
+    .glass {
+        background: rgba(10, 10, 11, 0.7);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    
+    .glass-hover:hover {
+        background: rgba(18, 18, 20, 0.8);
+        border-color: rgba(212, 175, 55, 0.3);
+    }
+    
+    .gradient-gold {
+        background: linear-gradient(135deg, #D4AF37 0%, #F59E0B 100%);
+    }
+    
+    .gradient-ocean {
+        background: linear-gradient(180deg, #020204 0%, #0F172A 100%);
+    }
+    
+    .vip-glow {
+        background: radial-gradient(circle at center, rgba(212, 175, 55, 0.15) 0%, transparent 70%);
+    }
+    
+    .noise-overlay::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        opacity: 0.03;
+        pointer-events: none;
+    }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #0A0A0B;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #1F1F22;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #2F2F32;
+}
+
+/* Selection */
+::selection {
+    background: rgba(212, 175, 55, 0.3);
+    color: #F8FAFC;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { 
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to { 
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse-gold {
+    0%, 100% { box-shadow: 0 0 20px -5px rgba(212, 175, 55, 0.4); }
+    50% { box-shadow: 0 0 30px -5px rgba(212, 175, 55, 0.6); }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
+.animate-slide-up {
+    animation: slideUp 0.6s ease-out forwards;
+}
+
+.animate-pulse-gold {
+    animation: pulse-gold 2s ease-in-out infinite;
+}
+
+/* Stagger delays */
+.stagger-1 { animation-delay: 0.1s; }
+.stagger-2 { animation-delay: 0.2s; }
+.stagger-3 { animation-delay: 0.3s; }
+.stagger-4 { animation-delay: 0.4s; }
+.stagger-5 { animation-delay: 0.5s; }

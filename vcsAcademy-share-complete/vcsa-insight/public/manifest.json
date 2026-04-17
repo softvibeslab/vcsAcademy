@@ -1,0 +1,21 @@
+{
+  "short_name": "VCSA Insight",
+  "name": "VCSA Insight - AI Sales Coach",
+  "icons": [
+    {
+      "src": "https://via.placeholder.com/192/1E3A8A/FFFFFF?text=V",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://via.placeholder.com/512/1E3A8A/FFFFFF?text=V",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#1E3A8A",
+  "background_color": "#020204",
+  "orientation": "portrait"
+}

@@ -1,0 +1,10 @@
+# Netlify configuration for pre-built files
+# No build command needed - files are already compiled
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[build]
+  publish = "."

@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificador de Módulos VCSA</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #020204 0%, #1E3A8A 100%);
+            color: #F1F5F9;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: rgba(212, 175, 55, 0.1);
+            border: 2px solid #D4AF37;
+            border-radius: 15px;
+        }
+
+        .header h1 {
+            color: #D4AF37;
+            margin-bottom: 10px;
+        }
+
+        .status-box {
+            background: rgba(34, 197, 94, 0.2);
+            border: 2px solid #22c55e;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .status-box.error {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: #ef4444;
+        }
+
+        .status-box h2 {
+            margin-bottom: 15px;
+        }
+
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .test-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .test-card:hover {
+            transform: translateY(-5px);
+            border-color: #D4AF37;
+        }
+
+        .test-card h3 {
+            color: #D4AF37;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        .test-card .url {
+            font-family: 'Courier New', monospace;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 8px;
+            border-radius: 5px;
+            margin: 10px 0;
+            word-break: break-all;
+            color: #86EFAC;
+        }
+
+        .test-card button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #D4AF37 0%, #B8860B 100%);
+            color: #020204;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .test-card button:hover {
+            transform: scale(1.05);
+        }
+
+        .test-card .result {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+
+        .test-card .result.success {
+            background: rgba(34, 197, 94, 0.2);
+            border: 1px solid #22c55e;
+            color: #86EFAC;
+        }
+
+        .test-card .result.error {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid #ef4444;
+            color: #FCA5A5;
+        }
+
+        .test-card .result.pending {
+            background: rgba(234, 179, 8, 0.2);
+            border: 1px solid #eab308;
+            color: #FDE047;
+        }
+
+        .instructions {
+            background: rgba(30, 58, 138, 0.3);
+            border: 2px solid #1E3A8A;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .instructions h3 {
+            color: #D4AF37;
+            margin-bottom: 15px;
+        }
+
+        .instructions ol {
+            margin-left: 20px;
+        }
+
+        .instructions li {
+            margin-bottom: 10px;
+        }
+
+        .instructions code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #FCA5A5;
+        }
+
+        .all-tests-btn {
+            width: 100%;
+            padding: 20px;
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+        }
+
+        .all-tests-btn:hover {
+            transform: scale(1.02);
+        }
+
+        .summary {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+        }
+
+        .summary h3 {
+            color: #D4AF37;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .stat {
+            text-align: center;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+        }
+
+        .stat .number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #D4AF37;
+        }
+
+        .stat .label {
+            color: #94A3B8;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 VERIFICADOR DE MÓDULOS VCSA</h1>
+            <p>Prueba cada módulo individualmente para identificar problemas</p>
+        </div>
+
+        <div id="statusBox" class="status-box">
+            <h2>📋 Instrucciones</h2>
+            <p>Haz click en "Probar" en cada módulo para verificar que funciona correctamente.</p>
+        </div>
+
+        <button class="all-tests-btn" onclick="testAllModules()">
+            🚀 PROBAR TODOS LOS MÓDULOS AUTOMÁTICAMENTE
+        </button>
+
+        <div class="test-grid">
+            <div class="test-card">
+                <h3>🏠 Dashboard</h3>
+                <div class="url">/dashboard</div>
+                <button onclick="testModule('Dashboard', 'http://localhost:1234/dashboard')">Probar Dashboard</button>
+                <div id="result-dashboard" class="result pending">Pendiente...</div>
+            </div>
+
+            <div class="test-card">
+                <h3>📊 Daily Performance</h3>
+                <div class="url">/daily-performance</div>
+                <button onclick="testModule('Daily Performance', 'http://localhost:1234/daily-performance')">Probar Daily Performance</button>
+                <div id="result-daily-performance" class="result pending">Pendiente...</div>
+            </div>
+
+            <div class="test-card">
+                <h3>🎯 Top Producer Path</h3>
+                <div class="url">/path</div>
+                <button onclick="testModule('Top Producer Path', 'http://localhost:1234/path')">Probar Top Producer</button>
+                <div id="result-path" class="result pending">Pendiente...</div>
+            </div>
+
+            <div class="test-card">
+                <h3>🎓 Coaching</h3>
+                <div class="url">/coaching</div>
+                <button onclick="testModule('Coaching', 'http://localhost:1234/coaching')">Probar Coaching</button>
+                <div id="result-coaching" class="result pending">Pendiente...</div>
+            </div>
+
+            <div class="test-card">
+                <h3>📈 Analytics</h3>
+                <div class="url">/analytics</div>
+                <button onclick="testModule('Analytics', 'http://localhost:1234/analytics')">Probar Analytics</button>
+                <div id="result-analytics" class="result pending">Pendiente...</div>
+            </div>
+
+            <div class="test-card">
+                <h3>🎯 Goal Sheets</h3>
+                <div class="url">/goals</div>
+                <button onclick="testModule('Goal Sheets', 'http://localhost:1234/goals')">Probar Goals</button>
+                <div id="result-goals" class="result pending">Pendiente...</div>
+            </div>
+
+            <div class="test-card">
+                <h3>💰 Financial Planner</h3>
+                <div class="url">/financial</div>
+                <button onclick="testModule('Financial Planner', 'http://localhost:1234/financial')">Probar Financial</button>
+                <div id="result-financial" class="result pending">Pendiente...</div>
+            </div>
+
+            <div class="test-card">
+                <h3>📚 Courses</h3>
+                <div class="url">/courses</div>
+                <button onclick="testModule('Courses', 'http://localhost:1234/courses')">Probar Courses</button>
+                <div id="result-courses" class="result pending">Pendiente...</div>
+            </div>
+
+            <div class="test-card">
+                <h3>👥 Community</h3>
+                <div class="url">/community</div>
+                <button onclick="testModule('Community', 'http://localhost:1234/community')">Probar Community</button>
+                <div id="result-community" class="result pending">Pendiente...</div>
+            </div>
+        </div>
+
+        <div class="instructions">
+            <h3>🔧 SOLUCIÓN DE PROBLEMAS</h3>
+            <ol>
+                <li>Si un módulo muestra <strong style="color: #FCA5A5;">"Error 200 pero mismo contenido"</strong>:
+                    <ul>
+                        <li>Abre DevTools (F12)</li>
+                        <li>Ve a Console tab</li>
+                        <li>Busca errores de JavaScript</li>
+                        <li>Verifica que el título de la página sea diferente</li>
+                    </ul>
+                </li>
+                <li>Si todos los módulos redirigen al onboarding:
+                    <br><code>localStorage.setItem('vcsa_onboarding_completed', 'true'); location.reload();</code>
+                </li>
+                <li>Si hay errores de CORS:
+                    <ul>
+                        <li>Espera 2 minutos después de iniciar Docker</li>
+                        <li>Verifica que el backend esté corriendo: <code>docker ps | grep vcsa</code></li>
+                    </ul>
+                </li>
+            </ol>
+        </div>
+
+        <div class="summary" id="summary" style="display: none;">
+            <h3>📊 RESUMEN DE PRUEBAS</h3>
+            <div class="summary-stats">
+                <div class="stat">
+                    <div class="number" id="stat-total">0</div>
+                    <div class="label">Total Probados</div>
+                </div>
+                <div class="stat">
+                    <div class="number" id="stat-success">0</div>
+                    <div class="label">Exitosos</div>
+                </div>
+                <div class="stat">
+                    <div class="number" id="stat-error">0</div>
+                    <div class="label">Con Errores</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const modules = [
+            { id: 'dashboard', name: 'Dashboard', url: 'http://localhost:1234/dashboard' },
+            { id: 'daily-performance', name: 'Daily Performance', url: 'http://localhost:1234/daily-performance' },
+            { id: 'path', name: 'Top Producer Path', url: 'http://localhost:1234/path' },
+            { id: 'coaching', name: 'Coaching', url: 'http://localhost:1234/coaching' },
+            { id: 'analytics', name: 'Analytics', url: 'http://localhost:1234/analytics' },
+            { id: 'goals', name: 'Goal Sheets', url: 'http://localhost:1234/goals' },
+            { id: 'financial', name: 'Financial Planner', url: 'http://localhost:1234/financial' },
+            { id: 'courses', name: 'Courses', url: 'http://localhost:1234/courses' },
+            { id: 'community', name: 'Community', url: 'http://localhost:1234/community' }
+        ];
+
+        let testResults = {
+            total: 0,
+            success: 0,
+            error: 0
+        };
+
+        async function testModule(name, url) {
+            const resultDiv = document.getElementById(`result-${name.toLowerCase().replace(/ /g, '-')}`);
+            resultDiv.className = 'result pending';
+            resultDiv.textContent = 'Probando...';
+
+            try {
+                const response = await fetch(url);
+                const html = await response.text();
+
+                // Verificar que el contenido es diferente
+                const hasModuleTitle = html.includes(name);
+                const hasDifferentContent = html.includes('data-testid');
+
+                if (response.ok && hasModuleTitle) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <strong>✅ OK</strong><br>
+                        Status: ${response.status}<br>
+                        Contenido único: Sí<br>
+                        <a href="${url}" target="_blank" style="color: #86EFAC;">Abrir en nueva pestaña →</a>
+                    `;
+                    testResults.success++;
+                } else if (response.ok) {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `
+                        <strong>⚠️ ADVERTENCIA</strong><br>
+                        Status: ${response.status}<br>
+                        Problema: Contenido duplicado o incorrecto<br>
+                        <a href="${url}" target="_blank" style="color: #FCA5A5;">Ver página →</a>
+                    `;
+                    testResults.error++;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `
+                        <strong>❌ ERROR</strong><br>
+                        Status: ${response.status}<br>
+                        Error: ${response.statusText}
+                    `;
+                    testResults.error++;
+                }
+
+                testResults.total++;
+                updateSummary();
+
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    <strong>❌ ERROR DE CONEXIÓN</strong><br>
+                    ${error.message}
+                `;
+                testResults.error++;
+                testResults.total++;
+                updateSummary();
+            }
+        }
+
+        async function testAllModules() {
+            for (const module of modules) {
+                await testModule(module.name, module.url);
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+        }
+
+        function updateSummary() {
+            const summaryDiv = document.getElementById('summary');
+            summaryDiv.style.display = 'block';
+
+            document.getElementById('stat-total').textContent = testResults.total;
+            document.getElementById('stat-success').textContent = testResults.success;
+            document.getElementById('stat-error').textContent = testResults.error;
+
+            const statusBox = document.getElementById('statusBox');
+            if (testResults.error === 0 && testResults.total > 0) {
+                statusBox.className = 'status-box';
+                statusBox.innerHTML = `
+                    <h2>✅ TODOS LOS MÓDULOS FUNCIONAN</h2>
+                    <p>Todos los ${testResults.total} módulos probados están funcionando correctamente.</p>
+                `;
+            } else if (testResults.total > 0) {
+                statusBox.className = 'status-box error';
+                statusBox.innerHTML = `
+                    <h2>⚠️ SE DETECTARON PROBLEMAS</h2>
+                    <p>${testResults.error} de ${testResults.total} módulos tienen problemas. Verifica los resultados arriba.</p>
+                `;
+            }
+        }
+
+        // Auto-check localStorage on load
+        window.addEventListener('load', function() {
+            const onboardingStatus = localStorage.getItem('vcsa_onboarding_completed');
+            const statusBox = document.getElementById('statusBox');
+
+            if (onboardingStatus !== 'true') {
+                statusBox.className = 'status-box error';
+                statusBox.innerHTML = `
+                    <h2>⚠️ ONBOARDING NO COMPLETADO</h2>
+                    <p>Primero completa el onboarding para probar los módulos.</p>
+                    <button onclick="completeOnboarding()" style="margin-top: 15px; padding: 10px 20px; background: linear-gradient(135deg, #D4AF37 0%, #B8860B 100%); color: #020204; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                        Completar Onboarding
+                    </button>
+                `;
+            }
+        });
+
+        function completeOnboarding() {
+            localStorage.setItem('onboarding_completed', 'true');
+            localStorage.setItem('onboarding_completed_at', new Date().toISOString());
+            localStorage.setItem('vcsa_onboarding_completed', 'true');
+            alert('✅ Onboarding completado! Ahora puedes probar todos los módulos.');
+            location.reload();
+        }
+    </script>
+</body>
+</html>

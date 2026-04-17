@@ -1,0 +1,32 @@
+{
+  "expo": {
+    "name": "VCSA Pocket",
+    "slug": "vcsa-pocket",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.vcsa.pocket"
+    },
+    "android": {
+      "package": "com.vcsa.pocket",
+      "permissions": [
+        "RECORD_AUDIO",
+        "INTERNET",
+        "ACCESS_NETWORK_STATE"
+      ]
+    },
+    "web": {
+      "bundler": "metro"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "2392fc2b-d5c2-43b1-8116-a9d33116090d"
+      }
+    }
+  }
+}

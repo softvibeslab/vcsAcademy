@@ -1,0 +1,425 @@
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import {
+  LayoutDashboard, BookOpen, Users, Calendar,
+  Download, Crown, User, Settings, LogOut,
+  Trophy, Menu, X, Shield, Target, TrendingUp, Briefcase, DollarSign, BarChart3, Lightbulb,
+  ChevronDown, ChevronRight, FileText, Video, MessageSquare
+} from 'lucide-react';
+import { useState } from 'react';
+import { useAuth } from '@/App';
+import { useOrganization } from '@/contexts/OrganizationContext';
+import { cn } from '@/lib/utils';
+import { AIAssistantButton } from '@/components/ai/AIAssistantButton';
+
+const navStructure = [
+  {
+    icon: Lightbulb,
+    label: 'Strategy',
+    path: '/strategy',
+    children: [
+      { icon: Trophy, label: 'Daily Performance', path: '/daily-performance' },
+      { icon: Target, label: 'Goal Sheets', path: '/goals' },
+      { icon: DollarSign, label: 'Financial Planner', path: '/financial' },
+      { icon: BarChart3, label: 'Analytics', path: '/analytics' },
+    ]
+  },
+  {
+    icon: Target,
+    label: 'Top Producer Path',
+    path: '/path',
+    highlight: true,
+    children: [
+      {
+        icon: BookOpen,
+        label: 'Training Library',
+        path: '/courses',
+        children: [
+          { icon: Video, label: 'Session 1', path: '/courses/session/1' },
+          { icon: Video, label: 'Session 2', path: '/courses/session/2' },
+          { icon: Video, label: 'Session 3', path: '/courses/session/3' },
+          { icon: Video, label: 'Session 4', path: '/courses/session/4' },
+          { icon: Video, label: 'Session 5', path: '/courses/session/5' },
+        ]
+      },
+    ]
+  },
+  {
+    icon: TrendingUp,
+    label: 'Coaching',
+    path: '/coaching',
+    children: [
+      { icon: Calendar, label: 'Events', path: '/events' },
+      { icon: Users, label: 'Group Live Coaching', path: '/coaching/group' },
+      { icon: MessageSquare, label: 'Role Play Sessions', path: '/coaching/roleplay' },
+      { icon: Calendar, label: 'Q&A Sessions', path: '/coaching/qa' },
+    ]
+  },
+  {
+    icon: Download,
+    label: 'Resources',
+    path: '/resources',
+    children: [
+      { icon: FileText, label: 'PDFs & Ebooks', path: '/resources/pdfs' },
+      { icon: Download, label: 'Templates', path: '/resources/templates' },
+      { icon: FileText, label: 'Guides', path: '/resources/guides' },
+    ]
+  },
+  { icon: Users, label: 'Community', path: '/community' },
+  { icon: Crown, label: 'Membership', path: '/membership' },
+];
+
+export const DashboardLayout = ({ children }) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  const { organization, siteName, logoUrl } = useOrganization();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [expandedMenus, setExpandedMenus] = useState({});
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/');
+  };
+
+  const toggleMenu = (path) => {
+    setExpandedMenus(prev => ({
+      ...prev,
+      [path]: !prev[path]
+    }));
+  };
+
+  const NavigationItem = ({ item, level = 0, isMobile = false }) => {
+    const [isExpanded, setIsExpanded] = useState(expandedMenus[item.path] || false);
+    const hasChildren = item.children && item.children.length > 0;
+    const isActive = location.pathname === item.path ||
+      (item.path !== '/dashboard' && location.pathname.startsWith(item.path));
+
+    const handleClick = (e) => {
+      if (hasChildren) {
+        e.preventDefault();
+        setIsExpanded(!isExpanded);
+        if (!isMobile) {
+          toggleMenu(item.path);
+        }
+      }
+      if (isMobile) {
+        setMobileMenuOpen(false);
+      }
+    };
+
+    return (
+      <div key={item.path}>
+        <Link
+          to={item.path}
+          onClick={handleClick}
+          className={cn(
+            "flex items-center gap-3 px-4 py-3 rounded-sm transition-colors",
+            isActive
+              ? "bg-[#D4AF37]/10 text-[#D4AF37] border-l-2 border-[#D4AF37]"
+              : "text-[#94A3B8] hover:text-white hover:bg-white/5"
+          )}
+          style={{ paddingLeft: `${level * 16 + 16}px` }}
+        >
+          <item.icon className="w-5 h-5 flex-shrink-0" />
+          <span className="font-medium flex-1">{item.label}</span>
+          {hasChildren && (
+            <div className="flex-shrink-0">
+              {isExpanded ? (
+                <ChevronDown className="w-4 h-4" />
+              ) : (
+                <ChevronRight className="w-4 h-4" />
+              )}
+            </div>
+          )}
+        </Link>
+        {hasChildren && isExpanded && (
+          <div className="space-y-1 mt-1">
+            {item.children.map((child) => (
+              <NavigationItem
+                key={child.path}
+                item={child}
+                level={level + 1}
+                isMobile={isMobile}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const levelColors = {
+    1: 'bg-slate-500',
+    2: 'bg-blue-500',
+    3: 'bg-purple-500',
+    4: 'bg-orange-500',
+    5: 'bg-[#D4AF37]',
+  };
+
+  return (
+    <div className="min-h-screen bg-[#020204]">
+      {/* Desktop Sidebar */}
+      <aside className="hidden lg:flex flex-col fixed left-0 top-0 bottom-0 w-64 bg-[#0A0A0B] border-r border-white/5">
+        {/* Logo */}
+        <div className="p-6 border-b border-white/5">
+          <Link to="/dashboard" className="flex items-center gap-3">
+            {logoUrl && logoUrl !== '/logo.png' ? (
+              <img src={logoUrl} alt={siteName} className="w-10 h-10 object-contain" />
+            ) : (
+              <div className="w-10 h-10 gradient-gold flex items-center justify-center">
+                <Trophy className="w-5 h-5 text-black" />
+              </div>
+            )}
+            <div className="flex flex-col">
+              <span className="font-serif text-sm font-semibold leading-tight">{siteName || 'Vacation Club'}</span>
+              <span className="text-[10px] text-[#D4AF37] uppercase tracking-widest">Sales Academy</span>
+            </div>
+          </Link>
+        </div>
+
+        {/* User Card */}
+        <div className="p-4 mx-4 mt-4 glass rounded-sm">
+          <div className="flex items-center gap-3">
+            {user?.picture ? (
+              <img src={user.picture} alt={user.name} className="w-10 h-10 rounded-full object-cover" />
+            ) : (
+              <div className="w-10 h-10 bg-[#1E3A8A] rounded-full flex items-center justify-center">
+                <span className="font-medium">{user?.name?.charAt(0) || 'U'}</span>
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="font-medium truncate">{user?.name}</p>
+              <div className="flex items-center gap-2">
+                <span className={cn("w-2 h-2 rounded-full", levelColors[user?.level || 1])} />
+                <span className="text-xs text-[#94A3B8]">Level {user?.level || 1}</span>
+              </div>
+            </div>
+          </div>
+          {user?.membership === 'vip' && (
+            <div className="mt-3 flex items-center gap-2 text-xs text-[#D4AF37]">
+              <Crown className="w-3 h-3" />
+              <span className="uppercase tracking-wider font-medium">VIP Member</span>
+            </div>
+          )}
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 p-4 space-y-1">
+          {/* Dashboard */}
+          <Link
+            to="/dashboard"
+            className={cn(
+              "flex items-center gap-3 px-4 py-3 rounded-sm transition-colors",
+              location.pathname === '/dashboard'
+                ? "bg-[#D4AF37]/10 text-[#D4AF37] border-l-2 border-[#D4AF37]"
+                : "text-[#94A3B8] hover:text-white hover:bg-white/5"
+            )}
+          >
+            <LayoutDashboard className="w-5 h-5" />
+            <span className="font-medium">Dashboard</span>
+          </Link>
+
+          {/* Navigation Sections */}
+          {navStructure.map((item) => (
+            <NavigationItem key={item.path} item={item} />
+          ))}
+
+          {/* Manager Dashboard - for managers and directors */}
+          {(user?.role === 'manager' || user?.role === 'director' || user?.role === 'admin' || user?.role === 'org_admin') && (
+            <Link
+              to="/manager"
+              className={cn(
+                "flex items-center gap-3 px-4 py-3 rounded-sm transition-colors",
+                location.pathname === '/manager'
+                  ? "bg-[#D4AF37]/10 text-[#D4AF37] border-l-2 border-[#D4AF37]"
+                  : "text-[#94A3B8] hover:text-white hover:bg-white/5"
+              )}
+              data-testid="nav-manager"
+            >
+              <Briefcase className="w-5 h-5" />
+              <span className="font-medium">Team Dashboard</span>
+            </Link>
+          )}
+
+          {/* Admin - for admins only */}
+          {(user?.role === 'admin' || user?.role === 'org_admin') && (
+            <>
+              <Link
+                to="/admin"
+                className={cn(
+                  "flex items-center gap-3 px-4 py-3 rounded-sm transition-colors",
+                  location.pathname === '/admin'
+                    ? "bg-[#D4AF37]/10 text-[#D4AF37] border-l-2 border-[#D4AF37]"
+                    : "text-[#94A3B8] hover:text-white hover:bg-white/5"
+                )}
+                data-testid="nav-admin"
+              >
+                <Shield className="w-5 h-5" />
+                <span className="font-medium">Admin</span>
+              </Link>
+              {user?.role === 'org_admin' && organization && (
+                <Link
+                  to="/settings/organization"
+                  className={cn(
+                    "flex items-center gap-3 px-4 py-3 rounded-sm transition-colors",
+                    location.pathname.startsWith('/settings/organization')
+                      ? "bg-[#D4AF37]/10 text-[#D4AF37] border-l-2 border-[#D4AF37]"
+                      : "text-[#94A3B8] hover:text-white hover:bg-white/5"
+                  )}
+                >
+                  <Settings className="w-5 h-5" />
+                  <span className="font-medium">Organization</span>
+                </Link>
+              )}
+            </>
+          )}
+        </nav>
+
+        {/* Bottom */}
+        <div className="p-4 border-t border-white/5 space-y-1">
+          <Link
+            to="/profile"
+            className={cn(
+              "flex items-center gap-3 px-4 py-3 rounded-sm transition-colors",
+              location.pathname === '/profile'
+                ? "bg-[#D4AF37]/10 text-[#D4AF37]" 
+                : "text-[#94A3B8] hover:text-white hover:bg-white/5"
+            )}
+            data-testid="nav-profile"
+          >
+            <User className="w-5 h-5" />
+            <span className="font-medium">Profile</span>
+          </Link>
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-3 px-4 py-3 rounded-sm text-[#94A3B8] hover:text-white hover:bg-white/5 w-full transition-colors"
+            data-testid="nav-logout"
+          >
+            <LogOut className="w-5 h-5" />
+            <span className="font-medium">Logout</span>
+          </button>
+        </div>
+      </aside>
+
+      {/* Mobile Header */}
+      <header className="lg:hidden fixed top-0 left-0 right-0 z-50 glass">
+        <div className="flex items-center justify-between px-4 py-3">
+          <Link to="/dashboard" className="flex items-center gap-2">
+            {logoUrl && logoUrl !== '/logo.png' ? (
+              <img src={logoUrl} alt={siteName} className="w-8 h-8 object-contain" />
+            ) : (
+              <div className="w-8 h-8 gradient-gold flex items-center justify-center">
+                <Trophy className="w-4 h-4 text-black" />
+              </div>
+            )}
+            <div className="flex flex-col">
+              <span className="font-serif text-sm font-semibold leading-tight">{siteName || 'Vacation Club'}</span>
+              <span className="text-[9px] text-[#D4AF37] uppercase tracking-wider">Sales Academy</span>
+            </div>
+          </Link>
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="p-2 text-white"
+            data-testid="mobile-menu-toggle"
+          >
+            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+        </div>
+      </header>
+
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div className="lg:hidden fixed inset-0 z-40 bg-[#020204] pt-16">
+          <div className="p-4">
+            {/* User Card */}
+            <div className="glass p-4 rounded-sm mb-4">
+              <div className="flex items-center gap-3">
+                {user?.picture ? (
+                  <img src={user.picture} alt={user.name} className="w-10 h-10 rounded-full object-cover" />
+                ) : (
+                  <div className="w-10 h-10 bg-[#1E3A8A] rounded-full flex items-center justify-center">
+                    <span className="font-medium">{user?.name?.charAt(0) || 'U'}</span>
+                  </div>
+                )}
+                <div>
+                  <p className="font-medium">{user?.name}</p>
+                  <p className="text-xs text-[#94A3B8]">Level {user?.level || 1} • {user?.points || 0} pts</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Nav */}
+            <nav className="space-y-1">
+              {/* Dashboard */}
+              <Link
+                to="/dashboard"
+                onClick={() => setMobileMenuOpen(false)}
+                className={cn(
+                  "flex items-center gap-3 px-4 py-3 rounded-sm transition-colors",
+                  location.pathname === '/dashboard'
+                    ? "bg-[#D4AF37]/10 text-[#D4AF37]"
+                    : "text-[#94A3B8]"
+                )}
+              >
+                <LayoutDashboard className="w-5 h-5" />
+                <span>Dashboard</span>
+              </Link>
+
+              {/* Navigation Sections */}
+              {navStructure.map((item) => (
+                <NavigationItem key={item.path} item={item} isMobile={true} />
+              ))}
+              {(user?.role === 'admin' || user?.role === 'org_admin') && (
+                <>
+                  <Link
+                    to="/admin"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 rounded-sm text-[#94A3B8]"
+                  >
+                    <Shield className="w-5 h-5" />
+                    <span>Admin</span>
+                  </Link>
+                  {user?.role === 'org_admin' && organization && (
+                    <Link
+                      to="/settings/organization"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 rounded-sm text-[#94A3B8]"
+                    >
+                      <Settings className="w-5 h-5" />
+                      <span>Organization</span>
+                    </Link>
+                  )}
+                </>
+              )}
+              <Link
+                to="/profile"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-3 px-4 py-3 rounded-sm text-[#94A3B8]"
+              >
+                <User className="w-5 h-5" />
+                <span>Profile</span>
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-3 px-4 py-3 rounded-sm text-[#94A3B8] w-full"
+              >
+                <LogOut className="w-5 h-5" />
+                <span>Logout</span>
+              </button>
+            </nav>
+          </div>
+        </div>
+      )}
+
+      {/* Main Content */}
+      <main className="lg:ml-64 pt-16 lg:pt-0 min-h-screen">
+        <div className="p-6 lg:p-8">
+          {children}
+        </div>
+      </main>
+
+      {/* AI Assistant Button */}
+      <AIAssistantButton />
+    </div>
+  );
+};

@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estado de Conexión VCSA Academy</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #020204 0%, #1E3A8A 100%);
+            color: #F1F5F9;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: rgba(212, 175, 55, 0.1);
+            border: 2px solid #D4AF37;
+            border-radius: 15px;
+        }
+
+        .header h1 {
+            color: #D4AF37;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .overall-status {
+            background: rgba(34, 197, 94, 0.2);
+            border: 2px solid #22c55e;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .overall-status.error {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: #ef4444;
+        }
+
+        .overall-status h2 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .service-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .service-card:hover {
+            transform: translateY(-5px);
+            border-color: #D4AF37;
+        }
+
+        .service-card.healthy {
+            border-left: 4px solid #22c55e;
+        }
+
+        .service-card.unhealthy {
+            border-left: 4px solid #ef4444;
+        }
+
+        .service-card h3 {
+            color: #D4AF37;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .status-badge.healthy {
+            background: rgba(34, 197, 94, 0.2);
+            color: #86EFAC;
+            border: 1px solid #22c55e;
+        }
+
+        .status-badge.unhealthy {
+            background: rgba(239, 68, 68, 0.2);
+            color: #FCA5A5;
+            border: 1px solid #ef4444;
+        }
+
+        .connection-details {
+            font-size: 0.9rem;
+            color: #94A3B8;
+        }
+
+        .connection-details div {
+            margin-bottom: 8px;
+        }
+
+        .connection-details strong {
+            color: #F1F5F9;
+        }
+
+        .test-button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #D4AF37 0%, #B8860B 100%);
+            color: #020204;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .test-button:hover {
+            transform: scale(1.02);
+        }
+
+        .test-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .quick-actions {
+            background: rgba(30, 58, 138, 0.3);
+            border: 2px solid #1E3A8A;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 40px;
+        }
+
+        .quick-actions h3 {
+            color: #D4AF37;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .action-button {
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            color: #F1F5F9;
+            text-decoration: none;
+            text-align: center;
+            transition: all 0.3s ease;
+            display: block;
+        }
+
+        .action-button:hover {
+            background: rgba(212, 175, 55, 0.1);
+            border-color: #D4AF37;
+            transform: scale(1.02);
+        }
+
+        .troubleshooting {
+            background: rgba(239, 68, 68, 0.1);
+            border: 2px solid #ef4444;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 40px;
+        }
+
+        .troubleshooting h3 {
+            color: #FCA5A5;
+            margin-bottom: 20px;
+        }
+
+        .troubleshooting ol {
+            margin-left: 20px;
+        }
+
+        .troubleshooting li {
+            margin-bottom: 15px;
+            color: #94A3B8;
+        }
+
+        .troubleshooting code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #FCA5A5;
+        }
+
+        .refresh-all {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .refresh-all button {
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .refresh-all button:hover {
+            transform: scale(1.05);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .loading {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #94A3B8;
+        }
+
+        .status-icon {
+            font-size: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔌 ESTADO DE CONEXIÓN VCSA ACADEMY</h1>
+            <p>Diagnóstico completo de todos los servicios</p>
+        </div>
+
+        <div id="overallStatus" class="overall-status">
+            <h2 id="overallTitle">🔍 Verificando conexiones...</h2>
+            <p id="overallMessage">Por favor espera...</p>
+        </div>
+
+        <div class="refresh-all">
+            <button onclick="checkAllConnections()">🔄 VERIFICAR TODAS LAS CONEXIONES</button>
+        </div>
+
+        <div class="services-grid">
+            <div class="service-card" id="card-frontend">
+                <h3>🌐 Frontend</h3>
+                <div id="status-frontend" class="status-badge">Verificando...</div>
+                <div class="connection-details">
+                    <div><strong>URL:</strong> http://localhost:1234</div>
+                    <div><strong>Puerto:</strong> 1234</div>
+                    <div><strong>Contenedor:</strong> vcsa-web-local</div>
+                    <div id="details-frontend"></div>
+                </div>
+                <button class="test-button" onclick="testConnection('frontend')">Probar Frontend</button>
+            </div>
+
+            <div class="service-card" id="card-backend">
+                <h3>⚙️ Backend API</h3>
+                <div id="status-backend" class="status-badge">Verificando...</div>
+                <div class="connection-details">
+                    <div><strong>URL:</strong> http://localhost:2345</div>
+                    <div><strong>Puerto:</strong> 2345</div>
+                    <div><strong>Contenedor:</strong> vcsa-api-local</div>
+                    <div id="details-backend"></div>
+                </div>
+                <button class="test-button" onclick="testConnection('backend')">Probar Backend</button>
+            </div>
+
+            <div class="service-card" id="card-mongodb">
+                <h3>🗄️ MongoDB</h3>
+                <div id="status-mongodb" class="status-badge">Verificando...</div>
+                <div class="connection-details">
+                    <div><strong>URL:</strong> mongodb://localhost:3456</div>
+                    <div><strong>Puerto:</strong> 3456</div>
+                    <div><strong>Contenedor:</strong> vcsa-db-local</div>
+                    <div id="details-mongodb"></div>
+                </div>
+                <button class="test-button" onclick="testConnection('mongodb')">Probar MongoDB</button>
+            </div>
+
+            <div class="service-card" id="card-docker">
+                <h3🐳 Docker</h3>
+                <div id="status-docker" class="status-badge">Verificando...</div>
+                <div class="connection-details">
+                    <div><strong>Contenedores:</strong> 3 activos</div>
+                    <div><strong>Estado:</strong> Running</div>
+                    <div id="details-docker"></div>
+                </div>
+                <button class="test-button" onclick="testConnection('docker')">Ver Contenedores</button>
+            </div>
+        </div>
+
+        <div class="quick-actions">
+            <h3>🚀 ACCESOS RÁPIDOS</h3>
+            <div class="action-buttons">
+                <a href="http://localhost:1234" target="_blank" class="action-button">
+                    🏠 Abrir Frontend
+                </a>
+                <a href="http://localhost:1234/dashboard" target="_blank" class="action-button">
+                    📊 Ir al Dashboard
+                </a>
+                <a href="http://localhost:2345/api/health" target="_blank" class="action-button">
+                    🔍 Ver Health API
+                </a>
+            </div>
+        </div>
+
+        <div class="troubleshooting">
+            <h3>⚠️ SOLUCIÓN DE PROBLEMAS DE CONEXIÓN</h3>
+            <ol>
+                <li>
+                    <strong>Si el frontend no carga:</strong>
+                    <br>Verifica que el contenedor esté corriendo:
+                    <code>docker ps | grep vcsa-web-local</code>
+                </li>
+                <li>
+                    <strong>Si hay errores de CORS:</strong>
+                    <br>Espera 2 minutos después de iniciar los contenedores
+                </li>
+                <li>
+                    <strong>Si el backend no responde:</strong>
+                    <br>Reinicia el backend:
+                    <code>docker-compose -f docker-compose.local.yml restart vcsa-api-local</code>
+                </li>
+                <li>
+                    <strong>Si MongoDB no conecta:</strong>
+                    <br>Verifica que el contenedor esté healthy:
+                    <code>docker ps | grep vcsa-db-local</code>
+                </li>
+                <li>
+                    <strong>Para reiniciar todo:</strong>
+                    <br><code>./INICIAR_LOCAL.sh</code>
+                </li>
+            </ol>
+        </div>
+
+        <div class="footer">
+            <p><strong>VCSA Academy v1.0.0</strong></p>
+            <p>Sistema local de desarrollo</p>
+            <p>Última verificación: <span id="lastCheck">-</span></p>
+        </div>
+    </div>
+
+    <script>
+        let connections = {
+            frontend: false,
+            backend: false,
+            mongodb: false,
+            docker: false
+        };
+
+        // Auto-check on load
+        window.addEventListener('load', function() {
+            checkAllConnections();
+        });
+
+        async function checkAllConnections() {
+            updateOverallStatus('checking');
+
+            await Promise.all([
+                testConnection('frontend'),
+                testConnection('backend'),
+                testConnection('mongodb'),
+                testConnection('docker')
+            ]);
+
+            updateOverallStatus();
+            document.getElementById('lastCheck').textContent = new Date().toLocaleString();
+        }
+
+        async function testConnection(service) {
+            const statusBadge = document.getElementById(`status-${service}`);
+            const detailsDiv = document.getElementById(`details-${service}`);
+            const card = document.getElementById(`card-${service}`);
+
+            statusBadge.className = 'status-badge loading';
+            statusBadge.textContent = 'Verificando...';
+
+            try {
+                let result;
+                switch(service) {
+                    case 'frontend':
+                        result = await testFrontend();
+                        break;
+                    case 'backend':
+                        result = await testBackend();
+                        break;
+                    case 'mongodb':
+                        result = await testMongoDB();
+                        break;
+                    case 'docker':
+                        result = await testDocker();
+                        break;
+                }
+
+                if (result.success) {
+                    connections[service] = true;
+                    statusBadge.className = 'status-badge healthy';
+                    statusBadge.innerHTML = '<span class="status-icon">✅</span> Conectado';
+                    card.className = 'service-card healthy';
+                    detailsDiv.innerHTML = result.details;
+                } else {
+                    connections[service] = false;
+                    statusBadge.className = 'status-badge unhealthy';
+                    statusBadge.innerHTML = '<span class="status-icon">❌</span> Error';
+                    card.className = 'service-card unhealthy';
+                    detailsDiv.innerHTML = `<strong>Error:</strong> ${result.error}`;
+                }
+            } catch (error) {
+                connections[service] = false;
+                statusBadge.className = 'status-badge unhealthy';
+                statusBadge.innerHTML = '<span class="status-icon">❌</span> Error';
+                card.className = 'service-card unhealthy';
+                detailsDiv.innerHTML = `<strong>Error:</strong> ${error.message}`;
+            }
+
+            updateOverallStatus();
+        }
+
+        async function testFrontend() {
+            try {
+                const response = await fetch('http://localhost:1234/health');
+                if (response.ok) {
+                    const text = await response.text();
+                    return {
+                        success: true,
+                        details: `
+                            <strong>Status:</strong> ${response.status}<br>
+                            <strong>Health Check:</strong> ${text.trim()}<br>
+                            <strong>Response:</strong> OK
+                        `
+                    };
+                }
+                return { success: false, error: `Status ${response.status}` };
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+
+        async function testBackend() {
+            try {
+                const response = await fetch('http://localhost:2345/api/health');
+                if (response.ok) {
+                    const data = await response.json();
+                    return {
+                        success: true,
+                        details: `
+                            <strong>Status:</strong> ${data.status}<br>
+                            <strong>API:</strong> ${data.services.api}<br>
+                            <strong>MongoDB:</strong> ${data.services.mongodb}
+                        `
+                    };
+                }
+                return { success: false, error: `Status ${response.status}` };
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+
+        async function testMongoDB() {
+            try {
+                const response = await fetch('http://localhost:2345/api/health');
+                if (response.ok) {
+                    const data = await response.json();
+                    const mongoHealthy = data.services?.mongodb === 'healthy';
+                    return {
+                        success: mongoHealthy,
+                        details: mongoHealthy
+                            ? '<strong>Estado:</strong> Conectado<br><strong>Driver:</strong> Motor (async)'
+                            : 'MongoDB reporta unhealthy'
+                    };
+                }
+                return { success: false, error: `Status ${response.status}` };
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+
+        async function testDocker() {
+            // Docker status is checked via the healthy status of containers
+            const frontend = connections.frontend;
+            const backend = connections.backend;
+            const mongodb = connections.mongodb;
+
+            const allHealthy = frontend && backend && mongodb;
+
+            return {
+                success: allHealthy,
+                details: allHealthy
+                    ? '<strong>Contenedores:</strong> 3/3 healthy<br><strong>Estado:</strong> All systems operational'
+                    : '<strong>Estado:</strong> Algunos contenedores con problemas'
+            };
+        }
+
+        function updateOverallStatus(forceStatus = null) {
+            const overallDiv = document.getElementById('overallStatus');
+            const overallTitle = document.getElementById('overallTitle');
+            const overallMessage = document.getElementById('overallMessage');
+
+            const allConnected = connections.frontend && connections.backend && connections.mongodb && connections.docker;
+            const someConnected = connections.frontend || connections.backend || connections.mongodb;
+
+            if (forceStatus === 'checking') {
+                overallDiv.className = 'overall-status';
+                overallTitle.textContent = '🔍 Verificando conexiones...';
+                overallMessage.textContent = 'Por favor espera...';
+            } else if (allConnected) {
+                overallDiv.className = 'overall-status';
+                overallTitle.innerHTML = '✅ TODOS LOS SISTEMAS CONECTADOS';
+                overallMessage.innerHTML = `
+                    <strong>Frontend:</strong> ✅ ${connections.frontend ? 'Conectado' : 'Error'}<br>
+                    <strong>Backend:</strong> ✅ ${connections.backend ? 'Conectado' : 'Error'}<br>
+                    <strong>MongoDB:</strong> ✅ ${connections.mongodb ? 'Conectado' : 'Error'}<br>
+                    <strong>Docker:</strong> ✅ ${connections.docker ? 'Operativo' : 'Error'}
+                `;
+            } else if (someConnected) {
+                overallDiv.className = 'overall-status error';
+                overallTitle.innerHTML = '⚠️ ALGUNOS SERVICIOS CON ERRORES';
+                overallMessage.innerHTML = `
+                    <strong>Frontend:</strong> ${connections.frontend ? '✅' : '❌'}<br>
+                    <strong>Backend:</strong> ${connections.backend ? '✅' : '❌'}<br>
+                    <strong>MongoDB:</strong> ${connections.mongodb ? '✅' : '❌'}<br>
+                    <strong>Docker:</strong> ${connections.docker ? '✅' : '❌'}
+                `;
+            } else {
+                overallDiv.className = 'overall-status error';
+                overallTitle.innerHTML = '❌ SISTEMAS DESCONECTADOS';
+                overallMessage.textContent = 'Ningún servicio está respondiendo. Verifica que Docker esté corriendo.';
+            }
+        }
+
+        // Add click handlers for service cards
+        document.querySelectorAll('.test-button').forEach(button => {
+            button.addEventListener('click', function() {
+                const service = this.getAttribute('onclick').match(/testConnection\('(\w+)'\)/)[1];
+                testConnection(service);
+            });
+        });
+    </script>
+</body>
+</html>

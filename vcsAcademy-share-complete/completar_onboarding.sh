@@ -1,0 +1,280 @@
+#!/bin/bash
+
+# 🚀 SCRIPT PARA COMPLETAR ONBOARDING AUTOMÁTICAMENTE
+# Este script crea un archivo HTML que cuando lo abras en tu navegador,
+# automáticamente completará el onboarding y te redirigirá al dashboard.
+
+echo "🔧 CREANDO SOLUCIÓN AUTOMÁTICA PARA ONBOARDING..."
+
+cat > /Users/newproject/Documents/GitHub/vcsAcademy/COMPLETAR_ONBOARDING.html << 'EOF'
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Completar Onboarding - VCSA Academy</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #020204 0%, #1E3A8A 100%);
+            color: #F1F5F9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 2px solid #D4AF37;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        h1 {
+            color: #D4AF37;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        .status {
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+
+        .status.checking {
+            background: rgba(234, 179, 8, 0.2);
+            border: 2px solid #eab308;
+            color: #FDE047;
+        }
+
+        .status.success {
+            background: rgba(34, 197, 94, 0.2);
+            border: 2px solid #22c55e;
+            color: #86EFAC;
+        }
+
+        .status.error {
+            background: rgba(239, 68, 68, 0.2);
+            border: 2px solid #ef4444;
+            color: #FCA5A5;
+        }
+
+        button {
+            width: 100%;
+            padding: 20px;
+            background: linear-gradient(135deg, #D4AF37 0%, #B8860B 100%);
+            color: #020204;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+        }
+
+        button:hover {
+            transform: scale(1.02);
+            box-shadow: 0 10px 20px rgba(212, 175, 55, 0.3);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .info {
+            background: rgba(30, 58, 138, 0.3);
+            border: 1px solid #1E3A8A;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: #94A3B8;
+        }
+
+        .info p {
+            margin-bottom: 10px;
+        }
+
+        .info strong {
+            color: #D4AF37;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(212, 175, 55, 0.3);
+            border-top: 3px solid #D4AF37;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .countdown {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #D4AF37;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>✅ COMPLETAR ONBOARDING</h1>
+
+            <div id="status" class="status checking">
+                <div class="spinner"></div>
+                <p>Verificando estado del onboarding...</p>
+            </div>
+
+            <button id="completeBtn" onclick="completeOnboarding()">
+                🚀 COMPLETAR ONBOARDING AHORA
+            </button>
+
+            <div class="info">
+                <p><strong>📋 ¿Qué hace este botón?</strong></p>
+                <p>Marca el onboarding como completado en tu navegador para que puedas acceder a todos los módulos del sistema.</p>
+
+                <p style="margin-top: 15px;"><strong>🎯 Después de completar:</strong></p>
+                <p>• Serás redirigido automáticamente al Dashboard</p>
+                <p>• Podrás acceder a todos los módulos</p>
+                <p>• Cada módulo mostrará su contenido único</p>
+
+                <p style="margin-top: 15px;"><strong>🔑 Credenciales:</strong></p>
+                <p>Email: <strong>admin@vcsa.com</strong></p>
+                <p>Password: <strong>admin123</strong></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.addEventListener('load', function() {
+            checkStatus();
+        });
+
+        function checkStatus() {
+            const statusDiv = document.getElementById('status');
+            const completeBtn = document.getElementById('completeBtn');
+
+            const onboardingStatus = localStorage.getItem('vcsa_onboarding_completed');
+
+            if (onboardingStatus === 'true') {
+                statusDiv.className = 'status success';
+                statusDiv.innerHTML = `
+                    <h2>✅ ONBOARDING YA COMPLETADO</h2>
+                    <p>Serás redirigido al Dashboard en...</p>
+                    <div class="countdown">3</div>
+                `;
+
+                completeBtn.style.display = 'none';
+
+                let count = 3;
+                const interval = setInterval(() => {
+                    count--;
+                    document.querySelector('.countdown').textContent = count;
+
+                    if (count <= 0) {
+                        clearInterval(interval);
+                        window.location.href = 'http://localhost:1234/dashboard';
+                    }
+                }, 1000);
+            } else {
+                statusDiv.className = 'status error';
+                statusDiv.innerHTML = `
+                    <h2>⚠️ ONBOARDING NO COMPLETADO</h2>
+                    <p>El sistema te está redirigiendo siempre a /get-started porque el onboarding no está marcado como completado.</p>
+                `;
+                completeBtn.style.display = 'block';
+            }
+        }
+
+        function completeOnboarding() {
+            const statusDiv = document.getElementById('status');
+            const completeBtn = document.getElementById('completeBtn');
+
+            completeBtn.disabled = true;
+            completeBtn.textContent = '⏳ PROCESANDO...';
+
+            statusDiv.className = 'status checking';
+            statusDiv.innerHTML = '<div class="spinner"></div><p>Completando onboarding...</p>';
+
+            setTimeout(() => {
+                // Marcar onboarding como completado
+                localStorage.setItem('onboarding_completed', 'true');
+                localStorage.setItem('onboarding_completed_at', new Date().toISOString());
+                localStorage.setItem('vcsa_onboarding_completed', 'true');
+
+                statusDiv.className = 'status success';
+                statusDiv.innerHTML = `
+                    <h2>✅ ¡ONBOARDING COMPLETADO!</h2>
+                    <p>Redirigiendo al Dashboard...</p>
+                    <div class="countdown">3</div>
+                `;
+
+                let count = 3;
+                const interval = setInterval(() => {
+                    count--;
+                    document.querySelector('.countdown').textContent = count;
+
+                    if (count <= 0) {
+                        clearInterval(interval);
+                        window.location.href = 'http://localhost:1234/dashboard';
+                    }
+                }, 1000);
+
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
+EOF
+
+echo "✅ ARCHIVO CREADO: COMPLETAR_ONBOARDING.html"
+echo ""
+echo "📍 UBICACIÓN:"
+echo "   /Users/newproject/Documents/GitHub/vcsAcademy/COMPLETAR_ONBOARDING.html"
+echo ""
+echo "🚀 INSTRUCCIONES:"
+echo "   1. Abre el archivo COMPLETAR_ONBOARDING.html en tu navegador"
+echo "   2. Click en 'COMPLETAR ONBOARDING AHORA'"
+echo "   3. Automáticamente te redirigirá al Dashboard"
+echo "   4. ¡Listo! Podrás acceder a todos los módulos"
+echo ""
+echo "🌐 O abre directamente en tu navegador:"
+echo "   file:///Users/newproject/Documents/GitHub/vcsAcademy/COMPLETAR_ONBOARDING.html"
+echo ""
+
+# Abrir el archivo automáticamente
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    open /Users/newproject/Documents/GitHub/vcsAcademy/COMPLETAR_ONBOARDING.html
+elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    xdg-open /Users/newproject/Documents/GitHub/vcsAcademy/COMPLETAR_ONBOARDING.html 2>/dev/null || \
+    sensible-browser /Users/newproject/Documents/GitHub/vcsAcademy/COMPLETAR_ONBOARDING.html 2>/dev/null || \
+    echo "Abre manualmente: file:///Users/newproject/Documents/GitHub/vcsAcademy/COMPLETAR_ONBOARDING.html"
+fi
+
+echo "✅ LISTO! El archivo se abrirá en tu navegador automáticamente."

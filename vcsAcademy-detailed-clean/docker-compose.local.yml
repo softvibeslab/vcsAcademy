@@ -1,0 +1,84 @@
+version: '3.8'
+
+services:
+  # Frontend - VCSA Academy
+  vcsa-web-local:
+    container_name: vcsa-web-local
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - REACT_APP_BACKEND_URL=http://localhost:2345
+    ports:
+      - "1234:80"
+      - "1443:443"
+    environment:
+      - REACT_APP_BACKEND_URL=http://localhost:2345
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - vcsa-local-network
+    restart: unless-stopped
+
+  # Backend - VCSA Academy API
+  vcsa-api-local:
+    container_name: vcsa-api-local
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "2345:8000"
+    environment:
+      - MONGO_URL=mongodb://admin:admin123@vcsa-db-local:27017/vcsa_local?authSource=admin
+      - DB_NAME=vcsa_local
+      - CORS_ORIGINS=http://localhost:1234,http://localhost:1235
+      - STRIPE_API_KEY=${STRIPE_API_KEY:-sk_test_none}
+    volumes:
+      - ./backend:/app
+      - /app/__pycache__
+    depends_on:
+      vcsa-db-local:
+        condition: service_healthy
+    networks:
+      - vcsa-local-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
+  # MongoDB - VCSA Database
+  vcsa-db-local:
+    container_name: vcsa-db-local
+    image: mongo:8
+    ports:
+      - "3456:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=vcsa_local
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=admin123
+    volumes:
+      - vcsa_mongo_local:/data/db
+      - vcsa_mongo_config:/data/configdb
+    networks:
+      - vcsa-local-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
+networks:
+  vcsa-local-network:
+    driver: bridge
+
+volumes:
+  vcsa_mongo_local:
+    driver: local
+  vcsa_mongo_config:
+    driver: local

@@ -1,0 +1,90 @@
+version: '3.8'
+
+services:
+  # Frontend (React)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - REACT_APP_BACKEND_URL=https://api.salesmastersminds.com
+    container_name: vcsa-frontend
+    restart: unless-stopped
+    networks:
+      - vcsa-network
+    depends_on:
+      - backend
+    environment:
+      - REACT_APP_BACKEND_URL=https://api.salesmastersminds.com
+    labels:
+      - "com.centurylinklabs.watchtower.enable=false"
+
+  # Backend (FastAPI)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: vcsa-backend
+    restart: unless-stopped
+    networks:
+      - vcsa-network
+    depends_on:
+      - mongodb
+    environment:
+      - MONGO_URL=mongodb://mongodb:27017
+      - DB_NAME=vcsa_production
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_ALGORITHM=HS256
+      - CORS_ORIGINS=https://salesmastersminds.com,https://www.salesmastersminds.com
+      - SENTRY_DSN=${SENTRY_DSN}
+    volumes:
+      - ./backend/uploads:/app/uploads
+    labels:
+      - "com.centurylinklabs.watchtower.enable=false"
+
+  # MongoDB
+  mongodb:
+    image: mongo:6.0
+    container_name: vcsa-mongodb
+    restart: unless-stopped
+    networks:
+      - vcsa-network
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_ROOT_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD}
+      - MONGO_INITDB_DATABASE=vcsa_production
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+    labels:
+      - "com.centurylinklabs.watchtower.enable=false"
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: vcsa-nginx
+    restart: unless-stopped
+    networks:
+      - vcsa-network
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./nginx/logs:/var/log/nginx
+    depends_on:
+      - frontend
+      - backend
+    labels:
+      - "com.centurylinklabs.watchtower.enable=false"
+
+networks:
+  vcsa-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+    driver: local
+  mongodb_config:
+    driver: local

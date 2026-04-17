@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VCSA Academy - Platform Tour</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #020204 0%, #1E3A8A 100%);
+            color: #F8FAFC;
+            min-height: 100vh;
+        }
+        .container {
+            max-w: 7xl;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .logo-icon {
+            background: linear-gradient(135deg, #D4AF37 0%, #B8860B 100%);
+            padding: 0.75rem;
+            border-radius: 0.75rem;
+        }
+        .logo-text h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #F8FAFC;
+        }
+        .logo-text p {
+            font-size: 0.875rem;
+            color: #94A3B8;
+        }
+        .skip-btn {
+            color: #94A3B8;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 0.875rem;
+        }
+        .progress-section {
+            margin-bottom: 2rem;
+        }
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        .progress-label {
+            font-size: 0.875rem;
+            color: #94A3B8;
+        }
+        .progress-value {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #D4AF37;
+        }
+        .progress-bar {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+            height: 0.5rem;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #D4AF37 0%, #B8860B 100%);
+            border-radius: 1rem;
+            transition: width 0.5s ease;
+        }
+        .content {
+            text-align: center;
+            padding: 2rem 0;
+        }
+        .icon-display {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.2) 0%, rgba(184, 134, 11, 0.1) 100%);
+            border: 2px solid rgba(212, 175, 55, 0.3);
+            border-radius: 2rem;
+            padding: 3rem;
+            margin-bottom: 2rem;
+        }
+        .title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #F8FAFC;
+            margin-bottom: 0.5rem;
+        }
+        .subtitle {
+            font-size: 1.25rem;
+            color: #D4AF37;
+            margin-bottom: 2rem;
+        }
+        .description {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        .description p {
+            font-size: 1.125rem;
+            line-height: 1.75;
+            color: #94A3B8;
+        }
+        .module-preview {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .module-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .module-emoji {
+            font-size: 3rem;
+        }
+        .module-info h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #F8FAFC;
+            margin-bottom: 0.25rem;
+        }
+        .module-info p {
+            font-size: 0.875rem;
+            color: #94A3B8;
+        }
+        .features {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+        .feature {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: #94A3B8;
+        }
+        .check {
+            color: #D4AF37;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+            padding: 1rem;
+            background: linear-gradient(90deg, rgba(212, 175, 55, 0.1) 0%, transparent 100%);
+            border-radius: 0.75rem;
+            border: 1px solid rgba(212, 175, 55, 0.2);
+        }
+        .stat {
+            text-align: center;
+        }
+        .stat-label {
+            font-size: 0.75rem;
+            color: #94A3B8;
+            margin-bottom: 0.25rem;
+        }
+        .stat-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #D4AF37;
+        }
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+        .btn {
+            padding: 0.75rem 2rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s ease;
+        }
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: #94A3B8;
+        }
+        .btn-secondary:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .btn-secondary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #D4AF37 0%, #B8860B 100%);
+            color: #020204;
+        }
+        .btn-primary:hover {
+            transform: scale(1.02);
+            box-shadow: 0 10px 20px rgba(212, 175, 55, 0.3);
+        }
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        .module-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .module-card:hover {
+            border-color: rgba(212, 175, 55, 0.3);
+            transform: translateY(-2px);
+        }
+        .module-card-icon {
+            width: 3rem;
+            height: 3rem;
+            background: rgba(212, 175, 55, 0.1);
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+        .module-card-icon svg {
+            color: #D4AF37;
+        }
+        .module-card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #F8FAFC;
+            margin-bottom: 0.5rem;
+        }
+        .module-card-desc {
+            font-size: 0.875rem;
+            color: #94A3B8;
+            margin-bottom: 1rem;
+        }
+        .module-card-emoji {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        .module-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .tag {
+            background: rgba(255, 255, 255, 0.05);
+            color: #94A3B8;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+        }
+        .welcome-banner {
+            background: linear-gradient(90deg, rgba(212, 175, 55, 0.2) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(139, 92, 246, 0.2) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        .welcome-banner h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: #F8FAFC;
+            margin-bottom: 0.5rem;
+        }
+        .welcome-banner p {
+            color: #94A3B8;
+        }
+        .quick-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+            padding: 1rem;
+            text-align: center;
+        }
+        .stat-card-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #F8FAFC;
+        }
+        .stat-card-label {
+            font-size: 0.875rem;
+            color: #94A3B8;
+            margin-top: 0.25rem;
+        }
+        .hidden {
+            display: none;
+        }
+        .visible {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const STEPS = [
+            { id: 1, title: 'Welcome to VCSA Academy!', subtitle: 'Your Complete Sales Operating System', icon: '⭐', content: 'This platform will transform you into a top vacation club sales producer. Let me show you around.' },
+            { id: 2, title: 'Track Daily Performance', subtitle: 'Daily Performance Module', icon: '📊', content: 'Log your tours, presentations, and closes every day. Track 7 key attributes and build winning streaks.', module: { name: 'Daily Performance', emoji: '📊', features: ['25-Day Grid View', '7 Core Attributes', 'Real-time Tracking', 'Streak Bonuses'], stats: { tours: 3, presentations: 2, closes: 1 } } },
+            { id: 3, title: 'Set SMART Goals', subtitle: 'Goal Sheet Module', icon: '🎯', content: 'Define clear, measurable goals for income, activity, skills, and performance. Track progress and celebrate achievements.', module: { name: 'Goal Sheet', emoji: '🎯', features: ['SMART Goals', 'Progress Tracking', 'Milestones', 'Achievement Badges'], stats: { totalGoals: 11, completed: 4, inProgress: 7 } } },
+            { id: 4, title: 'Plan Your Financial Future', subtitle: 'Financial Planner Module', icon: '💰', content: 'Project your income, track savings goals, and create a budget. See where you\'ll be in 3 years.', module: { name: 'Financial Planner', emoji: '💰', features: ['3-Year Projections', 'Savings Goals', 'Budget Planner', 'Income Calculator'], stats: { monthlyIncome: '$12,200', savingsRate: '28%', projected: '$18,500' } } },
+            { id: 5, title: 'Master the Training', subtitle: 'Top Producer Path', icon: '🏆', content: 'Complete 36 training sessions across 6 tracks. Progress from New Rep to Top Producer.', module: { name: 'Top Producer Path', emoji: '🏆', features: ['4 Stages', '6 Tracks', '36 Sessions', 'Certificates'], stats: { completed: 12, inProgress: 5, readiness: '67%' } } },
+            { id: 6, title: 'Get Expert Coaching', subtitle: 'Coaching Platform', icon: '👥', content: 'Join live sessions, practice with role play, and get answers in Q&A forums.', module: { name: 'Coaching Platform', emoji: '🎪', features: ['Live Sessions', 'Role Play', 'Q&A Forums', 'Expert Access'], stats: { upcoming: 10, registered: 3 } } },
+            { id: 7, title: 'Access Proven Resources', subtitle: 'Knowledge Hub', icon: '📄', content: 'Download battle-tested frameworks, scripts, and templates used by top producers.', module: { name: 'Resources Library', emoji: '📄', features: ['Frameworks', 'Scripts', 'Templates', 'Tools', 'Case Studies'], stats: { total: 10, downloaded: 3 } } },
+            { id: 8, title: 'Analyze & Improve', subtitle: 'Analytics Dashboard', icon: '📈', content: 'Dive deep into your performance metrics. Get predictive insights and track trends over time.', module: { name: 'Analytics Dashboard', emoji: '📈', features: ['Efficiency Dashboard', 'Predictive Insights', 'Monthly Reports', 'Trends'], stats: { conversionRate: '28%', growth: '12%', ranking: '5' } } },
+            { id: 9, title: 'You\'re All Set!', subtitle: 'Start Your Journey', icon: '🚀', content: 'All modules are ready to use. Start with Daily Performance or explore whatever interests you most.' }
+        ];
+
+        const MODULES = [
+            { id: 1, name: 'Daily Performance', emoji: '📊', desc: 'Track daily sales metrics', route: '/daily-performance' },
+            { id: 2, name: 'Goal Sheet', emoji: '🎯', desc: 'Set SMART goals', route: '/goals' },
+            { id: 3, name: 'Financial Planner', emoji: '💰', desc: 'Plan financial future', route: '/financial' },
+            { id: 4, name: 'Analytics', emoji: '📈', desc: 'Performance insights', route: '/analytics' },
+            { id: 5, name: 'Top Producer Path', emoji: '🏆', desc: '36 training sessions', route: '/path' },
+            { id: 6, name: 'Training Library', emoji: '📚', desc: 'Video training content', route: '/courses' },
+            { id: 7, name: 'Coaching Events', emoji: '🎪', desc: 'Live coaching sessions', route: '/coaching/events' },
+            { id: 8, name: 'Group Coaching', emoji: '👥', desc: 'Peer learning sessions', route: '/coaching/group' },
+            { id: 9, name: 'Role Play Sessions', emoji: '🎭', desc: 'Practice scenarios', route: '/coaching/roleplay' },
+            { id: 10, name: 'Q&A Sessions', emoji: '❓', desc: 'Expert Q&A forums', route: '/coaching/qa' },
+            { id: 11, name: 'Resources Library', emoji: '📄', desc: 'Downloadable content', route: '/resources' },
+            { id: 12, name: 'Community', emoji: '🌐', desc: 'Connect with peers', route: '/community' }
+        ];
+
+        function App() {
+            const [currentStep, setCurrentStep] = useState(0);
+            const [viewMode, setViewMode] = useState('tour');
+
+            const currentStepData = STEPS[currentStep];
+            const progress = ((currentStep + 1) / STEPS.length) * 100;
+
+            const handleNext = () => {
+                if (currentStep < STEPS.length - 1) {
+                    setCurrentStep(currentStep + 1);
+                } else {
+                    setViewMode('dashboard');
+                }
+            };
+
+            const handleBack = () => {
+                if (currentStep > 0) {
+                    setCurrentStep(currentStep - 1);
+                }
+            };
+
+            const handleSkip = () => {
+                setViewMode('dashboard');
+            };
+
+            if (viewMode === 'dashboard') {
+                return (
+                    <div className="container">
+                        <div className="header">
+                            <div className="logo">
+                                <div className="logo-icon">⭐</div>
+                                <div className="logo-text">
+                                    <h1>VCSA Academy</h1>
+                                    <p>Complete Sales Operating System</p>
+                                </div>
+                            </div>
+                            <button className="btn btn-secondary" onClick={() => { setCurrentStep(0); setViewMode('tour'); }}>
+                                Restart Tour
+                            </button>
+                        </div>
+
+                        <div className="welcome-banner">
+                            <h2>Welcome to Your Sales Operating System</h2>
+                            <p>12 powerful modules to transform your sales performance</p>
+                        </div>
+
+                        <div className="quick-stats">
+                            <div className="stat-card">
+                                <div className="stat-card-value">12</div>
+                                <div className="stat-card-label">Modules</div>
+                            </div>
+                            <div className="stat-card">
+                                <div className="stat-card-value">36</div>
+                                <div className="stat-card-label">Sessions</div>
+                            </div>
+                            <div className="stat-card">
+                                <div className="stat-card-value">11</div>
+                                <div className="stat-card-label">Badges</div>
+                            </div>
+                            <div className="stat-card">
+                                <div className="stat-card-value">500+</div>
+                                <div className="stat-card-label">Demo Data</div>
+                            </div>
+                        </div>
+
+                        <div className="modules-grid">
+                            {MODULES.map(module => (
+                                <div key={module.id} className="module-card">
+                                    <div className="module-card-emoji">{module.emoji}</div>
+                                    <h3 className="module-card-title">{module.name}</h3>
+                                    <p className="module-card-desc">{module.desc}</p>
+                                    <div className="module-tags">
+                                        <span className="tag">Interactive</span>
+                                        <span className="tag">Demo Data</span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div style={{ textAlign: 'center', marginTop: '3rem', padding: '2rem', background: 'rgba(255,255,255,0.05)', borderRadius: '1rem' }}>
+                            <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: '1.5rem', color: '#F8FAFC', marginBottom: '1rem' }}>
+                                Try the Full System
+                            </h2>
+                            <p style={{ color: '#94A3B8', marginBottom: '1.5rem' }}>
+                                Login to experience all modules with complete demo data
+                            </p>
+                            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+                                <a href="/" className="btn btn-primary">Main Dashboard</a>
+                                <button className="btn btn-secondary" onClick={() => { setCurrentStep(0); setViewMode('tour'); }}>
+                                    Watch Tour Again
+                                </button>
+                            </div>
+                            <div style={{ marginTop: '2rem', padding: '1rem', background: 'rgba(212, 175, 55, 0.1)', borderRadius: '0.75rem', border: '1px solid rgba(212, 175, 55, 0.2)' }}>
+                                <p style={{ fontSize: '0.875rem', color: '#94A3B8', marginBottom: '0.5rem' }}>
+                                    <strong style={{ color: '#D4AF37' }}>Demo Login:</strong>
+                                </p>
+                                <p style={{ fontSize: '0.875rem', color: '#94A3B8' }}>
+                                    admin@vcsa.com / admin123<br/>
+                                    sarah.johnson@vcsa.com / demo123
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="container">
+                    <div className="header">
+                        <div className="logo">
+                            <div className="logo-icon">⭐</div>
+                            <div className="logo-text">
+                                <h1>VCSA Academy</h1>
+                                <p>Platform Tour</p>
+                            </div>
+                        </div>
+                        <button className="skip-btn" onClick={handleSkip}>Skip Tour</button>
+                    </div>
+
+                    <div className="progress-section">
+                        <div className="progress-header">
+                            <span className="progress-label">Step {currentStep + 1} of {STEPS.length}</span>
+                            <span className="progress-value">{Math.round(progress)}%</span>
+                        </div>
+                        <div className="progress-bar">
+                            <div className="progress-fill" style={{ width: `${progress}%` }}></div>
+                        </div>
+                    </div>
+
+                    <div className="content">
+                        <div className="icon-display">
+                            <div style={{ fontSize: '5rem' }}>{currentStepData.icon}</div>
+                        </div>
+                        <h2 className="title">{currentStepData.title}</h2>
+                        <p className="subtitle">{currentStepData.subtitle}</p>
+                        <div className="description">
+                            <p>{currentStepData.content}</p>
+                        </div>
+
+                        {currentStepData.module && (
+                            <div className="module-preview">
+                                <div className="module-header">
+                                    <div className="module-emoji">{currentStepData.module.emoji}</div>
+                                    <div className="module-info">
+                                        <h3>{currentStepData.module.name}</h3>
+                                        <p>Interactive Module Preview</p>
+                                    </div>
+                                </div>
+                                <div className="features">
+                                    {currentStepData.module.features.map((feature, idx) => (
+                                        <div key={idx} className="feature">
+                                            <span className="check">✓</span>
+                                            {feature}
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="stats">
+                                    {Object.entries(currentStepData.module.stats).map(([key, value]) => (
+                                        <div key={key} className="stat">
+                                            <div className="stat-label">{key.replace(/([A-Z])/g, ' $1')}</div>
+                                            <div className="stat-value">{value}</div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="navigation">
+                            <button
+                                className="btn btn-secondary"
+                                onClick={handleBack}
+                                disabled={currentStep === 0}
+                            >
+                                ← Back
+                            </button>
+                            <button className="btn btn-primary" onClick={handleNext}>
+                                {currentStep === STEPS.length - 1 ? 'Finish Tour →' : 'Next →'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
