@@ -1,49 +1,30 @@
-/**
- * VCSA Pocket - Play Role Screen
- * Practice scenarios with AI feedback
- * Based on STITCH_DESIGN_PROMPT.md Screen 7 specifications
- */
-
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
   ScrollView,
-  TouchableOpacity,
+  StyleSheet,
+  Text,
   TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
-import {
-  Colors,
-  Spacing,
-  Typography,
-} from '@/theme';
-import {
-  Button,
-  Card,
-  Badge,
-  ProgressBar,
-} from '@/components/ui';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+
+import { getDemoPracticeSummary, recordDemoPracticeSession } from '../demo/progress';
+import { PracticeSummary, RootStackParamList } from '../types';
 
 interface Scenario {
   id: string;
-  icon: string;
+  icon: keyof typeof Ionicons.glyphMap;
   title: string;
   description: string;
   category: string;
-  difficulty: number; // 1-5
+  difficulty: 1 | 2 | 3 | 4 | 5;
   averageScore: number;
   personalBest: number;
-}
-
-interface PracticeMode {
-  active: boolean;
-  scenario: Scenario | null;
-  userInput: string;
-  isRecording: boolean;
-  recordingTime: number;
+  coachTip: string;
 }
 
 interface Feedback {
@@ -53,1009 +34,851 @@ interface Feedback {
   suggestedResponse: string;
 }
 
-const PlayRoleScreen: React.FC = () => {
-  const navigation = useNavigation();
-  const [mode, setMode] = useState<'selection' | 'practice' | 'feedback'>('selection');
+type PlayRoleNavigationProp = StackNavigationProp<RootStackParamList, 'PlayRole'>;
+type ScreenMode = 'selection' | 'practice' | 'feedback';
+
+const scenarios: Scenario[] = [
+  {
+    id: 'price-objection',
+    icon: 'cash-outline',
+    title: 'The Price Objection',
+    description: '"It feels too expensive for us right now."',
+    category: 'Price',
+    difficulty: 3,
+    averageScore: 7.2,
+    personalBest: 8.5,
+    coachTip: 'Acknowledge first, then connect value to travel use rather than monthly price.',
+  },
+  {
+    id: 'spouse-approval',
+    icon: 'people-outline',
+    title: 'Spouse Approval',
+    description: '"I need to talk to my spouse before making a decision."',
+    category: 'Spouse',
+    difficulty: 2,
+    averageScore: 9.0,
+    personalBest: 9.0,
+    coachTip: 'Create alignment by asking what both decision makers want from future vacations.',
+  },
+  {
+    id: 'not-right-time',
+    icon: 'time-outline',
+    title: 'Not the Right Time',
+    description: '"We are interested, but this is not the right time."',
+    category: 'Timing',
+    difficulty: 3,
+    averageScore: 7.5,
+    personalBest: 8.0,
+    coachTip: 'Find out what has to be true for the time to feel right, then narrow the gap.',
+  },
+  {
+    id: 'already-member',
+    icon: 'ribbon-outline',
+    title: 'Already a Member',
+    description: '"We already own with another company."',
+    category: 'Competition',
+    difficulty: 2,
+    averageScore: 6.0,
+    personalBest: 7.5,
+    coachTip: 'Do not attack the competitor. Surface what is missing and position the upgrade.',
+  },
+  {
+    id: 'competitor-compare',
+    icon: 'swap-horizontal-outline',
+    title: 'Competitor Comparison',
+    description: '"Another brand offers more benefits for less money."',
+    category: 'Competition',
+    difficulty: 4,
+    averageScore: 8.0,
+    personalBest: 8.5,
+    coachTip: 'Slow down the comparison and anchor on the benefits they will realistically use.',
+  },
+];
+
+const categories = ['All', 'Price', 'Spouse', 'Timing', 'Competition'];
+
+export default function PlayRoleScreen() {
+  const navigation = useNavigation<PlayRoleNavigationProp>();
+
+  const [mode, setMode] = useState<ScreenMode>('selection');
   const [selectedCategory, setSelectedCategory] = useState('All');
-
-  // Mock scenarios data
-  const scenarios: Scenario[] = [
-    {
-      id: 'price-objection',
-      icon: '💰',
-      title: 'The Price Objection',
-      description: '"It\'s too expensive for us"',
-      category: 'Price',
-      difficulty: 3,
-      averageScore: 7.2,
-      personalBest: 8.5,
-    },
-    {
-      id: 'spouse-approval',
-      icon: '📅',
-      title: 'Spouse Needs Approval',
-      description: '"I need to talk to my spouse"',
-      category: 'Spouse',
-      difficulty: 2,
-      averageScore: 9.0,
-      personalBest: 9.0,
-    },
-    {
-      id: 'not-right-time',
-      icon: '⏰',
-      title: 'Not the Right Time',
-      description: '"We\'re not looking right now"',
-      category: 'Timing',
-      difficulty: 3,
-      averageScore: 7.5,
-      personalBest: 8.0,
-    },
-    {
-      id: 'already-member',
-      icon: '🏆',
-      title: 'Already a Member',
-      description: '"We already have a membership"',
-      category: 'Competition',
-      difficulty: 2,
-      averageScore: 6.0,
-      personalBest: 7.5,
-    },
-    {
-      id: 'competitor-compare',
-      icon: '🔄',
-      title: 'Competitor Comparison',
-      description: '"X Brand offers more for less"',
-      category: 'Competition',
-      difficulty: 4,
-      averageScore: 8.0,
-      personalBest: 8.5,
-    },
-  ];
-
-  const [practiceMode, setPracticeMode] = useState<PracticeMode>({
-    active: false,
-    scenario: null,
-    userInput: '',
-    isRecording: false,
-    recordingTime: 0,
-  });
-
+  const [selectedScenario, setSelectedScenario] = useState<Scenario | null>(null);
+  const [responseText, setResponseText] = useState('');
   const [feedback, setFeedback] = useState<Feedback | null>(null);
+  const [practiceSummary, setPracticeSummary] = useState<PracticeSummary | null>(null);
 
-  const categories = ['All', 'Price', 'Closing', 'Spouse', 'Timing', 'Competition'];
+  const filteredScenarios = useMemo(() => {
+    return selectedCategory === 'All'
+      ? scenarios
+      : scenarios.filter((scenario) => scenario.category === selectedCategory);
+  }, [selectedCategory]);
 
-  const filteredScenarios = selectedCategory === 'All'
-    ? scenarios
-    : scenarios.filter(s => s.category === selectedCategory);
+  useFocusEffect(
+    React.useCallback(() => {
+      let active = true;
 
-  const getDifficultyColor = (difficulty: number) => {
-    switch (difficulty) {
-      case 1:
-      case 2:
-        return Colors.success;
-      case 3:
-        return Colors.warning;
-      case 4:
-        return Colors.error;
-      case 5:
-        return Colors.mindset; // Expert
-      default:
-        return Colors.border;
-    }
-  };
+      const loadSummary = async () => {
+        try {
+          const summary = await getDemoPracticeSummary();
+          if (active) {
+            setPracticeSummary(summary);
+          }
+        } catch (error) {
+          console.error('Practice summary load error:', error);
+        }
+      };
 
-  const getDifficultyLabel = (difficulty: number) => {
-    switch (difficulty) {
-      case 1:
-      case 2:
-        return 'Easy';
-      case 3:
-        return 'Medium';
-      case 4:
-        return 'Hard';
-      case 5:
-        return 'Expert';
-      default:
-        return 'Unknown';
-    }
-  };
+      loadSummary();
 
-  const getScoreColor = (score: number) => {
-    if (score >= 9) return Colors.excellent;
-    if (score >= 7) return Colors.good;
-    if (score >= 5) return Colors.fair;
-    return Colors.poor;
-  };
+      return () => {
+        active = false;
+      };
+    }, [])
+  );
+
+  const featuredScenario = filteredScenarios[0] || scenarios[0];
 
   const startPractice = (scenario: Scenario) => {
-    setPracticeMode({
-      active: true,
-      scenario,
-      userInput: '',
-      isRecording: false,
-      recordingTime: 0,
-    });
+    setSelectedScenario(scenario);
+    setResponseText('');
+    setFeedback(null);
     setMode('practice');
   };
 
   const submitResponse = () => {
-    // Simulate AI feedback
-    setFeedback({
-      score: 8.5,
-      strengths: [
-        'Good acknowledgment',
-        'Confident delivery',
-        'Used social proof effectively',
-      ],
-      improvements: [
-        'Add specific benefit mention',
-        'Include urgency element',
-        'Close with next step',
-      ],
+    if (!selectedScenario || !responseText.trim()) {
+      return;
+    }
+
+    const trimmed = responseText.trim();
+    const mentionsEmpathy = /(understand|feel|hear|totally|makes sense)/i.test(trimmed);
+    const mentionsValue = /(value|benefit|vacation|family|memories|travel)/i.test(trimmed);
+    const mentionsClose = /(next step|move forward|today|start|reserve|ownership)/i.test(trimmed);
+
+    let score = 5.8;
+    if (trimmed.length > 90) score += 0.9;
+    if (mentionsEmpathy) score += 1.0;
+    if (mentionsValue) score += 1.0;
+    if (mentionsClose) score += 0.8;
+    if (selectedScenario.difficulty >= 4) score += 0.3;
+    score = Math.min(9.6, Number(score.toFixed(1)));
+
+    const strengths = [
+      mentionsEmpathy ? 'You acknowledged the concern before pushing back.' : 'You stayed concise and direct.',
+      mentionsValue ? 'You tied the answer back to value instead of defending price.' : 'Your answer kept the conversation moving.',
+      'Your tone can translate well on the floor with a calm delivery.',
+    ];
+
+    const improvements = [
+      !mentionsEmpathy ? 'Open with a short empathy line before reframing the objection.' : 'Tighten the first sentence to sound even more confident.',
+      !mentionsValue ? 'Add one concrete benefit tied to their next vacation.' : 'Name one benefit even more specifically.',
+      !mentionsClose ? 'Finish with a micro-close or next step question.' : 'End with a stronger invitation to act now.',
+    ];
+
+    const nextFeedback = {
+      score,
+      strengths,
+      improvements,
       suggestedResponse:
-        '"I understand budget is important. Most members find the value far exceeds the investment, especially with our exclusive perks like vacation exchanges and member-only events."',
+        'I completely understand why you would pause there. Most families want to be sure the value is real before saying yes. What usually helps is looking at how this supports the trips you already want to take, so the decision becomes about better vacations and flexibility, not just a number on paper.',
+    };
+
+    void recordDemoPracticeSession({
+      scenario_id: selectedScenario.id,
+      scenario_title: selectedScenario.title,
+      category: selectedScenario.category,
+      score,
+      response_excerpt: trimmed.slice(0, 120),
+    }).then(() => getDemoPracticeSummary().then(setPracticeSummary)).catch((error) => {
+      console.error('Practice session save error:', error);
     });
+
+    setFeedback(nextFeedback);
     setMode('feedback');
   };
 
-  const renderSelectionScreen = () => (
-    <SafeAreaView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}
-        >
-          <Text style={styles.backIcon}>←</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>PLAY ROLE</Text>
-        <Text style={styles.headerSubtitle}>Practice & Perfect</Text>
-      </View>
+  const resetToSelection = () => {
+    setMode('selection');
+    setSelectedScenario(null);
+    setResponseText('');
+    setFeedback(null);
+  };
 
-      <ScrollView
-        style={styles.scrollView}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Filter Section */}
-        <View style={styles.filterSection}>
-          <Text style={styles.filterTitle}>Choose a Scenario</Text>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.filterScroll}
+  if (mode === 'practice' && selectedScenario) {
+    return (
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
+        <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+          <View style={styles.header}>
+            <TouchableOpacity activeOpacity={0.85} onPress={resetToSelection} style={styles.backButton}>
+              <Ionicons name="close" size={20} color="#F1F5F9" />
+            </TouchableOpacity>
+
+            <View style={styles.headerCopy}>
+              <Text style={styles.title}>Practice Mode</Text>
+              <Text style={styles.subtitle}>{selectedScenario.title}</Text>
+            </View>
+          </View>
+
+          <View style={styles.scenarioHero}>
+            <View style={styles.scenarioIconBlock}>
+              <Ionicons name={selectedScenario.icon} size={24} color="#D4AF37" />
+            </View>
+            <Text style={styles.scenarioPrompt}>{selectedScenario.description}</Text>
+            <View style={styles.metaRow}>
+              <Pill label={selectedScenario.category} tone="#3B82F6" />
+              <Pill label={getDifficultyLabel(selectedScenario.difficulty)} tone={getDifficultyColor(selectedScenario.difficulty)} />
+            </View>
+          </View>
+
+          <View style={styles.card}>
+            <View style={styles.cardHeader}>
+              <Text style={styles.cardTitle}>Coach Tip</Text>
+              <Ionicons name="bulb-outline" size={18} color="#D4AF37" />
+            </View>
+            <Text style={styles.cardCopy}>{selectedScenario.coachTip}</Text>
+          </View>
+
+          <View style={styles.card}>
+            <View style={styles.cardHeader}>
+              <Text style={styles.cardTitle}>Your Response</Text>
+              <Ionicons name="create-outline" size={18} color="#D4AF37" />
+            </View>
+
+            <TextInput
+              multiline
+              maxLength={420}
+              onChangeText={setResponseText}
+              placeholder="Type how you would handle this objection on the floor..."
+              placeholderTextColor="#64748B"
+              style={styles.textInput}
+              value={responseText}
+            />
+
+            <View style={styles.inputFooter}>
+              <Text style={styles.charCount}>{responseText.length}/420</Text>
+              <TouchableOpacity
+                activeOpacity={0.85}
+                onPress={() =>
+                  setResponseText(
+                    'I understand why you feel that way. Most families pause here because they want to make the right decision, not a rushed one. If we compare this to the vacations you already want to take, the value becomes a lot clearer.'
+                  )
+                }
+                style={styles.inlineAction}
+              >
+                <Text style={styles.inlineActionText}>Use sample start</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <View style={styles.actionsColumn}>
+            <TouchableOpacity activeOpacity={0.85} onPress={submitResponse} style={styles.primaryAction}>
+              <Text style={styles.primaryActionText}>Get Feedback</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              activeOpacity={0.85}
+              onPress={() =>
+                setResponseText("I hear you. Let’s compare this to the vacations you already know you want so we can see whether the long-term value makes sense for your family.")
+              }
+              style={styles.secondaryAction}
+            >
+              <Text style={styles.secondaryActionText}>Generate Better Draft</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
+
+  if (mode === 'feedback' && selectedScenario && feedback) {
+    return (
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
+        <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+          <View style={styles.header}>
+            <TouchableOpacity activeOpacity={0.85} onPress={() => setMode('practice')} style={styles.backButton}>
+              <Ionicons name="arrow-back" size={20} color="#F1F5F9" />
+            </TouchableOpacity>
+
+            <View style={styles.headerCopy}>
+              <Text style={styles.title}>Practice Feedback</Text>
+              <Text style={styles.subtitle}>{selectedScenario.title}</Text>
+            </View>
+          </View>
+
+          <View style={styles.feedbackHero}>
+            <Text style={styles.feedbackScore}>{feedback.score}/10</Text>
+            <Text style={styles.feedbackLabel}>Practice Score</Text>
+            <View style={styles.feedbackStars}>
+              {Array.from({ length: 5 }).map((_, index) => (
+                <Ionicons
+                  key={index}
+                  name="star"
+                  size={18}
+                  color={index < Math.round(feedback.score / 2) ? '#D4AF37' : '#334155'}
+                />
+              ))}
+            </View>
+          </View>
+
+          <FeedbackCard
+            icon="checkmark-circle-outline"
+            title="Strengths"
+            items={feedback.strengths}
+            tone="#22C55E"
+          />
+          <FeedbackCard
+            icon="construct-outline"
+            title="Improvements"
+            items={feedback.improvements}
+            tone="#F59E0B"
+          />
+
+          <View style={styles.card}>
+            <View style={styles.cardHeader}>
+              <Text style={styles.cardTitle}>Suggested Response</Text>
+              <Ionicons name="chatbox-ellipses-outline" size={18} color="#D4AF37" />
+            </View>
+            <Text style={styles.cardCopy}>{feedback.suggestedResponse}</Text>
+          </View>
+
+          <View style={styles.actionsColumn}>
+            <TouchableOpacity activeOpacity={0.85} onPress={() => setMode('practice')} style={styles.primaryAction}>
+              <Text style={styles.primaryActionText}>Try Again</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity activeOpacity={0.85} onPress={resetToSelection} style={styles.secondaryAction}>
+              <Text style={styles.secondaryActionText}>Back to Scenarios</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <View style={styles.header}>
+          <TouchableOpacity activeOpacity={0.85} onPress={() => navigation.goBack()} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={20} color="#F1F5F9" />
+          </TouchableOpacity>
+
+          <View style={styles.headerCopy}>
+            <Text style={styles.title}>Play Role</Text>
+            <Text style={styles.subtitle}>Practice tough objections before the floor asks for them.</Text>
+          </View>
+        </View>
+
+        <View style={styles.featuredCard}>
+          <Text style={styles.featuredEyebrow}>Featured Scenario</Text>
+          <View style={styles.featuredRow}>
+            <View style={styles.featuredIcon}>
+              <Ionicons name={featuredScenario.icon} size={24} color="#D4AF37" />
+            </View>
+            <View style={styles.featuredCopy}>
+              <Text style={styles.featuredTitle}>{featuredScenario.title}</Text>
+              <Text style={styles.featuredDescription}>{featuredScenario.description}</Text>
+            </View>
+          </View>
+
+          <View style={styles.featuredMeta}>
+            <Pill label={`${featuredScenario.averageScore}/10 avg`} tone="#22C55E" />
+            <Pill label={`${featuredScenario.personalBest}/10 best`} tone="#D4AF37" />
+            <Pill
+              label={getDifficultyLabel(featuredScenario.difficulty)}
+              tone={getDifficultyColor(featuredScenario.difficulty)}
+            />
+          </View>
+
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={() => startPractice(featuredScenario)}
+            style={styles.primaryAction}
           >
-            {categories.map((category) => (
+            <Text style={styles.primaryActionText}>Start Practice</Text>
+          </TouchableOpacity>
+        </View>
+
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.filterScroll}
+          contentContainerStyle={styles.filterScrollContent}
+        >
+          {categories.map((category) => {
+            const isActive = selectedCategory === category;
+
+            return (
               <TouchableOpacity
                 key={category}
-                style={[
-                  styles.filterChip,
-                  selectedCategory === category && styles.filterChipActive,
-                ]}
+                activeOpacity={0.85}
                 onPress={() => setSelectedCategory(category)}
+                style={[styles.filterPill, isActive && styles.filterPillActive]}
               >
-                <Text
-                  style={[
-                    styles.filterChipText,
-                    selectedCategory === category && styles.filterChipTextActive,
-                  ]}
-                >
+                <Text style={[styles.filterPillText, isActive && styles.filterPillTextActive]}>
                   {category}
                 </Text>
               </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
+            );
+          })}
+        </ScrollView>
 
-        {/* Featured Scenario */}
-        <View style={styles.featuredSection}>
-          <Card style={styles.featuredCard} padding={20}>
-            <View style={styles.featuredHeader}>
-              <Text style={styles.featuredStar}>⭐</Text>
-              <Text style={styles.featuredLabel}>FEATURED SCENARIO</Text>
-            </View>
+        <View style={styles.listSection}>
+          <Text style={styles.sectionTitle}>All Scenarios</Text>
 
-            <Text style={styles.featuredIcon}>{scenarios[0].icon}</Text>
-            <Text style={styles.featuredTitle}>{scenarios[0].title}</Text>
-            <Text style={styles.featuredDescription}>
-              Practice: {scenarios[0].description}
-            </Text>
-
-            <View style={styles.featuredDifficulty}>
-              {Array.from({ length: 5 }).map((_, i) => (
-                <View
-                  key={i}
-                  style={[
-                    styles.difficultyDot,
-                    i < scenarios[0].difficulty && {
-                      backgroundColor: getDifficultyColor(scenarios[0].difficulty),
-                    },
-                  ]}
-                />
-              ))}
-              <Text style={styles.featuredDifficultyText}>
-                {getDifficultyLabel(scenarios[0].difficulty)} Difficulty
-              </Text>
-            </View>
-
-            <View style={styles.featuredScores}>
-              <View style={styles.scoreColumn}>
-                <Text style={styles.scoreLabel}>Avg. Score</Text>
-                <Text style={styles.scoreValue}>{scenarios[0].averageScore}/10</Text>
-                <ProgressBar progress={scenarios[0].averageScore / 10} height={4} />
-              </View>
-              <View style={styles.scoreColumn}>
-                <Text style={styles.scoreLabel}>Your Best</Text>
-                <Text style={[styles.scoreValue, { color: Colors.gold }]}>
-                  {scenarios[0].personalBest}/10
-                </Text>
-                <ProgressBar progress={scenarios[0].personalBest / 10} height={4} color={Colors.gold} />
-              </View>
-            </View>
-
-            <Button
-              title="▶ START PRACTICE"
-              onPress={() => startPractice(scenarios[0])}
-              style={styles.featuredButton}
-            />
-          </Card>
-        </View>
-
-        {/* Scenario List */}
-        <View style={styles.scenariosSection}>
-          <Text style={styles.scenariosSectionTitle}>All Scenarios</Text>
-
-          {scenarios.slice(1).map((scenario) => (
-            <Card
+          {filteredScenarios.map((scenario) => (
+            <TouchableOpacity
               key={scenario.id}
-              style={styles.scenarioCard}
+              activeOpacity={0.9}
               onPress={() => startPractice(scenario)}
-              padding={16}
+              style={styles.scenarioCard}
             >
-              <View style={styles.scenarioHeader}>
-                <Text style={styles.scenarioIcon}>{scenario.icon}</Text>
-                <View style={styles.scenarioHeaderRight}>
-                  <View style={styles.scenarioDifficulty}>
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <View
-                        key={i}
-                        style={[
-                          styles.difficultyDotSmall,
-                          i < scenario.difficulty && {
-                            backgroundColor: getDifficultyColor(scenario.difficulty),
-                          },
-                        ]}
-                      />
-                    ))}
-                  </View>
+              <View style={styles.scenarioTopRow}>
+                <View style={styles.scenarioBadge}>
+                  <Ionicons name={scenario.icon} size={18} color="#D4AF37" />
                 </View>
+                <Pill
+                  label={getDifficultyLabel(scenario.difficulty)}
+                  tone={getDifficultyColor(scenario.difficulty)}
+                />
               </View>
 
               <Text style={styles.scenarioTitle}>{scenario.title}</Text>
               <Text style={styles.scenarioDescription}>{scenario.description}</Text>
 
               <View style={styles.scenarioFooter}>
-                {scenario.personalBest === 10 && (
-                  <Badge text="🏆 Personal Best" variant="gold" size="small" />
-                )}
-                <Text
-                  style={[
-                    styles.scenarioScore,
-                    { color: getScoreColor(scenario.personalBest) },
-                  ]}
-                >
-                  Score: {scenario.personalBest}/10
-                </Text>
+                <Text style={styles.scenarioMeta}>Avg {scenario.averageScore}/10</Text>
+                <Text style={styles.scenarioMeta}>Best {scenario.personalBest}/10</Text>
               </View>
-            </Card>
+            </TouchableOpacity>
           ))}
         </View>
 
-        {/* Weekly Stats Footer */}
-        <View style={styles.weeklyStatsFooter}>
-          <Text style={styles.weeklyStatsText}>
-            This Week: 12 practices | +3 vs last week
-          </Text>
-          <Text style={styles.weeklyStatsMotivation}>
-            🔥 You're on fire! Keep it up!
+        <View style={styles.card}>
+          <View style={styles.cardHeader}>
+            <Text style={styles.cardTitle}>Weekly Momentum</Text>
+            <Ionicons name="flame-outline" size={18} color="#D4AF37" />
+          </View>
+          <Text style={styles.cardCopy}>
+            {practiceSummary
+              ? `You completed ${practiceSummary.weeklySessions} practice ${
+                  practiceSummary.weeklySessions === 1 ? 'run' : 'runs'
+                } this week with an average score of ${practiceSummary.averageScore}/10.`
+              : 'Your latest practice results will appear here after the first completed run.'}
           </Text>
         </View>
-
-        <View style={styles.bottomSpacing} />
       </ScrollView>
     </SafeAreaView>
   );
+}
 
-  const renderPracticeMode = () => (
-    <SafeAreaView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => {
-            setMode('selection');
-            setPracticeMode({ ...practiceMode, active: false });
-          }}
-          style={styles.backButton}
-        >
-          <Text style={styles.backIcon}>✕</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{practiceMode.scenario?.title}</Text>
-        <View style={styles.headerActions}>
-          <TouchableOpacity style={styles.headerAction}>
-            <Text style={styles.headerActionIcon}>⏸️</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.headerAction}>
-            <Text style={styles.headerActionIcon}>💬</Text>
-          </TouchableOpacity>
-        </View>
+function FeedbackCard({
+  icon,
+  items,
+  title,
+  tone,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  items: string[];
+  title: string;
+  tone: string;
+}) {
+  return (
+    <View style={styles.card}>
+      <View style={styles.cardHeader}>
+        <Text style={styles.cardTitle}>{title}</Text>
+        <Ionicons name={icon} size={18} color={tone} />
       </View>
 
-      <ScrollView style={styles.scrollView}>
-        {/* Client Objection Display */}
-        <View style={styles.objectionDisplay}>
-          <Text style={styles.objectionIcon}>🙋</Text>
-          <Text style={styles.objectionQuote}>
-            "{practiceMode.scenario?.description}"
-          </Text>
-        </View>
-
-        {/* AI Tip Box */}
-        <View style={styles.tipBox}>
-          <Text style={styles.tipIcon}>💡</Text>
-          <Text style={styles.tipLabel}>AI Coach Tip:</Text>
-          <Text style={styles.tipText}>
-            Acknowledge first, then pivot to value, not price
-          </Text>
-        </View>
-
-        {/* Input Section */}
-        <View style={styles.inputSection}>
-          <Text style={styles.inputLabel}>🎤 Your Response:</Text>
-          <View style={styles.inputBox}>
-            <TextInput
-              style={styles.textInput}
-              placeholder="Record your response..."
-              placeholderTextColor={Colors.textMuted}
-              multiline
-              value={practiceMode.userInput}
-              onChangeText={(text) => setPracticeMode({ ...practiceMode, userInput: text })}
-              maxLength={280}
-            />
-            <Text style={styles.charCount}>
-              {practiceMode.userInput.length}/280 characters
-            </Text>
+      <View style={styles.feedbackList}>
+        {items.map((item) => (
+          <View key={item} style={styles.feedbackItem}>
+            <View style={[styles.feedbackBullet, { backgroundColor: tone }]} />
+            <Text style={styles.feedbackItemText}>{item}</Text>
           </View>
-        </View>
-
-        {/* Action Buttons */}
-        <View style={styles.practiceActions}>
-          <Button
-            title="🎙️ Record"
-            onPress={() => console.log('Record voice')}
-            variant="primary"
-            style={styles.practiceButton}
-          />
-          <Button
-            title="⌨️ Type"
-            onPress={() => console.log('Type mode')}
-            variant="secondary"
-            style={styles.practiceButton}
-          />
-          <Button
-            title="✓ Submit"
-            onPress={submitResponse}
-            variant="primary"
-            disabled={!practiceMode.userInput}
-            style={styles.practiceButton}
-          />
-        </View>
-
-        <View style={styles.bottomSpacing} />
-      </ScrollView>
-    </SafeAreaView>
-  );
-
-  const renderFeedbackScreen = () => (
-    <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView}>
-        {/* Success Header */}
-        <View style={styles.feedbackHeader}>
-          <Text style={styles.feedbackIcon}>✓</Text>
-          <Text style={styles.feedbackTitle}>Response Complete</Text>
-        </View>
-
-        {/* Score Display */}
-        <View style={styles.scoreDisplay}>
-          <Text style={styles.scoreDisplayText}>Your Score:</Text>
-          <Text style={styles.scoreDisplayNumber}>{feedback?.score}/10</Text>
-          <View style={styles.starsRow}>
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Text
-                key={i}
-                style={[
-                  styles.star,
-                  i < Math.floor(feedback!.score / 2)
-                    ? styles.starFilled
-                    : styles.starEmpty,
-                ]}
-              >
-                ⭐
-              </Text>
-            ))}
-          </View>
-        </View>
-
-        {/* Strengths Section */}
-        <Card style={styles.feedbackSection} padding={16}>
-          <Text style={styles.feedbackSectionTitle}>
-            ✅ Strengths
-          </Text>
-          {feedback?.strengths.map((strength, index) => (
-            <Text key={index} style={styles.feedbackBullet}>
-              • {strength}
-            </Text>
-          ))}
-        </Card>
-
-        {/* Improvements Section */}
-        <Card style={styles.feedbackSection} padding={16}>
-          <Text style={styles.feedbackSectionTitle}>
-            💡 Improvements
-          </Text>
-          {feedback?.improvements.map((improvement, index) => (
-            <Text key={index} style={styles.feedbackBullet}>
-              • {improvement}
-            </Text>
-          ))}
-        </Card>
-
-        {/* Suggested Response */}
-        <Card style={styles.suggestedResponseCard} padding={16}>
-          <Text style={styles.suggestedResponseTitle}>
-            🎯 Suggested Response
-          </Text>
-          <Text style={styles.suggestedResponseText}>
-            {feedback?.suggestedResponse}
-          </Text>
-        </Card>
-
-        {/* Action Buttons */}
-        <View style={styles.feedbackActions}>
-          <Button
-            title="🔄 Try Again"
-            onPress={() => {
-              setMode('practice');
-              setFeedback(null);
-            }}
-            variant="secondary"
-            style={styles.feedbackButton}
-          />
-          <Button
-            title="→ Next Scenario"
-            onPress={() => {
-              setMode('selection');
-              setFeedback(null);
-              setPracticeMode({
-                active: false,
-                scenario: null,
-                userInput: '',
-                isRecording: false,
-                recordingTime: 0,
-              });
-            }}
-            style={styles.feedbackButton}
-          />
-        </View>
-
-        <View style={styles.bottomSpacing} />
-      </ScrollView>
-    </SafeAreaView>
-  );
-
-  return (
-    <View style={styles.container}>
-      {mode === 'selection' && renderSelectionScreen()}
-      {mode === 'practice' && renderPracticeMode()}
-      {mode === 'feedback' && renderFeedbackScreen()}
+        ))}
+      </View>
     </View>
   );
-};
+}
+
+function Pill({ label, tone }: { label: string; tone: string }) {
+  return (
+    <View style={[styles.pill, { backgroundColor: `${tone}20` }]}>
+      <Text style={[styles.pillText, { color: tone }]}>{label}</Text>
+    </View>
+  );
+}
+
+function getDifficultyLabel(difficulty: number) {
+  switch (difficulty) {
+    case 1:
+    case 2:
+      return 'Easy';
+    case 3:
+      return 'Medium';
+    case 4:
+      return 'Hard';
+    case 5:
+      return 'Expert';
+    default:
+      return 'Unknown';
+  }
+}
+
+function getDifficultyColor(difficulty: number) {
+  switch (difficulty) {
+    case 1:
+    case 2:
+      return '#22C55E';
+    case 3:
+      return '#F59E0B';
+    case 4:
+      return '#EF4444';
+    case 5:
+      return '#A855F7';
+    default:
+      return '#64748B';
+  }
+}
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#020204',
+  },
   container: {
     flex: 1,
-    backgroundColor: Colors.black,
+    backgroundColor: '#020204',
   },
-
+  content: {
+    paddingBottom: 28,
+  },
   header: {
-    paddingHorizontal: Spacing.padding.md,
-    paddingTop: Spacing.padding.sm,
-    paddingBottom: Spacing.padding.md,
-    backgroundColor: Colors.black,
-  },
-
-  backButton: {
-    padding: Spacing.s,
-  },
-
-  backIcon: {
-    fontSize: Typography.fontSize.h3,
-    color: Colors.textPrimary,
-  },
-
-  headerTitle: {
-    fontSize: Typography.fontSize.h4,
-    fontWeight: Typography.fontWeight.bold,
-    color: Colors.textPrimary,
-    textAlign: 'center',
-    marginTop: Spacing.xs,
-  },
-
-  headerSubtitle: {
-    fontSize: Typography.fontSize.caption,
-    color: Colors.textSecondary,
-    textAlign: 'center',
-  },
-
-  headerActions: {
     flexDirection: 'row',
-    gap: Spacing.s,
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 12,
   },
-
-  headerAction: {
-    padding: Spacing.s,
+  backButton: {
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    backgroundColor: '#0F172A',
+    borderColor: '#334155',
+    borderRadius: 12,
+    borderWidth: 1,
+    height: 40,
+    justifyContent: 'center',
+    width: 40,
   },
-
-  headerActionIcon: {
-    fontSize: 20,
-    color: Colors.textSecondary,
-  },
-
-  scrollView: {
+  headerCopy: {
     flex: 1,
   },
-
-  // Filter Section
-  filterSection: {
-    paddingHorizontal: Spacing.padding.md,
-    paddingTop: Spacing.padding.md,
-    paddingBottom: Spacing.sm,
+  title: {
+    color: '#F1F5F9',
+    fontSize: 30,
+    fontWeight: '700',
   },
-
-  filterTitle: {
-    fontSize: Typography.fontSize.h5,
-    fontWeight: Typography.fontWeight.bold,
-    color: Colors.textPrimary,
-    marginBottom: Spacing.sm,
+  subtitle: {
+    color: '#94A3B8',
+    fontSize: 15,
+    lineHeight: 22,
+    marginTop: 6,
   },
-
-  filterScroll: {
-    flexDirection: 'row',
-  },
-
-  filterChip: {
-    paddingHorizontal: Spacing.padding.md,
-    paddingVertical: Spacing.xs,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    marginRight: Spacing.s,
-  },
-
-  filterChipActive: {
-    backgroundColor: Colors.gold,
-    borderColor: Colors.gold,
-  },
-
-  filterChipText: {
-    fontSize: Typography.fontSize.small,
-    color: Colors.textSecondary,
-    fontWeight: Typography.fontWeight.medium,
-  },
-
-  filterChipTextActive: {
-    color: Colors.black,
-  },
-
-  // Featured Section
-  featuredSection: {
-    paddingHorizontal: Spacing.padding.md,
-    marginBottom: Spacing.padding.md,
-  },
-
   featuredCard: {
-    backgroundColor: '#0F172A',
-    borderWidth: 2,
-    borderColor: Colors.gold,
+    backgroundColor: '#111827',
+    borderColor: '#D4AF37',
     borderRadius: 20,
+    borderWidth: 1,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    padding: 18,
   },
-
-  featuredHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: Spacing.sm,
-  },
-
-  featuredStar: {
-    fontSize: 16,
-    marginRight: Spacing.xs,
-  },
-
-  featuredLabel: {
-    fontSize: Typography.fontSize.small,
-    fontWeight: Typography.fontWeight.bold,
-    color: Colors.gold,
-    letterSpacing: 1,
+  featuredEyebrow: {
+    color: '#D4AF37',
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 0.8,
+    marginBottom: 12,
     textTransform: 'uppercase',
   },
-
+  featuredRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
   featuredIcon: {
-    fontSize: 32,
-    marginBottom: Spacing.sm,
-    textAlign: 'center',
-  },
-
-  featuredTitle: {
-    fontSize: Typography.fontSize.h2,
-    fontWeight: Typography.fontWeight.bold,
-    color: Colors.textPrimary,
-    textAlign: 'center',
-    marginBottom: Spacing.xs,
-  },
-
-  featuredDescription: {
-    fontSize: Typography.fontSize.h5,
-    color: Colors.textSecondary,
-    fontStyle: 'italic',
-    textAlign: 'center',
-    marginBottom: Spacing.md,
-  },
-
-  featuredDifficulty: {
-    flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: '#1E293B',
+    borderRadius: 16,
+    height: 52,
     justifyContent: 'center',
-    marginBottom: Spacing.md,
+    width: 52,
   },
-
-  difficultyDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: Colors.border,
-    marginHorizontal: 2,
-  },
-
-  featuredDifficultyText: {
-    fontSize: Typography.fontSize.caption,
-    color: Colors.textSecondary,
-    marginLeft: Spacing.s,
-  },
-
-  featuredScores: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginBottom: Spacing.lg,
-  },
-
-  scoreColumn: {
+  featuredCopy: {
     flex: 1,
+  },
+  featuredTitle: {
+    color: '#F8FAFC',
+    fontSize: 20,
+    fontWeight: '700',
+    marginBottom: 6,
+  },
+  featuredDescription: {
+    color: '#CBD5E1',
+    fontSize: 15,
+    lineHeight: 22,
+  },
+  featuredMeta: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 16,
+    marginBottom: 16,
+  },
+  pill: {
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  pillText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  primaryAction: {
     alignItems: 'center',
+    backgroundColor: '#D4AF37',
+    borderRadius: 14,
+    paddingVertical: 16,
   },
-
-  scoreLabel: {
-    fontSize: Typography.fontSize.small,
-    color: Colors.textSecondary,
-    marginBottom: Spacing.xs,
+  primaryActionText: {
+    color: '#020204',
+    fontSize: 15,
+    fontWeight: '700',
   },
-
-  scoreValue: {
-    fontSize: Typography.fontSize.h5,
-    fontWeight: Typography.fontWeight.bold,
-    color: Colors.textPrimary,
-    marginBottom: Spacing.xs,
-  },
-
-  featuredButton: {
-    marginTop: Spacing.sm,
-  },
-
-  // Scenario List
-  scenariosSection: {
-    paddingHorizontal: Spacing.padding.md,
-  },
-
-  scenariosSectionTitle: {
-    fontSize: Typography.fontSize.h4,
-    fontWeight: Typography.fontWeight.bold,
-    color: Colors.textPrimary,
-    marginBottom: Spacing.md,
-  },
-
-  scenarioCard: {
-    marginBottom: Spacing.md,
-    backgroundColor: Colors.card,
+  secondaryAction: {
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+    borderColor: '#475569',
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: 12,
+    paddingVertical: 16,
   },
-
-  scenarioHeader: {
+  secondaryActionText: {
+    color: '#F1F5F9',
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  filterScroll: {
+    maxHeight: 48,
+  },
+  filterScrollContent: {
+    paddingHorizontal: 16,
+    paddingBottom: 4,
+  },
+  filterPill: {
+    backgroundColor: '#1E293B',
+    borderRadius: 999,
+    marginRight: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+  },
+  filterPillActive: {
+    backgroundColor: '#D4AF37',
+  },
+  filterPillText: {
+    color: '#94A3B8',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  filterPillTextActive: {
+    color: '#020204',
+  },
+  listSection: {
+    marginTop: 12,
+    paddingHorizontal: 16,
+  },
+  sectionTitle: {
+    color: '#F1F5F9',
+    fontSize: 19,
+    fontWeight: '700',
+    marginBottom: 12,
+  },
+  scenarioCard: {
+    backgroundColor: '#1E293B',
+    borderColor: '#334155',
+    borderRadius: 18,
+    borderWidth: 1,
+    marginBottom: 14,
+    padding: 16,
+  },
+  scenarioTopRow: {
+    alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  scenarioBadge: {
     alignItems: 'center',
-    marginBottom: Spacing.sm,
+    backgroundColor: '#0F172A',
+    borderRadius: 12,
+    height: 40,
+    justifyContent: 'center',
+    width: 40,
   },
-
-  scenarioIcon: {
-    fontSize: 32,
-  },
-
-  scenarioHeaderRight: {
-    alignItems: 'flex-end',
-  },
-
-  scenarioDifficulty: {
-    flexDirection: 'row',
-  },
-
-  difficultyDotSmall: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: Colors.border,
-    marginRight: 2,
-  },
-
   scenarioTitle: {
-    fontSize: Typography.fontSize.h5,
-    fontWeight: Typography.fontWeight.bold,
-    color: Colors.textPrimary,
-    marginBottom: Spacing.xs,
+    color: '#F8FAFC',
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 8,
   },
-
   scenarioDescription: {
-    fontSize: Typography.fontSize.body,
-    color: Colors.textSecondary,
-    fontStyle: 'italic',
-    marginBottom: Spacing.sm,
+    color: '#94A3B8',
+    fontSize: 14,
+    lineHeight: 21,
   },
-
   scenarioFooter: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    gap: 16,
+    marginTop: 12,
+  },
+  scenarioMeta: {
+    color: '#CBD5E1',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  scenarioHero: {
+    backgroundColor: '#111827',
+    borderColor: '#334155',
+    borderRadius: 20,
+    borderWidth: 1,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    padding: 18,
+  },
+  scenarioIconBlock: {
     alignItems: 'center',
+    backgroundColor: '#1E293B',
+    borderRadius: 14,
+    height: 48,
+    justifyContent: 'center',
+    marginBottom: 14,
+    width: 48,
   },
-
-  scenarioScore: {
-    fontSize: Typography.fontSize.caption,
-    fontWeight: Typography.fontWeight.bold,
+  scenarioPrompt: {
+    color: '#F8FAFC',
+    fontSize: 22,
+    fontWeight: '700',
+    lineHeight: 30,
+    marginBottom: 14,
   },
-
-  // Weekly Stats Footer
-  weeklyStatsFooter: {
-    backgroundColor: '#0F172A',
-    borderTopWidth: 1,
-    borderTopColor: Colors.border,
-    padding: Spacing.padding.md,
-  },
-
-  weeklyStatsText: {
-    fontSize: Typography.fontSize.body,
-    color: Colors.textPrimary,
-    textAlign: 'center',
-    marginBottom: Spacing.xs,
-  },
-
-  weeklyStatsMotivation: {
-    fontSize: Typography.fontSize.caption,
-    color: Colors.textSecondary,
-    textAlign: 'center',
-  },
-
-  // Practice Mode Styles
-  objectionDisplay: {
+  metaRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  card: {
+    backgroundColor: '#1E293B',
+    borderColor: '#334155',
+    borderRadius: 18,
+    borderWidth: 1,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    padding: 18,
+  },
+  cardHeader: {
     alignItems: 'center',
-    backgroundColor: '#0F172A',
-    borderLeftWidth: 4,
-    borderLeftColor: Colors.error,
-    borderRadius: 8,
-    padding: Spacing.padding.md,
-    marginHorizontal: Spacing.padding.md,
-    marginTop: Spacing.padding.md,
-    marginBottom: Spacing.md,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 12,
   },
-
-  objectionIcon: {
-    fontSize: 40,
-    marginRight: Spacing.md,
+  cardTitle: {
+    color: '#F1F5F9',
+    fontSize: 18,
+    fontWeight: '700',
   },
-
-  objectionQuote: {
-    fontSize: Typography.fontSize.h4,
-    fontWeight: Typography.fontWeight.medium,
-    color: Colors.textPrimary,
-    fontStyle: 'italic',
-    flex: 1,
+  cardCopy: {
+    color: '#94A3B8',
+    fontSize: 14,
+    lineHeight: 21,
   },
-
-  tipBox: {
-    backgroundColor: 'rgba(212, 175, 55, 0.1)',
-    borderWidth: 1,
-    borderColor: Colors.gold,
-    borderRadius: 8,
-    padding: Spacing.padding.md,
-    marginHorizontal: Spacing.padding.md,
-    marginBottom: Spacing.md,
-  },
-
-  tipIcon: {
-    fontSize: 16,
-    marginBottom: Spacing.xs,
-  },
-
-  tipLabel: {
-    fontSize: Typography.fontSize.small,
-    fontWeight: Typography.fontWeight.bold,
-    color: Colors.gold,
-    marginBottom: Spacing.xs,
-  },
-
-  tipText: {
-    fontSize: Typography.fontSize.body,
-    color: Colors.textSecondary,
-  },
-
-  inputSection: {
-    paddingHorizontal: Spacing.padding.md,
-    marginBottom: Spacing.lg,
-  },
-
-  inputLabel: {
-    fontSize: Typography.fontSize.h5,
-    fontWeight: Typography.fontWeight.bold,
-    color: Colors.textPrimary,
-    marginBottom: Spacing.sm,
-  },
-
-  inputBox: {
-    backgroundColor: '#0F172A',
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: 12,
-    padding: Spacing.padding.md,
-    minHeight: 120,
-  },
-
   textInput: {
-    fontSize: Typography.fontSize.body,
-    color: Colors.textPrimary,
-    flex: 1,
+    backgroundColor: '#0F172A',
+    borderColor: '#334155',
+    borderRadius: 16,
+    borderWidth: 1,
+    color: '#F1F5F9',
+    fontSize: 15,
+    lineHeight: 22,
+    minHeight: 150,
+    padding: 16,
     textAlignVertical: 'top',
   },
-
+  inputFooter: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 12,
+  },
   charCount: {
-    fontSize: Typography.fontSize.small,
-    color: Colors.textMuted,
-    textAlign: 'right',
-    marginTop: Spacing.xs,
+    color: '#64748B',
+    fontSize: 12,
+    fontWeight: '600',
   },
-
-  practiceActions: {
-    flexDirection: 'row',
-    paddingHorizontal: Spacing.padding.md,
-    gap: Spacing.s,
+  inlineAction: {
+    paddingVertical: 4,
   },
-
-  practiceButton: {
-    flex: 1,
+  inlineActionText: {
+    color: '#D4AF37',
+    fontSize: 13,
+    fontWeight: '700',
   },
-
-  // Feedback Screen Styles
-  feedbackHeader: {
+  actionsColumn: {
+    gap: 12,
+    marginHorizontal: 16,
+  },
+  feedbackHero: {
     alignItems: 'center',
-    padding: Spacing.padding.xl,
-    marginBottom: Spacing.lg,
+    backgroundColor: '#111827',
+    borderColor: '#D4AF37',
+    borderRadius: 20,
+    borderWidth: 1,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    padding: 24,
   },
-
-  feedbackIcon: {
-    fontSize: 40,
-    color: Colors.success,
-    marginBottom: Spacing.sm,
+  feedbackScore: {
+    color: '#D4AF37',
+    fontSize: 42,
+    fontWeight: '700',
   },
-
-  feedbackTitle: {
-    fontSize: Typography.fontSize.h3,
-    fontWeight: Typography.fontWeight.bold,
-    color: Colors.success,
+  feedbackLabel: {
+    color: '#CBD5E1',
+    fontSize: 14,
+    marginTop: 6,
   },
-
-  scoreDisplay: {
-    alignItems: 'center',
-    paddingHorizontal: Spacing.padding.md,
-    marginBottom: Spacing.xl,
-  },
-
-  scoreDisplayText: {
-    fontSize: Typography.fontSize.h5,
-    color: Colors.textSecondary,
-    marginBottom: Spacing.sm,
-  },
-
-  scoreDisplayNumber: {
-    fontSize: 48,
-    fontWeight: Typography.fontWeight.bold,
-    color: Colors.gold,
-  },
-
-  starsRow: {
+  feedbackStars: {
     flexDirection: 'row',
-    marginTop: Spacing.sm,
+    gap: 6,
+    marginTop: 12,
   },
-
-  star: {
-    fontSize: 32,
+  feedbackList: {
+    gap: 10,
   },
-
-  starFilled: {
-    color: Colors.gold,
+  feedbackItem: {
+    flexDirection: 'row',
+    gap: 10,
   },
-
-  starEmpty: {
-    color: Colors.border,
-  },
-
-  feedbackSection: {
-    marginBottom: Spacing.md,
-  },
-
-  feedbackSectionTitle: {
-    fontSize: Typography.fontSize.h4,
-    fontWeight: Typography.fontWeight.bold,
-    marginBottom: Spacing.sm,
-  },
-
   feedbackBullet: {
-    fontSize: Typography.fontSize.body,
-    color: Colors.textPrimary,
-    marginBottom: Spacing.xs,
+    borderRadius: 999,
+    height: 8,
+    marginTop: 7,
+    width: 8,
   },
-
-  suggestedResponseCard: {
-    backgroundColor: '#0F172A',
-    borderLeftWidth: 4,
-    borderLeftColor: Colors.info,
-    marginBottom: Spacing.md,
-  },
-
-  suggestedResponseTitle: {
-    fontSize: Typography.fontSize.h5,
-    fontWeight: Typography.fontWeight.bold,
-    color: Colors.info,
-    marginBottom: Spacing.sm,
-  },
-
-  suggestedResponseText: {
-    fontSize: Typography.fontSize.body,
-    color: Colors.textSecondary,
-    fontStyle: 'italic',
-    lineHeight: Typography.lineHeight.body,
-  },
-
-  feedbackActions: {
-    flexDirection: 'row',
-    paddingHorizontal: Spacing.padding.md,
-    gap: Spacing.s,
-    marginBottom: Spacing.xl,
-  },
-
-  feedbackButton: {
+  feedbackItemText: {
+    color: '#CBD5E1',
     flex: 1,
-  },
-
-  bottomSpacing: {
-    height: 80,
+    fontSize: 14,
+    lineHeight: 21,
   },
 });
-
-export default PlayRoleScreen;

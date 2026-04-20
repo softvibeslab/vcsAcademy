@@ -1,6 +1,10 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { ReadinessScore, DailyGoal, TourResult } from '../../types';
 import { apiFetch } from '../../services/fetch';
+import {
+  normalizeDailyGoal,
+  normalizeReadinessScore,
+} from '../../services/mobileApiTransforms';
 
 interface PerformanceState {
   readinessScore: ReadinessScore | null;
@@ -24,14 +28,16 @@ const initialState: PerformanceState = {
 export const fetchReadinessScore = createAsyncThunk(
   'performance/fetchReadinessScore',
   async () => {
-    return apiFetch<ReadinessScore>('/mobile/performance/readiness');
+    const response = await apiFetch<any>('/mobile/performance/readiness');
+    return normalizeReadinessScore(response);
   }
 );
 
 export const fetchDailyGoal = createAsyncThunk(
   'performance/fetchDailyGoal',
   async () => {
-    return apiFetch<DailyGoal>('/mobile/performance/daily-goal');
+    const response = await apiFetch<any>('/mobile/performance/daily-goal');
+    return normalizeDailyGoal(response);
   }
 );
 
@@ -62,11 +68,51 @@ const performanceSlice = createSlice({
         state.isLoading = false;
         state.readinessScore = action.payload;
       })
+      .addCase(fetchReadinessScore.rejected, (state) => {
+        state.isLoading = false;
+      })
+      .addCase(fetchDailyGoal.pending, (state) => {
+        state.isLoading = true;
+      })
       .addCase(fetchDailyGoal.fulfilled, (state, action) => {
+        state.isLoading = false;
         state.dailyGoal = action.payload;
       })
+      .addCase(fetchDailyGoal.rejected, (state) => {
+        state.isLoading = false;
+      })
+      .addCase(recordTourResult.pending, (state) => {
+        state.isLoading = true;
+      })
       .addCase(recordTourResult.fulfilled, (state, action) => {
-        state.tourHistory.push(action.payload);
+        state.isLoading = false;
+        state.tourHistory.unshift(action.payload);
+
+        if (state.dailyGoal) {
+          state.dailyGoal.progress.tours_completed += 1;
+
+          if (action.payload.outcome === 'sale') {
+            state.dailyGoal.progress.sales_closed += 1;
+          }
+
+          if (action.payload.ai_coach_used) {
+            state.dailyGoal.progress.ai_sessions_used += 1;
+          }
+
+          const goal = state.dailyGoal.goals;
+          const progress = state.dailyGoal.progress;
+          const completed =
+            progress.tours_completed >= goal.tours &&
+            progress.sales_closed >= goal.sales &&
+            progress.ai_sessions_used >= goal.ai_coach_sessions;
+
+          state.dailyGoal.status = completed ? 'completed' : 'in_progress';
+        }
+
+        state.streak += 1;
+      })
+      .addCase(recordTourResult.rejected, (state) => {
+        state.isLoading = false;
       });
   },
 });

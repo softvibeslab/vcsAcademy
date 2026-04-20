@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { CoachingInput, CoachingResponse, ChatMessage } from '../../types';
 import { apiFetch } from '../../services/fetch';
+import { normalizeCoachingResponse } from '../../services/mobileApiTransforms';
 
 interface AICoachState {
   messages: ChatMessage[];
@@ -28,10 +29,12 @@ const initialState: AICoachState = {
 export const generateCoachingResponse = createAsyncThunk(
   'aiCoach/generateResponse',
   async (input: CoachingInput) => {
-    return apiFetch<CoachingResponse>('/mobile/ai/coach', {
+    const response = await apiFetch<any>('/mobile/ai/coach', {
       method: 'POST',
       body: JSON.stringify(input),
     });
+
+    return normalizeCoachingResponse(response);
   }
 );
 

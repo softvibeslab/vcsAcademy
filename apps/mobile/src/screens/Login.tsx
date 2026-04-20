@@ -4,15 +4,16 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
-  SafeAreaView,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { clearError, login } from '../store/slices/authSlice';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
+import { DEMO_EMAIL, DEMO_PASSWORD } from '../demo/data';
 
 export default function LoginScreen() {
   const dispatch = useAppDispatch();
@@ -41,9 +42,21 @@ export default function LoginScreen() {
     );
   };
 
-  const fillDemoCredentials = () => {
-    setEmail('demo@vcsa.com');
-    setPassword('demo123');
+  const handleDemoLogin = async () => {
+    if (isLoading) {
+      return;
+    }
+
+    setEmail(DEMO_EMAIL);
+    setPassword(DEMO_PASSWORD);
+
+    dispatch(clearError());
+    await dispatch(
+      login({
+        email: DEMO_EMAIL,
+        password: DEMO_PASSWORD,
+      })
+    );
   };
 
   return (
@@ -101,12 +114,12 @@ export default function LoginScreen() {
               )}
             </Pressable>
 
-            <Pressable onPress={fillDemoCredentials} style={styles.secondaryButton}>
+            <Pressable onPress={handleDemoLogin} style={styles.secondaryButton}>
               <Text style={styles.secondaryButtonText}>Use Demo Credentials</Text>
             </Pressable>
 
             <Text style={styles.footnote}>
-              For internal QA you can use demo@vcsa.com / demo123.
+              For internal QA you can use demo@vcsa.com / demo123. Demo mode also works offline in Expo Go.
             </Text>
           </View>
         </View>

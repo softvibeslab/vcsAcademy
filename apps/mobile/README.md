@@ -37,11 +37,13 @@ npm run web      # Web browser (development only)
 # - iOS: App Store
 # - Android: Google Play Store
 
-# 2. Start development server
-npm start
+# 2. Start Expo Go mode
+npm run start:go
 
 # 3. Scan QR code with Expo Go app
 ```
+
+For Expo Go, the app now falls back to `https://api.salesmastersminds.com/api` when no explicit `EXPO_PUBLIC_API_URL` is provided, so it can work on a real phone without pointing at `localhost`.
 
 ---
 

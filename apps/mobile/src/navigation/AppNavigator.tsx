@@ -2,9 +2,9 @@ import React, { useEffect } from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Platform, StyleSheet, Text, View } from 'react-native';
 
-import { RootStackParamList } from '../types';
+import { MainTabParamList, RootStackParamList } from '../types';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { restoreSession } from '../store/slices/authSlice';
 
@@ -16,21 +16,31 @@ import PostTourDebriefScreen from '../screens/PostTourDebrief';
 import GoalSheetScreen from '../screens/GoalSheetScreen';
 import PlayRoleScreen from '../screens/PlayRoleScreen';
 import LoginScreen from '../screens/Login';
+import MoreHubScreen from '../screens/MoreHub';
 
 const Stack = createStackNavigator<RootStackParamList>();
-const Tab = createBottomTabNavigator();
+const Tab = createBottomTabNavigator<MainTabParamList>();
 
 function MainTabs() {
   return (
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
+        tabBarHideOnKeyboard: true,
         tabBarStyle: {
           backgroundColor: '#1E293B',
           borderTopColor: '#334155',
+          borderTopWidth: 1,
+          height: Platform.OS === 'android' ? 66 : 84,
+          paddingTop: 8,
+          paddingBottom: Platform.OS === 'android' ? 8 : 24,
         },
         tabBarActiveTintColor: '#D4AF37',
         tabBarInactiveTintColor: '#94A3B8',
+        tabBarLabelStyle: {
+          fontSize: 11,
+          fontWeight: '600',
+        },
       }}
     >
       <Tab.Screen
@@ -44,20 +54,10 @@ function MainTabs() {
         }}
       />
       <Tab.Screen
-        name="PreTourMode"
-        component={PreTourModeScreen}
-        options={{
-          tabBarLabel: 'Pre-Tour',
-          tabBarIcon: ({ color, size }: { color: string; size: number }) => (
-            <Ionicons name="trophy" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tab.Screen
         name="AICoachChat"
         component={AICoachChatScreen}
         options={{
-          tabBarLabel: 'AI Coach',
+          tabBarLabel: 'Coach',
           tabBarIcon: ({ color, size }: { color: string; size: number }) => (
             <Ionicons name="chatbubbles" size={size} color={color} />
           ),
@@ -67,39 +67,19 @@ function MainTabs() {
         name="QuickWinsLibrary"
         component={QuickWinsLibraryScreen}
         options={{
-          tabBarLabel: 'Quick Wins',
+          tabBarLabel: 'Library',
           tabBarIcon: ({ color, size }: { color: string; size: number }) => (
-            <Ionicons name="flash" size={size} color={color} />
+            <Ionicons name="library" size={size} color={color} />
           ),
         }}
       />
       <Tab.Screen
-        name="PostTourDebrief"
-        component={PostTourDebriefScreen}
+        name="MoreHub"
+        component={MoreHubScreen}
         options={{
-          tabBarLabel: 'Debrief',
+          tabBarLabel: 'More',
           tabBarIcon: ({ color, size }: { color: string; size: number }) => (
-            <Ionicons name="stats-chart" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="GoalSheet"
-        component={GoalSheetScreen}
-        options={{
-          tabBarLabel: 'Goals',
-          tabBarIcon: ({ color, size }: { color: string; size: number }) => (
-            <Ionicons name="cash" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="PlayRole"
-        component={PlayRoleScreen}
-        options={{
-          tabBarLabel: 'Practice',
-          tabBarIcon: ({ color, size }: { color: string; size: number }) => (
-            <Ionicons name="musical-notes" size={size} color={color} />
+            <Ionicons name="grid" size={size} color={color} />
           ),
         }}
       />
@@ -138,7 +118,7 @@ export function AppNavigator() {
         },
         headerTintColor: '#F1F5F9',
         headerTitleStyle: {
-          fontFamily: 'Playfair Display',
+          fontWeight: '700',
         },
       }}
     >
@@ -149,11 +129,33 @@ export function AppNavigator() {
           options={{ headerShown: false }}
         />
       ) : (
-        <Stack.Screen
-          name="MainTabs"
-          component={MainTabs}
-          options={{ headerShown: false }}
-        />
+        <>
+          <Stack.Screen
+            name="MainTabs"
+            component={MainTabs}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="PreTourMode"
+            component={PreTourModeScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="PostTourDebrief"
+            component={PostTourDebriefScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="GoalSheet"
+            component={GoalSheetScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="PlayRole"
+            component={PlayRoleScreen}
+            options={{ headerShown: false }}
+          />
+        </>
       )}
     </Stack.Navigator>
   );

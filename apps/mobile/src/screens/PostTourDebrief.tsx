@@ -1,14 +1,24 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { useAppDispatch, useAppSelector } from '../store/hooks';
+import {
+  fetchDailyGoal,
+  fetchReadinessScore,
+  recordTourResult,
+} from '../store/slices/performanceSlice';
 import { RootStackParamList } from '../types';
 
 type PostTourDebriefRouteProp = RouteProp<RootStackParamList, 'PostTourDebrief'>;
 
 export default function PostTourDebriefScreen() {
+  const dispatch = useAppDispatch();
   const navigation = useNavigation();
   const route = useRoute<PostTourDebriefRouteProp>();
+  const { isLoading } = useAppSelector((state) => state.performance);
   const tourId = route.params?.tourId;
 
   const [outcome, setOutcome] = useState<'sale' | 'no_sale' | 'follow_up' | null>(null);
@@ -17,361 +27,410 @@ export default function PostTourDebriefScreen() {
   const [confidenceAfter, setConfidenceAfter] = useState(5);
   const [notes, setNotes] = useState('');
 
-  const handleSubmit = () => {
-    // TODO: Submit tour result to API
-    console.log({
-      tour_id: tourId || `tour_${Date.now()}`,
-      outcome,
-      duration_minutes: 30,
-      objections_handled: objectionsHandled,
-      ai_coach_used: true,
-      confidence_before: confidenceBefore,
-      confidence_after: confidenceAfter,
-      notes,
-    });
+  const insight = useMemo(() => {
+    if (outcome === 'sale') {
+      return {
+        icon: 'trophy',
+        color: '#D4AF37',
+        title: 'Momentum logged',
+        copy: `Your confidence climbed from ${confidenceBefore} to ${confidenceAfter}. Keep replaying what worked.`,
+      };
+    }
 
-    // Show success and navigate back
-    navigation.goBack();
+    if (outcome === 'no_sale') {
+      return {
+        icon: 'trending-up',
+        color: '#3B82F6',
+        title: 'Film room moment',
+        copy: `You worked through ${objectionsHandled} objection${objectionsHandled === 1 ? '' : 's'}. Use that debrief in Play Role tomorrow.`,
+      };
+    }
+
+    if (outcome === 'follow_up') {
+      return {
+        icon: 'refresh-circle',
+        color: '#F59E0B',
+        title: 'Follow-up protected',
+        copy: 'Log the next step now so the opportunity does not cool off overnight.',
+      };
+    }
+
+    return null;
+  }, [confidenceAfter, confidenceBefore, objectionsHandled, outcome]);
+
+  const handleSubmit = async () => {
+    if (!outcome || isLoading) {
+      return;
+    }
+
+    try {
+      await dispatch(
+        recordTourResult({
+          tour_id: tourId || `tour_${Date.now()}`,
+          outcome,
+          duration_minutes: 30,
+          objections_handled: objectionsHandled,
+          ai_coach_used: true,
+          confidence_before: confidenceBefore,
+          confidence_after: confidenceAfter,
+          notes,
+        })
+      ).unwrap();
+
+      await Promise.all([
+        dispatch(fetchReadinessScore()),
+        dispatch(fetchDailyGoal()),
+      ]);
+
+      navigation.goBack();
+    } catch (error) {
+      console.error('Debrief submit error:', error);
+    }
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Post-Tour Debrief</Text>
-        <Text style={styles.subtitle}>1-minute reflection & learning</Text>
-      </View>
-
-      {/* Outcome Selection */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Tour Outcome</Text>
-        <View style={styles.outcomeGrid}>
-          <OutcomeOption
-            icon="checkmark-circle"
-            label="Sale!"
-            color="#22c55e"
-            selected={outcome === 'sale'}
-            onPress={() => setOutcome('sale')}
-          />
-          <OutcomeOption
-            icon="close-circle"
-            label="No Sale"
-            color="#EF4444"
-            selected={outcome === 'no_sale'}
-            onPress={() => setOutcome('no_sale')}
-          />
-          <OutcomeOption
-            icon="refresh"
-            label="Follow Up"
-            color="#F59E0B"
-            selected={outcome === 'follow_up'}
-            onPress={() => setOutcome('follow_up')}
-          />
-        </View>
-      </View>
-
-      {/* Metrics */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Tour Metrics</Text>
-
-        <View style={styles.metricRow}>
-          <Text style={styles.metricLabel}>Objections Handled</Text>
-          <View style={styles.counter}>
-            <TouchableOpacity onPress={() => setObjectionsHandled(Math.max(0, objectionsHandled - 1))}>
-              <Ionicons name="remove-circle" size={24} color="#D4AF37" />
-            </TouchableOpacity>
-            <Text style={styles.counterValue}>{objectionsHandled}</Text>
-            <TouchableOpacity onPress={() => setObjectionsHandled(objectionsHandled + 1)}>
-              <Ionicons name="add-circle" size={24} color="#D4AF37" />
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        <View style={styles.divider} />
-
-        <View style={styles.metricRow}>
-          <Text style={styles.metricLabel}>Confidence Before</Text>
-          <View style={styles.slider}>
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((value) => (
-              <TouchableOpacity
-                key={value}
-                onPress={() => setConfidenceBefore(value)}
-              >
-                <View
-                  style={[
-                    styles.sliderDot,
-                    confidenceBefore >= value && styles.sliderDotActive
-                  ]}
-                />
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
-        <View style={styles.metricRow}>
-          <Text style={styles.metricLabel}>Confidence After</Text>
-          <View style={styles.slider}>
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((value) => (
-              <TouchableOpacity
-                key={value}
-                onPress={() => setConfidenceAfter(value)}
-              >
-                <View
-                  style={[
-                    styles.sliderDot,
-                    confidenceAfter >= value && styles.sliderDotActive
-                  ]}
-                />
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-      </View>
-
-      {/* AI Coach Usage */}
-      <View style={styles.card}>
-        <View style={styles.aiUsageRow}>
-          <Ionicons name="chatbubbles" size={24} color="#3B82F6" />
-          <View style={styles.aiUsageContent}>
-            <Text style={styles.aiUsageTitle}>AI Coach Used</Text>
-            <Text style={styles.aiUsageSubtitle}>Get insights from this tour</Text>
-          </View>
-          <View style={styles.checkContainer}>
-            <Ionicons name="checkmark-circle" size={28} color="#22c55e" />
-          </View>
-        </View>
-      </View>
-
-      {/* Notes */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Notes (Optional)</Text>
-        <TextInput
-          style={styles.notesInput}
-          placeholder="What did you learn? What would you do differently?"
-          placeholderTextColor="#94A3B8"
-          multiline
-          value={notes}
-          onChangeText={setNotes}
-          maxLength={500}
-        />
-      </View>
-
-      {/* Submit Button */}
-      <TouchableOpacity
-        style={[styles.submitButton, !outcome && styles.submitButtonDisabled]}
-        onPress={handleSubmit}
-        disabled={!outcome}
-      >
-        <Ionicons name="checkmark" size={24} color="#020204" />
-        <Text style={styles.submitButtonText}>Submit Debrief</Text>
-      </TouchableOpacity>
-
-      {/* Insight Card */}
-      {outcome === 'sale' && (
-        <View style={styles.insightCard}>
-          <Ionicons name="trophy" size={32} color="#D4AF37" />
-          <Text style={styles.insightTitle}>Great Job! 🎉</Text>
-          <Text style={styles.insightText}>
-            Your confidence improved from {confidenceBefore} to {confidenceAfter}. Keep up the momentum!
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Post-Tour Debrief</Text>
+          <Text style={styles.subtitle}>
+            Capture the result while the language, objections, and energy are still fresh.
           </Text>
         </View>
-      )}
 
-      {outcome === 'no_sale' && (
-        <View style={styles.insightCard}>
-          <Ionicons name="trending-up" size={32} color="#3B82F6" />
-          <Text style={styles.insightTitle}>Learning Opportunity</Text>
-          <Text style={styles.insightText}>
-            You handled {objectionsHandled} objection{objectionsHandled !== 1 ? 's' : ''}. Review the AI Coach suggestions for next time.
-          </Text>
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Tour Outcome</Text>
+          <View style={styles.outcomeGrid}>
+            <OutcomeOption
+              icon="checkmark-circle"
+              label="Sale"
+              color="#22C55E"
+              selected={outcome === 'sale'}
+              onPress={() => setOutcome('sale')}
+            />
+            <OutcomeOption
+              icon="close-circle"
+              label="No Sale"
+              color="#EF4444"
+              selected={outcome === 'no_sale'}
+              onPress={() => setOutcome('no_sale')}
+            />
+            <OutcomeOption
+              icon="refresh"
+              label="Follow Up"
+              color="#F59E0B"
+              selected={outcome === 'follow_up'}
+              onPress={() => setOutcome('follow_up')}
+            />
+          </View>
         </View>
-      )}
-    </ScrollView>
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Tour Metrics</Text>
+
+          <View style={styles.metricRow}>
+            <Text style={styles.metricLabel}>Objections Handled</Text>
+            <View style={styles.counter}>
+              <TouchableOpacity activeOpacity={0.8} onPress={() => setObjectionsHandled(Math.max(0, objectionsHandled - 1))}>
+                <Ionicons name="remove-circle" size={24} color="#D4AF37" />
+              </TouchableOpacity>
+              <Text style={styles.counterValue}>{objectionsHandled}</Text>
+              <TouchableOpacity activeOpacity={0.8} onPress={() => setObjectionsHandled(objectionsHandled + 1)}>
+                <Ionicons name="add-circle" size={24} color="#D4AF37" />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <View style={styles.divider} />
+
+          <ConfidenceRow
+            label="Confidence Before"
+            selectedValue={confidenceBefore}
+            onSelect={setConfidenceBefore}
+          />
+          <ConfidenceRow
+            label="Confidence After"
+            selectedValue={confidenceAfter}
+            onSelect={setConfidenceAfter}
+          />
+        </View>
+
+        <View style={styles.card}>
+          <View style={styles.aiUsageRow}>
+            <Ionicons name="chatbubbles" size={24} color="#3B82F6" />
+            <View style={styles.aiUsageContent}>
+              <Text style={styles.aiUsageTitle}>AI Coach Used</Text>
+              <Text style={styles.aiUsageSubtitle}>This debrief will count that interaction for today.</Text>
+            </View>
+            <Ionicons name="checkmark-circle" size={28} color="#22C55E" />
+          </View>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Notes</Text>
+          <TextInput
+            style={styles.notesInput}
+            placeholder="What did you learn? What would you say differently next time?"
+            placeholderTextColor="#94A3B8"
+            multiline
+            value={notes}
+            onChangeText={setNotes}
+            maxLength={500}
+          />
+          <Text style={styles.notesCount}>{notes.length}/500</Text>
+        </View>
+
+        {insight ? (
+          <View style={styles.insightCard}>
+            <Ionicons name={insight.icon as keyof typeof Ionicons.glyphMap} size={30} color={insight.color} />
+            <Text style={styles.insightTitle}>{insight.title}</Text>
+            <Text style={styles.insightText}>{insight.copy}</Text>
+          </View>
+        ) : null}
+
+        <TouchableOpacity
+          activeOpacity={0.85}
+          style={[styles.submitButton, (!outcome || isLoading) && styles.submitButtonDisabled]}
+          onPress={handleSubmit}
+          disabled={!outcome || isLoading}
+        >
+          <Ionicons name="checkmark" size={22} color="#020204" />
+          <Text style={styles.submitButtonText}>{isLoading ? 'Saving...' : 'Submit Debrief'}</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
-interface OutcomeOptionProps {
+function ConfidenceRow({
+  label,
+  selectedValue,
+  onSelect,
+}: {
+  label: string;
+  selectedValue: number;
+  onSelect: (value: number) => void;
+}) {
+  return (
+    <View style={styles.metricRow}>
+      <Text style={styles.metricLabel}>{label}</Text>
+      <View style={styles.slider}>
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((value) => (
+          <TouchableOpacity key={value} activeOpacity={0.8} onPress={() => onSelect(value)}>
+            <View style={[styles.sliderDot, selectedValue >= value && styles.sliderDotActive]} />
+          </TouchableOpacity>
+        ))}
+      </View>
+    </View>
+  );
+}
+
+function OutcomeOption({
+  icon,
+  label,
+  color,
+  selected,
+  onPress,
+}: {
   icon: string;
   label: string;
   color: string;
   selected: boolean;
   onPress: () => void;
-}
-
-function OutcomeOption({ icon, label, color, selected, onPress }: OutcomeOptionProps) {
+}) {
   return (
     <TouchableOpacity
+      activeOpacity={0.85}
       style={[styles.outcomeOption, selected && { borderColor: color, backgroundColor: `${color}20` }]}
       onPress={onPress}
     >
-      <Ionicons name={icon as any} size={32} color={selected ? color : '#94A3B8'} />
+      <Ionicons name={icon as keyof typeof Ionicons.glyphMap} size={30} color={selected ? color : '#94A3B8'} />
       <Text style={[styles.outcomeLabel, selected && { color }]}>{label}</Text>
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#020204',
+  },
   container: {
     flex: 1,
     backgroundColor: '#020204',
   },
+  content: {
+    paddingBottom: 28,
+  },
   header: {
-    padding: 20,
-    paddingTop: 60,
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 12,
   },
   title: {
-    fontSize: 32,
-    fontWeight: '700',
     color: '#F1F5F9',
-    fontFamily: 'Playfair Display',
+    fontSize: 30,
+    fontWeight: '700',
   },
   subtitle: {
-    fontSize: 16,
     color: '#94A3B8',
-    marginTop: 4,
+    fontSize: 15,
+    lineHeight: 22,
+    marginTop: 6,
   },
   card: {
     backgroundColor: '#1E293B',
-    margin: 16,
-    marginBottom: 16,
-    padding: 20,
-    borderRadius: 16,
-    borderWidth: 1,
     borderColor: '#334155',
+    borderRadius: 18,
+    borderWidth: 1,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    padding: 18,
   },
   cardTitle: {
-    fontSize: 18,
-    fontWeight: '600',
     color: '#F1F5F9',
+    fontSize: 18,
+    fontWeight: '700',
     marginBottom: 16,
   },
   outcomeGrid: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexWrap: 'wrap',
     gap: 12,
   },
   outcomeOption: {
-    flex: 1,
     alignItems: 'center',
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 2,
     borderColor: '#334155',
+    borderRadius: 14,
+    borderWidth: 2,
+    minWidth: 94,
+    paddingVertical: 16,
+    width: '30%',
   },
   outcomeLabel: {
-    fontSize: 14,
-    fontWeight: '500',
     color: '#94A3B8',
+    fontSize: 14,
+    fontWeight: '700',
     marginTop: 8,
     textAlign: 'center',
   },
   metricRow: {
-    marginBottom: 16,
+    marginBottom: 14,
   },
   metricLabel: {
-    fontSize: 16,
     color: '#F1F5F9',
+    fontSize: 15,
+    fontWeight: '600',
     marginBottom: 12,
   },
   counter: {
-    flexDirection: 'row',
     alignItems: 'center',
+    flexDirection: 'row',
     gap: 16,
   },
   counterValue: {
+    color: '#D4AF37',
     fontSize: 24,
     fontWeight: '700',
-    color: '#D4AF37',
+    minWidth: 24,
+    textAlign: 'center',
   },
   divider: {
-    height: 1,
     backgroundColor: '#334155',
-    marginVertical: 16,
+    height: 1,
+    marginVertical: 6,
   },
   slider: {
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
   sliderDot: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
     backgroundColor: '#334155',
+    borderRadius: 12,
+    height: 24,
+    width: 24,
   },
   sliderDotActive: {
     backgroundColor: '#D4AF37',
   },
   aiUsageRow: {
-    flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    flexDirection: 'row',
   },
   aiUsageContent: {
     flex: 1,
+    marginLeft: 12,
+    marginRight: 12,
   },
   aiUsageTitle: {
-    fontSize: 16,
-    fontWeight: '600',
     color: '#F1F5F9',
+    fontSize: 16,
+    fontWeight: '700',
   },
   aiUsageSubtitle: {
-    fontSize: 14,
     color: '#94A3B8',
-  },
-  checkContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#22c55e',
-    justifyContent: 'center',
-    alignItems: 'center',
+    fontSize: 13,
+    lineHeight: 19,
+    marginTop: 4,
   },
   notesInput: {
     backgroundColor: '#0F172A',
-    color: '#F1F5F9',
-    fontSize: 16,
-    padding: 16,
-    borderRadius: 12,
-    minHeight: 100,
-    borderWidth: 1,
     borderColor: '#334155',
-  },
-  submitButton: {
-    flexDirection: 'row',
-    backgroundColor: '#22c55e',
-    margin: 16,
-    padding: 20,
     borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 12,
+    borderWidth: 1,
+    color: '#F1F5F9',
+    fontSize: 15,
+    lineHeight: 22,
+    minHeight: 130,
+    padding: 16,
+    textAlignVertical: 'top',
   },
-  submitButtonDisabled: {
-    opacity: 0.5,
-  },
-  submitButtonText: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#020204',
+  notesCount: {
+    color: '#64748B',
+    fontSize: 12,
+    fontWeight: '600',
+    marginTop: 10,
+    textAlign: 'right',
   },
   insightCard: {
-    backgroundColor: '#1E293B',
-    margin: 16,
-    padding: 20,
-    borderRadius: 16,
     alignItems: 'center',
+    backgroundColor: '#111827',
+    borderColor: '#334155',
+    borderRadius: 18,
     borderWidth: 1,
-    borderColor: '#D4AF37',
+    marginHorizontal: 16,
+    marginBottom: 16,
+    padding: 20,
   },
   insightTitle: {
+    color: '#F8FAFC',
     fontSize: 18,
-    fontWeight: '600',
-    color: '#F1F5F9',
-    marginTop: 12,
-    marginBottom: 8,
+    fontWeight: '700',
+    marginTop: 10,
+    marginBottom: 6,
   },
   insightText: {
+    color: '#CBD5E1',
     fontSize: 14,
-    color: '#94A3B8',
+    lineHeight: 21,
     textAlign: 'center',
+  },
+  submitButton: {
+    alignItems: 'center',
+    backgroundColor: '#D4AF37',
+    borderRadius: 16,
+    flexDirection: 'row',
+    gap: 8,
+    justifyContent: 'center',
+    marginHorizontal: 16,
+    paddingVertical: 18,
+  },
+  submitButtonDisabled: {
+    opacity: 0.55,
+  },
+  submitButtonText: {
+    color: '#020204',
+    fontSize: 16,
+    fontWeight: '700',
   },
 });

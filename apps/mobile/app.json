@@ -4,7 +4,13 @@
     "slug": "vcsa-pocket",
     "version": "1.0.0",
     "orientation": "portrait",
+    "newArchEnabled": true,
     "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/splash-logo.png",
+      "backgroundColor": "#020204",
+      "resizeMode": "contain"
+    },
     "assetBundlePatterns": [
       "**/*"
     ],
@@ -15,7 +21,6 @@
     "android": {
       "package": "com.vcsa.pocket",
       "permissions": [
-        "RECORD_AUDIO",
         "INTERNET",
         "ACCESS_NETWORK_STATE"
       ]
@@ -23,6 +28,18 @@
     "web": {
       "bundler": "metro"
     },
+    "plugins": [
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-logo.png",
+          "backgroundColor": "#020204",
+          "resizeMode": "contain",
+          "imageWidth": 160
+        }
+      ]
+    ],
     "extra": {
       "eas": {
         "projectId": "b620dee4-5ca7-4939-9b9a-9fc22482a70c"

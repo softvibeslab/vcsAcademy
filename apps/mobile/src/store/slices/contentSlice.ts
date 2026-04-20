@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { QuickWin, ContentItem } from '../../types';
 import { apiFetch } from '../../services/fetch';
+import { normalizeQuickWins } from '../../services/mobileApiTransforms';
 
 interface ContentState {
   quickWins: QuickWin[];
@@ -21,7 +22,7 @@ const initialState: ContentState = {
   isSyncing: false,
   lastSync: null,
   searchQuery: '',
-  selectedCategory: null,
+  selectedCategory: 'All',
 };
 
 // Async thunks
@@ -33,7 +34,8 @@ export const fetchQuickWins = createAsyncThunk(
     if (filters?.limit) params.append('limit', filters.limit.toString());
 
     const query = params.toString();
-    return apiFetch<QuickWin[]>(`/mobile/quick-wins${query ? `?${query}` : ''}`);
+    const response = await apiFetch<any>(`/mobile/quick-wins${query ? `?${query}` : ''}`);
+    return normalizeQuickWins(response);
   }
 );
 
@@ -73,11 +75,17 @@ const contentSlice = createSlice({
         state.isLoading = false;
         state.quickWins = action.payload;
       })
+      .addCase(fetchQuickWins.rejected, (state) => {
+        state.isLoading = false;
+      })
       .addCase(toggleFavorite.fulfilled, (state, action) => {
         const updatedWin = action.payload;
         const index = state.quickWins.findIndex(w => w.id === updatedWin.id);
         if (index !== -1) {
-          state.quickWins[index] = updatedWin;
+          state.quickWins[index] = {
+            ...state.quickWins[index],
+            ...updatedWin,
+          };
         }
       })
       .addCase(syncOfflineContent.pending, (state) => {
@@ -87,6 +95,9 @@ const contentSlice = createSlice({
         state.isSyncing = false;
         state.offlineContent = action.payload;
         state.lastSync = new Date().toISOString();
+      })
+      .addCase(syncOfflineContent.rejected, (state) => {
+        state.isSyncing = false;
       });
   },
 });

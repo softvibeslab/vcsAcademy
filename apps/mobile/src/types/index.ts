@@ -113,15 +113,65 @@ export interface DailyGoal {
   status: 'pending' | 'in_progress' | 'completed' | 'missed';
 }
 
+export interface GoalSheetData {
+  currentEarnings: number;
+  targetEarnings: number;
+  lastMonthEarnings: number;
+  daysRemaining: number;
+  sales: {
+    current: number;
+    target: number;
+  };
+  commission: {
+    total: number;
+    rate: number;
+  };
+  averageDeal: {
+    amount: number;
+    lastMonth: number;
+  };
+  streak: {
+    current: number;
+    best: number;
+  };
+  incomeBreakdown: {
+    commissions: number;
+    bonuses: number;
+    overrides: number;
+  };
+}
+
+export interface PracticeSession {
+  id: string;
+  scenario_id: string;
+  scenario_title: string;
+  category: string;
+  score: number;
+  response_excerpt: string;
+  created_at: string;
+}
+
+export interface PracticeSummary {
+  totalSessions: number;
+  weeklySessions: number;
+  averageScore: number;
+  bestScore: number;
+  lastScenarioTitle: string | null;
+}
+
 // Navigation Types
+export type MainTabParamList = {
+  Dashboard: undefined;
+  AICoachChat: undefined;
+  QuickWinsLibrary: undefined;
+  MoreHub: undefined;
+};
+
 export type RootStackParamList = {
   Login: undefined;
   MainTabs: undefined;
-  Dashboard: undefined;
   PreTourMode: undefined;
-  AICoachChat: undefined;
-  QuickWinsLibrary: undefined;
-  PostTourDebrief: { tourId?: string };
+  PostTourDebrief: { tourId?: string } | undefined;
   GoalSheet: undefined;
   PlayRole: undefined;
   Profile: undefined;
@@ -149,6 +199,23 @@ export interface ContentItem {
   url?: string;
   local_path?: string;
   cached_at?: string;
+}
+
+export interface CourseItem {
+  id: string;
+  module: string;
+  title: string;
+  copy: string;
+  link: string;
+  platform: 'youtube' | 'skool';
+  section?: string;
+  durationLabel?: string;
+  coverVariant?: string;
+  coverEyebrow?: string;
+  coverTitle?: string;
+  statusLabel?: string;
+  mentor?: string;
+  order?: number;
 }
 
 // Chat Types

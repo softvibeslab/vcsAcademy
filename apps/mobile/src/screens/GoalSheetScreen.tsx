@@ -1,549 +1,629 @@
-/**
- * VCSA Pocket - Goal Sheet Screen
- * Financial goal tracking with real-time earnings
- * Based on STITCH_DESIGN_PROMPT.md Screen 6 specifications
- */
-
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
+  ActivityIndicator,
   ScrollView,
+  StyleSheet,
+  Text,
   TouchableOpacity,
-  Dimensions,
+  View,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
-import {
-  Colors,
-  Spacing,
-  Typography,
-  CommonStyles,
-  Shadows,
-} from '@/theme';
-import {
-  Button,
-  Card,
-  ProgressBar,
-  StatCard,
-  Badge,
-  SectionHeader,
-} from '@/components/ui';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 
-interface GoalSheetData {
-  currentEarnings: number;
-  targetEarnings: number;
-  lastMonthEarnings: number;
-  daysRemaining: number;
-  sales: {
-    current: number;
-    target: number;
-  };
-  commission: {
-    total: number;
-    rate: number;
-  };
-  averageDeal: {
-    amount: number;
-    lastMonth: number;
-  };
-  streak: {
-    current: number;
-    best: number;
-  };
-  incomeBreakdown: {
-    commissions: number;
-    bonuses: number;
-    overrides: number;
-  };
-}
+import { getDemoGoalSheet } from '../demo/progress';
+import { useAppSelector } from '../store/hooks';
+import { GoalSheetData, RootStackParamList } from '../types';
 
-const GoalSheetScreen: React.FC = () => {
-  const navigation = useNavigation();
+type GoalSheetNavigationProp = StackNavigationProp<RootStackParamList, 'GoalSheet'>;
+
+export default function GoalSheetScreen() {
+  const navigation = useNavigation<GoalSheetNavigationProp>();
+  const { user } = useAppSelector((state) => state.auth);
+
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<GoalSheetData | null>(null);
 
-  useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setData({
-        currentEarnings: 12000,
-        targetEarnings: 15000,
-        lastMonthEarnings: 9600,
-        daysRemaining: 18,
-        sales: {
-          current: 8,
-          target: 10,
-        },
-        commission: {
-          total: 4800,
-          rate: 60,
-        },
-        averageDeal: {
-          amount: 1500,
-          lastMonth: 1300,
-        },
-        streak: {
-          current: 12,
-          best: 15,
-        },
-        incomeBreakdown: {
-          commissions: 4800,
-          bonuses: 600,
-          overrides: 0,
-        },
-      });
-      setLoading(false);
-    }, 1000);
-  }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      let active = true;
 
-  const progressPercentage = data
-    ? data.currentEarnings / data.targetEarnings
-    : 0;
+      const loadGoalSheet = async () => {
+        setLoading(true);
 
-  const salesProgress = data ? data.sales.current / data.sales.target : 0;
+        try {
+          const goalSheet = await getDemoGoalSheet();
+          if (active) {
+            setData(goalSheet);
+          }
+        } catch (error) {
+          console.error('Goal sheet load error:', error);
+          if (active) {
+            setData(null);
+          }
+        } finally {
+          if (active) {
+            setLoading(false);
+          }
+        }
+      };
+
+      loadGoalSheet();
+
+      return () => {
+        active = false;
+      };
+    }, [])
+  );
+
+  const firstName = user?.name?.split(' ')[0] || 'Closer';
+
+  const insight = useMemo(() => {
+    if (!data) {
+      return null;
+    }
+
+    const earningsGap = Math.max(0, data.targetEarnings - data.currentEarnings);
+    const pct = data.currentEarnings / data.targetEarnings;
+    const projectedFinish = data.daysRemaining > 0
+      ? Math.round(data.currentEarnings + (data.currentEarnings / Math.max(1, 30 - data.daysRemaining)) * data.daysRemaining)
+      : data.currentEarnings;
+
+    return {
+      earningsGap,
+      pct,
+      projectedFinish,
+    };
+  }, [data]);
 
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <Text style={styles.loadingText}>Loading Goal Sheet...</Text>
-      </View>
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator color="#D4AF37" size="large" />
+          <Text style={styles.loadingText}>Loading your goal sheet...</Text>
+        </View>
+      </SafeAreaView>
     );
   }
 
-  if (!data) {
+  if (!data || !insight) {
     return (
-      <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>Failed to load goal data</Text>
-      </View>
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
+        <View style={styles.loadingContainer}>
+          <Text style={styles.errorText}>We couldn&apos;t load your goal data right now.</Text>
+        </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}
-        >
-          <Text style={styles.backIcon}>←</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>GOAL SHEET</Text>
-        <Text style={styles.headerSubtitle}>Track Your Success</Text>
-      </View>
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <View style={styles.header}>
+          <TouchableOpacity activeOpacity={0.85} onPress={() => navigation.goBack()} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={20} color="#F1F5F9" />
+          </TouchableOpacity>
 
-      <ScrollView
-        style={styles.scrollView}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Hero Card - Monthly Income Goal */}
-        <Card style={styles.heroCard} padding={24}>
-          <View style={styles.heroIconRow}>
-            <Text style={styles.heroIcon}>💰</Text>
-            <Text style={styles.heroTitle}>MONTHLY INCOME GOAL</Text>
-          </View>
-
-          <View style={styles.heroAmountRow}>
-            <Text style={styles.heroAmount}>
-              ${data.currentEarnings.toLocaleString()}
-            </Text>
-            <Text style={styles.heroTarget}>
-              of ${data.targetEarnings.toLocaleString()} target
+          <View style={styles.headerCopy}>
+            <Text style={styles.title}>Goal Sheet</Text>
+            <Text style={styles.subtitle}>
+              {firstName}, this is your pacing board for the rest of the month.
             </Text>
           </View>
+        </View>
 
-          <View style={styles.heroProgressRow}>
-            <ProgressBar
-              progress={progressPercentage}
-              height={12}
-              color={Colors.gold}
-              showPercentage
+        <View style={styles.heroCard}>
+          <View style={styles.heroTopRow}>
+            <View>
+              <Text style={styles.heroEyebrow}>Monthly Income Goal</Text>
+              <Text style={styles.heroAmount}>${data.currentEarnings.toLocaleString()}</Text>
+              <Text style={styles.heroTarget}>
+                of ${data.targetEarnings.toLocaleString()} target
+              </Text>
+            </View>
+
+            <View style={styles.heroBadge}>
+              <Ionicons name="trending-up" size={18} color="#D4AF37" />
+              <Text style={styles.heroBadgeText}>{Math.round(insight.pct * 100)}%</Text>
+            </View>
+          </View>
+
+          <View style={styles.progressTrack}>
+            <View style={[styles.progressFill, { width: `${Math.min(insight.pct * 100, 100)}%` }]} />
+          </View>
+
+          <View style={styles.heroStats}>
+            <StatPill
+              icon="arrow-up"
+              label={`$${(data.currentEarnings - data.lastMonthEarnings).toLocaleString()} above last month`}
+              tone="success"
+            />
+            <StatPill
+              icon="calendar"
+              label={`${data.daysRemaining} days left`}
+              tone="neutral"
             />
           </View>
-
-          <View style={styles.heroStatsRow}>
-            <Text style={styles.heroTrend}>
-              ↑ ${(data.currentEarnings - data.lastMonthEarnings).toLocaleString()}{' '}
-              above last month
-            </Text>
-            <Text style={styles.heroDays}>
-              📅 {data.daysRemaining} days remaining
-            </Text>
-          </View>
-        </Card>
-
-        {/* Stats Grid */}
-        <View style={styles.statsGrid}>
-          {/* Sales */}
-          <StatCard
-            icon="🎯"
-            value={data.sales.current.toString()}
-            label={`target: ${data.sales.target}`}
-            progress={salesProgress}
-            style={styles.statCardItem}
-          />
-
-          {/* Commission */}
-          <StatCard
-            icon="💵"
-            value={`$${data.commission.total.toLocaleString()}`}
-            label={`rate: ${data.commission.rate}%`}
-            progress={0.8}
-            style={styles.statCardItem}
-          />
         </View>
 
-        <View style={styles.statsGrid}>
-          {/* Average Deal */}
-          <StatCard
-            icon="📊"
+        <View style={styles.grid}>
+          <MetricCard
+            icon="cash-outline"
+            label="Gap to Goal"
+            tone="#F97316"
+            value={`$${insight.earningsGap.toLocaleString()}`}
+            sublabel="still to close"
+          />
+          <MetricCard
+            icon="trophy-outline"
+            label="Sales Pace"
+            tone="#22C55E"
+            value={`${data.sales.current}/${data.sales.target}`}
+            sublabel="deals this month"
+          />
+          <MetricCard
+            icon="stats-chart-outline"
+            label="Avg Deal"
+            tone="#3B82F6"
             value={`$${data.averageDeal.amount.toLocaleString()}`}
-            label="this month"
-            trend={`↑ $${(data.averageDeal.amount - data.averageDeal.lastMonth).toLocaleString()}`}
-            style={styles.statCardItem}
+            sublabel={`+$${(data.averageDeal.amount - data.averageDeal.lastMonth).toLocaleString()} vs last month`}
           />
-
-          {/* Streak */}
-          <StatCard
-            icon="🔥"
+          <MetricCard
+            icon="flame-outline"
+            label="Consistency"
+            tone="#D4AF37"
             value={`${data.streak.current} days`}
-            label="personal best"
-            trend={`🏆 ${data.streak.best} days`}
-            style={styles.statCardItem}
+            sublabel={`best ${data.streak.best} days`}
           />
         </View>
 
-        {/* Income Breakdown */}
-        <Card style={styles.breakdownCard}>
-          <SectionHeader
-            icon="📈"
-            title="INCOME BREAKDOWN"
-            subtitle="Detailed breakdown by source"
+        <View style={styles.card}>
+          <View style={styles.cardHeader}>
+            <Text style={styles.cardTitle}>Income Breakdown</Text>
+            <Ionicons name="pie-chart" size={18} color="#D4AF37" />
+          </View>
+
+          <BreakdownRow
+            color="#22C55E"
+            label="Sales Commissions"
+            percentage={80}
+            value={data.incomeBreakdown.commissions}
+          />
+          <BreakdownRow
+            color="#3B82F6"
+            label="Bonuses"
+            percentage={10}
+            value={data.incomeBreakdown.bonuses}
+          />
+          <BreakdownRow
+            color="#64748B"
+            label="Overrides"
+            percentage={0}
+            value={data.incomeBreakdown.overrides}
           />
 
-          {/* Sales Commissions */}
-          <View style={styles.breakdownRow}>
-            <View style={styles.breakdownInfo}>
-              <Text style={styles.breakdownLabel}>Sales Commissions</Text>
-              <Text style={styles.breakdownAmount}>
-                ${data.incomeBreakdown.commissions.toLocaleString()}
-              </Text>
-            </View>
-            <View style={styles.breakdownMeta}>
-              <Text style={styles.breakdownPercentage}>80%</Text>
-              <ProgressBar
-                progress={0.8}
-                height={8}
-                color={Colors.success}
-                style={styles.breakdownProgress}
-              />
-            </View>
-          </View>
+          <View style={styles.divider} />
 
-          {/* Bonuses */}
-          <View style={styles.breakdownRow}>
-            <View style={styles.breakdownInfo}>
-              <Text style={styles.breakdownLabel}>Bonuses</Text>
-              <Text style={styles.breakdownAmount}>
-                ${data.incomeBreakdown.bonuses.toLocaleString()}
-              </Text>
-            </View>
-            <View style={styles.breakdownMeta}>
-              <Text style={styles.breakdownPercentage}>10%</Text>
-              <ProgressBar
-                progress={0.1}
-                height={8}
-                color={Colors.info}
-                style={styles.breakdownProgress}
-              />
-            </View>
+          <View style={styles.totalRow}>
+            <Text style={styles.totalLabel}>Projected Finish</Text>
+            <Text style={styles.totalValue}>${insight.projectedFinish.toLocaleString()}</Text>
           </View>
-
-          {/* Overrides */}
-          <View style={styles.breakdownRow}>
-            <View style={styles.breakdownInfo}>
-              <Text style={styles.breakdownLabel}>Overrides</Text>
-              <Text style={styles.breakdownAmount}>
-                ${data.incomeBreakdown.overrides.toLocaleString()}
-              </Text>
-            </View>
-            <View style={styles.breakdownMeta}>
-              <Text style={styles.breakdownPercentage}>0%</Text>
-              <ProgressBar
-                progress={0}
-                height={8}
-                color={Colors.border}
-                style={styles.breakdownProgress}
-              />
-            </View>
-          </View>
-
-          {/* Total */}
-          <View style={styles.breakdownTotalRow}>
-            <View style={styles.breakdownTotalLine} />
-            <View style={styles.breakdownTotalContent}>
-              <Text style={styles.breakdownTotalLabel}>TOTAL</Text>
-              <Text style={styles.breakdownTotalAmount}>
-                ${(data.currentEarnings + data.incomeBreakdown.bonuses).toLocaleString()}
-              </Text>
-            </View>
-          </View>
-        </Card>
-
-        {/* Action Buttons */}
-        <View style={styles.actionButtonsRow}>
-          <Button
-            title="Set New Goal"
-            onPress={() => console.log('Set new goal')}
-            variant="secondary"
-            style={styles.actionButton}
-          />
-          <Button
-            title="View History"
-            onPress={() => console.log('View history')}
-            variant="outline"
-            style={styles.actionButton}
-          />
         </View>
 
-        <View style={styles.bottomSpacing} />
+        <View style={styles.card}>
+          <View style={styles.cardHeader}>
+            <Text style={styles.cardTitle}>Coach Notes</Text>
+            <Ionicons name="bulb-outline" size={18} color="#D4AF37" />
+          </View>
+
+          <View style={styles.noteBlock}>
+            <Text style={styles.noteTitle}>What moves the needle now</Text>
+            <Text style={styles.noteCopy}>
+              You only need {Math.max(0, data.sales.target - data.sales.current)} more deal
+              {Math.max(0, data.sales.target - data.sales.current) === 1 ? '' : 's'} to hit the target.
+              Keep average deal size above ${data.averageDeal.amount.toLocaleString()} and protect your conversion quality.
+            </Text>
+          </View>
+
+          <View style={styles.noteBlock}>
+            <Text style={styles.noteTitle}>Daily focus</Text>
+            <Text style={styles.noteCopy}>
+              Run one Pre-Tour reset, practice one objection in Play Role, and debrief every tour
+              you present for the rest of the week.
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.actionsRow}>
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={() => navigation.navigate('PostTourDebrief')}
+            style={styles.primaryAction}
+          >
+            <Text style={styles.primaryActionText}>Log Debrief</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={() => navigation.navigate('PreTourMode')}
+            style={styles.secondaryAction}
+          >
+            <Text style={styles.secondaryActionText}>Run Pre-Tour</Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
-};
+}
+
+function MetricCard({
+  icon,
+  label,
+  tone,
+  value,
+  sublabel,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  tone: string;
+  value: string;
+  sublabel: string;
+}) {
+  return (
+    <View style={styles.metricCard}>
+      <View style={[styles.metricIcon, { backgroundColor: `${tone}20` }]}>
+        <Ionicons name={icon} size={20} color={tone} />
+      </View>
+      <Text style={styles.metricLabel}>{label}</Text>
+      <Text style={styles.metricValue}>{value}</Text>
+      <Text style={styles.metricSublabel}>{sublabel}</Text>
+    </View>
+  );
+}
+
+function BreakdownRow({
+  color,
+  label,
+  percentage,
+  value,
+}: {
+  color: string;
+  label: string;
+  percentage: number;
+  value: number;
+}) {
+  return (
+    <View style={styles.breakdownRow}>
+      <View style={styles.breakdownLabelRow}>
+        <View style={styles.breakdownTextBlock}>
+          <Text style={styles.breakdownLabel}>{label}</Text>
+          <Text style={styles.breakdownValue}>${value.toLocaleString()}</Text>
+        </View>
+        <Text style={styles.breakdownPercent}>{percentage}%</Text>
+      </View>
+      <View style={styles.breakdownTrack}>
+        <View style={[styles.breakdownFill, { width: `${percentage}%`, backgroundColor: color }]} />
+      </View>
+    </View>
+  );
+}
+
+function StatPill({
+  icon,
+  label,
+  tone,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  tone: 'success' | 'neutral';
+}) {
+  const color = tone === 'success' ? '#22C55E' : '#94A3B8';
+
+  return (
+    <View style={styles.statPill}>
+      <Ionicons name={icon} size={14} color={color} />
+      <Text style={[styles.statPillText, { color }]}>{label}</Text>
+    </View>
+  );
+}
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#020204',
+  },
   container: {
     flex: 1,
-    backgroundColor: Colors.black,
+    backgroundColor: '#020204',
   },
-
+  content: {
+    paddingBottom: 28,
+  },
   loadingContainer: {
-    flex: 1,
     alignItems: 'center',
+    backgroundColor: '#020204',
+    flex: 1,
+    gap: 12,
     justifyContent: 'center',
-    backgroundColor: Colors.black,
+    paddingHorizontal: 24,
   },
-
   loadingText: {
-    fontSize: Typography.fontSize.body,
-    color: Colors.textSecondary,
+    color: '#94A3B8',
+    fontSize: 15,
   },
-
-  errorContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: Colors.black,
-  },
-
   errorText: {
-    fontSize: Typography.fontSize.body,
-    color: Colors.error,
+    color: '#EF4444',
+    fontSize: 15,
+    textAlign: 'center',
   },
-
   header: {
-    paddingHorizontal: Spacing.padding.md,
-    paddingTop: Spacing.padding.sm,
-    paddingBottom: Spacing.padding.md,
-    backgroundColor: Colors.black,
+    flexDirection: 'row',
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 12,
   },
-
   backButton: {
-    padding: Spacing.s,
-  },
-
-  backIcon: {
-    fontSize: Typography.fontSize.h3,
-    color: Colors.textPrimary,
-  },
-
-  headerTitle: {
-    fontSize: Typography.fontSize.h2,
-    fontWeight: Typography.fontWeight.bold,
-    color: Colors.textPrimary,
-    textAlign: 'center',
-    marginTop: Spacing.s,
-  },
-
-  headerSubtitle: {
-    fontSize: Typography.fontSize.caption,
-    color: Colors.textSecondary,
-    textAlign: 'center',
-  },
-
-  scrollView: {
-    flex: 1,
-  },
-
-  heroCard: {
-    marginHorizontal: Spacing.padding.md,
-    marginTop: Spacing.padding.md,
-    marginBottom: Spacing.padding.md,
+    alignItems: 'center',
+    alignSelf: 'flex-start',
     backgroundColor: '#0F172A',
+    borderColor: '#334155',
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: 20,
-    padding: 24,
-    ...Shadows.goldGlow,
-  },
-
-  heroIconRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: Spacing.s,
-  },
-
-  heroIcon: {
-    fontSize: 32,
-    marginRight: Spacing.s,
-  },
-
-  heroTitle: {
-    fontSize: Typography.fontSize.small,
-    fontWeight: Typography.fontWeight.medium,
-    color: Colors.textSecondary,
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-  },
-
-  heroAmountRow: {
-    alignItems: 'center',
-    marginVertical: Spacing.lg,
-  },
-
-  heroAmount: {
-    fontSize: 48,
-    fontWeight: Typography.fontWeight.bold,
-    color: Colors.gold,
-  },
-
-  heroTarget: {
-    fontSize: Typography.fontSize.h4,
-    color: Colors.textSecondary,
-    marginTop: Spacing.xs,
-  },
-
-  heroProgressRow: {
-    marginBottom: Spacing.lg,
-  },
-
-  heroStatsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-
-  heroTrend: {
-    fontSize: Typography.fontSize.caption,
-    color: Colors.success,
-  },
-
-  heroDays: {
-    fontSize: Typography.fontSize.caption,
-    color: Colors.textSecondary,
-  },
-
-  statsGrid: {
-    flexDirection: 'row',
-    marginHorizontal: Spacing.padding.md,
-    marginBottom: Spacing.md,
-    gap: Spacing.padding.md,
-  },
-
-  statCardItem: {
-    flex: 1,
-    aspectRatio: 1.5,
-  },
-
-  breakdownCard: {
-    marginHorizontal: Spacing.padding.md,
-    marginBottom: Spacing.padding.md,
-  },
-
-  breakdownRow: {
-    marginBottom: Spacing.lg,
-  },
-
-  breakdownInfo: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: Spacing.s,
-  },
-
-  breakdownLabel: {
-    fontSize: Typography.fontSize.body,
-    color: Colors.textPrimary,
-  },
-
-  breakdownAmount: {
-    fontSize: Typography.fontSize.h5,
-    fontWeight: Typography.fontWeight.bold,
-    color: Colors.success,
-  },
-
-  breakdownMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.s,
-  },
-
-  breakdownPercentage: {
-    fontSize: Typography.fontSize.caption,
-    color: Colors.textSecondary,
+    height: 40,
+    justifyContent: 'center',
     width: 40,
   },
-
-  breakdownProgress: {
+  headerCopy: {
     flex: 1,
   },
-
-  breakdownTotalRow: {
-    marginTop: Spacing.lg,
-    paddingTop: Spacing.md,
+  title: {
+    color: '#F1F5F9',
+    fontSize: 30,
+    fontWeight: '700',
   },
-
-  breakdownTotalLine: {
-    height: 1,
-    backgroundColor: Colors.gold,
+  subtitle: {
+    color: '#94A3B8',
+    fontSize: 15,
+    lineHeight: 22,
+    marginTop: 6,
   },
-
-  breakdownTotalContent: {
+  heroCard: {
+    backgroundColor: '#111827',
+    borderColor: '#D4AF37',
+    borderRadius: 20,
+    borderWidth: 1,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    padding: 18,
+  },
+  heroTopRow: {
+    alignItems: 'flex-start',
     flexDirection: 'row',
     justifyContent: 'space-between',
+    marginBottom: 14,
+  },
+  heroEyebrow: {
+    color: '#D4AF37',
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 0.8,
+    marginBottom: 8,
+    textTransform: 'uppercase',
+  },
+  heroAmount: {
+    color: '#F8FAFC',
+    fontSize: 36,
+    fontWeight: '700',
+  },
+  heroTarget: {
+    color: '#94A3B8',
+    fontSize: 14,
+    marginTop: 4,
+  },
+  heroBadge: {
     alignItems: 'center',
-    marginTop: Spacing.sm,
-  },
-
-  breakdownTotalLabel: {
-    fontSize: Typography.fontSize.caption,
-    fontWeight: Typography.fontWeight.bold,
-    color: Colors.textSecondary,
-  },
-
-  breakdownTotalAmount: {
-    fontSize: Typography.fontSize.h3,
-    fontWeight: Typography.fontWeight.bold,
-    color: Colors.gold,
-  },
-
-  actionButtonsRow: {
+    backgroundColor: '#0F172A',
+    borderRadius: 999,
     flexDirection: 'row',
-    paddingHorizontal: Spacing.padding.md,
-    marginBottom: Spacing.padding.md,
-    gap: Spacing.s,
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
   },
-
-  actionButton: {
+  heroBadgeText: {
+    color: '#D4AF37',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  progressTrack: {
+    backgroundColor: '#1F2937',
+    borderRadius: 999,
+    height: 10,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    backgroundColor: '#D4AF37',
+    borderRadius: 999,
+    height: '100%',
+  },
+  heroStats: {
+    gap: 10,
+    marginTop: 16,
+  },
+  statPill: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 8,
+  },
+  statPillText: {
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    marginHorizontal: 16,
+    marginBottom: 16,
+  },
+  metricCard: {
+    backgroundColor: '#1E293B',
+    borderColor: '#334155',
+    borderRadius: 18,
+    borderWidth: 1,
+    padding: 16,
+    width: '48%',
+  },
+  metricIcon: {
+    alignItems: 'center',
+    borderRadius: 12,
+    height: 40,
+    justifyContent: 'center',
+    marginBottom: 12,
+    width: 40,
+  },
+  metricLabel: {
+    color: '#94A3B8',
+    fontSize: 13,
+    fontWeight: '600',
+    marginBottom: 6,
+  },
+  metricValue: {
+    color: '#F8FAFC',
+    fontSize: 22,
+    fontWeight: '700',
+  },
+  metricSublabel: {
+    color: '#64748B',
+    fontSize: 12,
+    lineHeight: 18,
+    marginTop: 6,
+  },
+  card: {
+    backgroundColor: '#1E293B',
+    borderColor: '#334155',
+    borderRadius: 18,
+    borderWidth: 1,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    padding: 18,
+  },
+  cardHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  cardTitle: {
+    color: '#F1F5F9',
+    fontSize: 19,
+    fontWeight: '700',
+  },
+  breakdownRow: {
+    marginBottom: 16,
+  },
+  breakdownLabelRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  breakdownTextBlock: {
     flex: 1,
   },
-
-  bottomSpacing: {
-    height: 80,
+  breakdownLabel: {
+    color: '#F8FAFC',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  breakdownValue: {
+    color: '#94A3B8',
+    fontSize: 13,
+    marginTop: 2,
+  },
+  breakdownPercent: {
+    color: '#CBD5E1',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  breakdownTrack: {
+    backgroundColor: '#0F172A',
+    borderRadius: 999,
+    height: 8,
+    overflow: 'hidden',
+  },
+  breakdownFill: {
+    borderRadius: 999,
+    height: '100%',
+  },
+  divider: {
+    backgroundColor: '#334155',
+    height: 1,
+    marginVertical: 4,
+  },
+  totalRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingTop: 10,
+  },
+  totalLabel: {
+    color: '#CBD5E1',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  totalValue: {
+    color: '#D4AF37',
+    fontSize: 22,
+    fontWeight: '700',
+  },
+  noteBlock: {
+    backgroundColor: '#0F172A',
+    borderRadius: 14,
+    marginTop: 10,
+    padding: 14,
+  },
+  noteTitle: {
+    color: '#F8FAFC',
+    fontSize: 15,
+    fontWeight: '700',
+    marginBottom: 8,
+  },
+  noteCopy: {
+    color: '#94A3B8',
+    fontSize: 14,
+    lineHeight: 21,
+  },
+  actionsRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginHorizontal: 16,
+  },
+  primaryAction: {
+    alignItems: 'center',
+    backgroundColor: '#D4AF37',
+    borderRadius: 14,
+    flex: 1,
+    paddingVertical: 16,
+  },
+  primaryActionText: {
+    color: '#020204',
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  secondaryAction: {
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+    borderColor: '#475569',
+    borderRadius: 14,
+    borderWidth: 1,
+    flex: 1,
+    paddingVertical: 16,
+  },
+  secondaryActionText: {
+    color: '#F1F5F9',
+    fontSize: 15,
+    fontWeight: '700',
   },
 });
-
-export default GoalSheetScreen;
