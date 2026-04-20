@@ -16,7 +16,11 @@ services:
       - REACT_APP_BACKEND_URL=http://localhost:2345
     volumes:
       - ./frontend:/app
+      - ./frontend/nginx.local.conf:/etc/nginx/nginx.conf:ro
       - /app/node_modules
+    depends_on:
+      vcsa-api-local:
+        condition: service_healthy
     networks:
       - vcsa-local-network
     restart: unless-stopped
